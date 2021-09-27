@@ -23,8 +23,8 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
     meta = {
         'name': "Tool - Nmap",
-        'summary': "Identify what Operating System might be used.",
-        'flags': ["tool", "slow", "invasive"],
+        'summary': "Port scan to identify open ports, URLs, and operating systems.",
+        'flags': ["tool", "invasive"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Crawling and Scanning"],
         'toolDetails': {
@@ -44,9 +44,11 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'nmappath': "",
         'topports': 1000,
         'ports': '',
+        'timing': 4,
         'netblockscan': True,
         'netblockscanmax': 24,
-        'batchsize': 16
+        'batchsize': 16,
+        '_maxthreads': 4
     }
 
     # Option descriptions
@@ -54,9 +56,11 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'nmappath': "Path to nmap executable. Optional.",
         'topports': "Scan top commonly-open ports.",
         'ports': "Manually specify ports to scan, comma-separated. Overrides \"top ports\".",
+        'timing': "Scanning speed, 0-5.",
         'netblockscan': "Port scan all IPs within identified owned netblocks?",
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'batchsize': "Scan in batches of this size."
+        'batchsize': "Scan in batches of this size.",
+        '_maxthreads': "Maximum number of scans to run at one time"
     }
 
     results = None
@@ -65,12 +69,15 @@ class sfp_tool_nmap(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.targetPool = self.tempStorage()
+        self.targetPool = dict()
         self.errorState = False
         self.__dataSource__ = "Target Network"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
+
+        self.scanPool = self.threadPool(threads=int(self.opts['_maxthreads']), name='sfp_tool_nmap')
+        self.scanPool.start(self.scan)
 
         # Normalize path
         if self.opts["nmappath"]:
@@ -94,9 +101,6 @@ class sfp_tool_nmap(SpiderFootPlugin):
             '-Pn',
             # Never do DNS resolution
             '-n',
-            # does the equivalent of --max-rtt-timeout 1250ms --min-rtt-timeout 100ms --initial-rtt-timeout 500ms
-            # --max-retries 6 and sets the maximum TCP scan delay to 10 milliseconds.
-            '-T4',
             # overrides --max-retries for faster results
             '--max-retries', '2',
             # Probe open ports to determine service/version info
@@ -119,6 +123,9 @@ class sfp_tool_nmap(SpiderFootPlugin):
             self.args += ("-O",)
             # Limit OS detection to promising targets
             self.args += ("--osscan-limit",)
+        # -T4 does the equivalent of --max-rtt-timeout 1250ms --min-rtt-timeout 100ms --initial-rtt-timeout 500ms
+        # --max-retries 6 and sets the maximum TCP scan delay to 10 milliseconds.
+        self.args += ("-T{}".format(max(0, min(5, int(self.opts["timing"])))),)
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -132,7 +139,6 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-
         if event.module == "sfp_tool_nmap":
             self.sf.debug("Skipping event from myself.")
             return
@@ -161,28 +167,30 @@ class sfp_tool_nmap(SpiderFootPlugin):
         targets = [t for t in targets if not any([ip_network(t, strict=False) in r for r in self.alreadyScannedHosts])]
 
         if targets:
-            self.sf.debug(f"Adding {len(targets):,} targets to queue.")
-        if not targets:
+            self.sf.debug(f"Adding {len(targets):,} targets to batch.")
+            for target in targets:
+                self.targetPool[target] = event
+        else:
             self.sf.debug(f"Skipping {event.data}, already scanned.")
             return
 
-        # Add targets to queue
-        for target in targets:
-            self.targetPool[target] = event
-
         if 0 < self.numHostsWaiting >= self.opts['batchsize']:
-            self.scan()
+            self.submitScan()
 
     def finish(self):
         if self.numHostsWaiting > 0:
             self.sf.debug("Starting final Nmap scan.")
-            self.scan()
+            self.submitScan()
         else:
             self.sf.debug("Nmap scans finished.")
 
-    def scan(self):
-        self.sf.info(f"Scanning {len(self.targetPool):,} targets.")
-        scan = NmapScan(list(self.targetPool.keys()), self.args, nmap_executable=self.exe, start=False)
+    def submitScan(self):
+        self.scanPool.submit(dict(self.targetPool))
+        self.targetPool.clear()
+
+    def scan(self, targetPool):
+        self.sf.info(f"Scanning {len(targetPool):,} targets.")
+        scan = NmapScan(list(targetPool.keys()), self.args, nmap_executable=self.exe, start=False)
         self.sf.debug(f"Running nmap command: {' '.join(scan.command)}")
         scan.start()
         if scan._process.returncode != 0:
@@ -192,7 +200,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         # Parse results
         for host in scan:
             sourceEvent = None
-            for target, event in self.targetPool.items():
+            for target, event in targetPool.items():
                 targetAddr = ip_network(target, strict=False)
                 hostAddr = ip_network(f"{host.address}/{targetAddr.prefixlen}", strict=False)
                 if hostAddr == targetAddr:
@@ -254,6 +262,10 @@ class sfp_tool_nmap(SpiderFootPlugin):
         for target in self.targetPool:
             self.results[target] = True
         self.targetPool.clear()
+
+    @property
+    def running(self):
+        return not self.scanPool.finished
 
     @property
     def numHostsWaiting(self):
