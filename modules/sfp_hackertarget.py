@@ -55,8 +55,6 @@ class sfp_hackertarget(SpiderFootPlugin):
         'maxnetblock': 24,
         'maxcohost': 100,
         'http_headers': False,
-        'tcp_portscan': False,
-        'udp_portscan': False
     }
 
     optdescs = {
@@ -66,8 +64,6 @@ class sfp_hackertarget(SpiderFootPlugin):
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
         'http_headers': "Retrieve IP HTTP headers using HackerTarget.com",
-        'tcp_portscan': "Scan IP for commonly open TCP ports using HackerTarget.com TCP port scan.",
-        'udp_portscan': "Scan IP for commonly open UDP ports using HackerTarget.com UDP port scan."
     }
 
     results = None
@@ -91,8 +87,6 @@ class sfp_hackertarget(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "CO_HOSTED_SITE",
-            "UDP_PORT_OPEN",
-            "TCP_PORT_OPEN",
             "IP_ADDRESS",
             'WEBSERVER_HTTPHEADERS',
             'RAW_DNS_RECORDS',
@@ -103,89 +97,6 @@ class sfp_hackertarget(SpiderFootPlugin):
             'AFFILIATE_INTERNET_NAME',
             'AFFILIATE_INTERNET_NAME_UNRESOLVED'
         ]
-
-    def portScanUDP(self, ip):
-        """Port scan for commonly open UDP ports
-
-        Args:
-            ip (str): IPv4 address
-
-        Returns:
-            list: open UDP ports
-        """
-        params = urllib.parse.urlencode({
-            "theinput": ip,
-            "thetest": "udpscan",
-            "name_of_nonce_field": "",
-            "_wp_http_referer": "/udp-port-scan/"
-        })
-
-        res = self.sf.fetchUrl(
-            "https://hackertarget.com/udp-port-scan/",
-            timeout=self.opts['_fetchtimeout'],
-            useragent=self.opts['_useragent'],
-            postData=params
-        )
-
-        if res['content'] is None:
-            return None
-
-        html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', str(res['content']), re.MULTILINE | re.DOTALL)
-
-        if not html_data:
-            self.sf.debug(f"Found no open UDP ports on {ip}")
-            return None
-
-        open_ports = re.findall(r'(\d+)/udp\s+open\s+', html_data[0])
-
-        if not open_ports:
-            self.sf.debug(f"Found no open UDP ports on {ip}")
-            return None
-
-        self.sf.debug(f"Found {len(open_ports)} open UDP ports on {ip}")
-
-        return open_ports
-
-    def portScanTCP(self, ip):
-        """Port scan for commonly open TCP ports
-
-        Args:
-            ip (str): IPv4 address
-
-        Returns:
-            list: open TCP ports
-        """
-        params = urllib.parse.urlencode({
-            "theinput": ip,
-            "thetest": "tcpscan",
-            "name_of_nonce_field": "",
-            "_wp_http_referer": "/tcp-port-scan/"
-        })
-
-        res = self.sf.fetchUrl(
-            "https://hackertarget.com/tcp-port-scan/", timeout=self.opts['_fetchtimeout'],
-            useragent=self.opts['_useragent'],
-            postData=params
-        )
-
-        if res['content'] is None:
-            return None
-
-        html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', res['content'], re.MULTILINE | re.DOTALL)
-
-        if not html_data:
-            self.sf.debug(f"Found no open TCP ports on {ip}")
-            return None
-
-        open_ports = re.findall(r'(\d+)/tcp\s+open\s+', html_data[0])
-
-        if not open_ports:
-            self.sf.debug(f"Found no open TCP ports on {ip}")
-            return None
-
-        self.sf.debug(f"Found {len(open_ports)} open TCP ports on {ip}")
-
-        return open_ports
 
     def httpHeaders(self, ip):
         """Retrieve HTTP headers for IP address
@@ -431,19 +342,5 @@ class sfp_hackertarget(SpiderFootPlugin):
                     e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', json.dumps(http_headers), self.__name__, pevent)
                     e.actualSource = ip
                     self.notifyListeners(e)
-
-            if self.opts.get('udp_portscan', True):
-                udp_ports = self.portScanUDP(ip)
-                if udp_ports:
-                    for port in udp_ports:
-                        e = SpiderFootEvent("UDP_PORT_OPEN", f"{ip}:{port}", self.__name__, pevent)
-                        self.notifyListeners(e)
-
-            if self.opts.get('tcp_portscan', True):
-                tcp_ports = self.portScanTCP(ip)
-                if tcp_ports:
-                    for port in tcp_ports:
-                        e = SpiderFootEvent("TCP_PORT_OPEN", f"{ip}:{port}", self.__name__, pevent)
-                        self.notifyListeners(e)
 
 # End of sfp_hackertarget class
