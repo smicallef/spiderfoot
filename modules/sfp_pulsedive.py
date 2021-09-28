@@ -185,7 +185,7 @@ class sfp_pulsedive(SpiderFootPlugin):
             if not self.opts['subnetlookup']:
                 return
 
-            if eventName == 'NETBLOCKV6_OWNER':
+            if eventName == 'NETBLOCKV6_MEMBER':
                 max_subnet = self.opts['maxv6subnet']
             else:
                 max_subnet = self.opts['maxsubnet']
