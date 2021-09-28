@@ -209,7 +209,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
-            self.sf.error("Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
+            self.sf.error(f"Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
 
         res = self.searchCompany(f"{eventData}*")
 

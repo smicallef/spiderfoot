@@ -165,7 +165,7 @@ class sfp_archiveorg(SpiderFootPlugin):
                 ret = None
 
             if not ret:
-                self.sf.debug("Empty response from archive.org for {eventData}")
+                self.sf.debug(f"Empty response from archive.org for {eventData}")
                 continue
 
             if len(ret['archived_snapshots']) < 1:
