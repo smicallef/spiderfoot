@@ -142,7 +142,7 @@ class sfp_github(SpiderFootPlugin):
                 self.sf.debug(f"{username} is not a valid GitHub profile")
                 return
 
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: {full_name}", self.__name__, event)
+            e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
             self.notifyListeners(e)
 
             location = json_data.get('location')

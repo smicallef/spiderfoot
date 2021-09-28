@@ -100,7 +100,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             r = json.loads(res['content'])
             if "error" in r:
-                self.sf.error("Error returned from SHODAN: {r['error']}")
+                self.sf.error(f"Error returned from SHODAN: {r['error']}")
                 return None
             return r
         except Exception as e:

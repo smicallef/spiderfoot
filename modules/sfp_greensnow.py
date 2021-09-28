@@ -87,12 +87,12 @@ class sfp_greensnow(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch {url}")
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch {url}")
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 

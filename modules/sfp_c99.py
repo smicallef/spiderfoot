@@ -355,9 +355,7 @@ class sfp_c99(SpiderFootPlugin):
             return
 
         if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
-            self.sf.debug(
-                "Host {data} could not be resolved."
-            )
+            self.sf.debug(f"Host {data} could not be resolved.")
             if self.getTarget().matches(data):
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 self.notifyListeners(evt)
