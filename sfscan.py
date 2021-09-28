@@ -288,8 +288,8 @@ class SpiderFootScanner():
             try:
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
-            except Exception as e:
-                self.__sf.error(f"Module {modName} initialization failed: {e}")
+            except Exception:
+                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 continue
 
             # Set up the module options, scan ID, database handle and listeners
@@ -304,8 +304,9 @@ class SpiderFootScanner():
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
                 mod.setScanId(self.__scanId)
-            except Exception as e:
-                self.__sf.error(f"Module {modName} initialization failed: {e}")
+            except Exception:
+                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                mod.errorState = True
                 continue
 
             # Override the module's local socket module to be the SOCKS one.
@@ -534,10 +535,13 @@ class SpiderFootScanner():
                 except Exception:
                     pass
 
-        if log_status and modules_running:
+        if log_status:
             events_queued = ", ".join([f"{mod}: {qsize:,}" for mod, qsize in modules_waiting[:5] if qsize > 0])
-            if events_queued:
-                self.__sf.debug(f"Events queued: {events_queued}")
+            if not events_queued:
+                events_queued = 'None'
+            self.__sf.debug(f"Events queued: {events_queued}")
+            if modules_running:
+                self.__sf.debug(f"Modules running: {', '.join(modules_running)}")
 
         if all(queues_empty) and not modules_running:
             return True
