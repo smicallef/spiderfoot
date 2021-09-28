@@ -225,7 +225,7 @@ class sfp_intelx(SpiderFootPlugin):
                 try:
                     last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
                     if last_seen < agelimit:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.sf.debug(f"Record found but too old ({last_seen}), skipping.")
                         continue
 
                     val = None

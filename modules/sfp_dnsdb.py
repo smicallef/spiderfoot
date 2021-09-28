@@ -141,7 +141,7 @@ class sfp_dnsdb(SpiderFootPlugin):
     def isTooOld(self, lastSeen):
         ageLimitTs = int(time.time()) - (86400 * self.opts["age_limit_days"])
         if self.opts["age_limit_days"] > 0 and lastSeen < ageLimitTs:
-            self.sf.debug("Record found but too old, skipping.")
+            self.sf.debug(f"Record found but too old ({lastSeen}), skipping.")
             return True
         return False
 

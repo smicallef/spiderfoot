@@ -183,7 +183,7 @@ class sfp_greynoise(SpiderFootPlugin):
                     lastseen_ts = int(time.mktime(lastseen_dt.timetuple()))
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and lastseen_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.sf.debug(f"Record found but too old ({lastseen_dt}), skipping.")
                         return
 
                     # Only report meta data about the target, not affiliates

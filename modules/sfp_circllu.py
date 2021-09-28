@@ -209,7 +209,7 @@ class sfp_circllu(SpiderFootPlugin):
 
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                 if self.opts['age_limit_days'] > 0 and rec['time_last'] < age_limit_ts:
-                    self.sf.debug("Record found but too old, skipping.")
+                    self.sf.debug(f"Record found but too old ({rec['time_last']}), skipping.")
                     continue
 
                 cohosts = list()

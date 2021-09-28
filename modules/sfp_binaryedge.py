@@ -343,7 +343,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                     age_limit_ts = int(time.time()) - (86400 * self.opts['torrent_age_limit_days'])
 
                     if self.opts['torrent_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.sf.debug(f"Record found but too old ({created_ts}), skipping.")
                         continue
 
                     dat = "Torrent: " + rec.get("torrent", "???").get("name") + " @ " + rec.get('torrent').get("source", "???")
@@ -380,7 +380,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                     age_limit_ts = int(time.time()) - (86400 * self.opts['cve_age_limit_days'])
 
                     if self.opts['cve_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.sf.debug(f"Record found but too old ({created_ts}), skipping.")
                         continue
 
                     cves = rec.get('cves')
@@ -419,7 +419,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                         age_limit_ts = int(time.time()) - (86400 * self.opts['port_age_limit_days'])
 
                         if self.opts['port_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
+                            self.sf.debug(f"Record found but too old ({created_ts}), skipping.")
                             continue
 
                         port = str(prec['target']['port'])

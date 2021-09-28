@@ -189,7 +189,7 @@ class sfp_threatminer(SpiderFootPlugin):
                 last_ts = int(time.mktime(last_seen.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                 if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                    self.sf.debug("Record found but too old, skipping.")
+                    self.sf.debug(f"Record found but too old ({last_seen}), skipping.")
                     continue
 
                 host = rec['domain']
