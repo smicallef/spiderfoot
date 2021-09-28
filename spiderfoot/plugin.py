@@ -403,17 +403,17 @@ class SpiderFootPlugin():
             while not self.checkForStop():
                 try:
                     sfEvent = self.incomingEventQueue.get_nowait()
-                    self._running = True
-                    if sfEvent == 'FINISHED':
-                        self.sf.debug(f"{self.__name__}.threadWorker() got \"FINISHED\" from incomingEventQueue.")
-                        self.finish()
-                    else:
-                        self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
-                        self.handleEvent(sfEvent)
-                    self._running = False
                 except queue.Empty:
                     sleep(.3)
                     continue
+                self._running = True
+                if sfEvent == 'FINISHED':
+                    self.sf.debug(f"{self.__name__}.threadWorker() got \"FINISHED\" from incomingEventQueue.")
+                    self.finish()
+                else:
+                    self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
+                    self.handleEvent(sfEvent)
+                self._running = False
         except KeyboardInterrupt:
             self.sf.debug(f"Interrupted module {self.__name__}.")
             self._stopScanning = True
@@ -550,7 +550,7 @@ class SpiderFootPlugin():
             for i in iterable:
                 if self.stop:
                     break
-                while 1:
+                while not self.stop:
                     try:
                         q.put_nowait(i)
                         break

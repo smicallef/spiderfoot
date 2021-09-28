@@ -16,6 +16,7 @@ import queue
 import traceback
 from time import sleep
 from copy import deepcopy
+from contextlib import suppress
 from collections import OrderedDict
 
 import dns.resolver
@@ -524,7 +525,16 @@ class SpiderFootScanner():
         }
         modules_waiting = sorted(modules_waiting.items(), key=lambda x: x[-1], reverse=True)
         modules_running = [m.__name__ for m in self.__moduleInstances.values() if m.running]
+        modules_errored = [m.__name__ for m in self.__moduleInstances.values() if m.errorState]
         queues_empty = [qsize == 0 for m, qsize in modules_waiting]
+
+        for mod in self.__moduleInstances.values():
+            if mod.errorState and mod.incomingEventQueue is not None:
+                self.__sf.debug(f"Clearing and unsetting incomingEventQueue for errored module {mod.__name__}.")
+                with suppress(Exception):
+                    while 1:
+                        mod.incomingEventQueue.get_nowait()
+                mod.incomingEventQueue = None
 
         if not modules_running and not queues_empty:
             self.__sf.debug("Clearing queues for stalled/aborted modules.")
@@ -539,9 +549,11 @@ class SpiderFootScanner():
             events_queued = ", ".join([f"{mod}: {qsize:,}" for mod, qsize in modules_waiting[:5] if qsize > 0])
             if not events_queued:
                 events_queued = 'None'
-            self.__sf.debug(f"Events queued: {events_queued}")
+            self.__sf.debug(f"Events queued: {sum([m[-1] for m in modules_waiting]):,} ({events_queued})")
             if modules_running:
-                self.__sf.debug(f"Modules running: {', '.join(modules_running)}")
+                self.__sf.debug(f"Modules running: {len(modules_running):,} ({', '.join(modules_running)})")
+            if modules_errored:
+                self.__sf.debug(f"Modules errored: {len(modules_errored):,} ({', '.join(modules_errored)})")
 
         if all(queues_empty) and not modules_running:
             return True
