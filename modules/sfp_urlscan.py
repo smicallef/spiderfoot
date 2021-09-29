@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib.error
 import urllib.parse
@@ -55,6 +56,7 @@ class sfp_urlscan(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -83,18 +85,18 @@ class sfp_urlscan(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by URLScan.io.")
+            self.log.error("You are being rate-limited by URLScan.io.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No results info found for " + qry)
+            self.log.info("No results info found for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -107,10 +109,10 @@ class sfp_urlscan(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -185,7 +187,7 @@ class sfp_urlscan(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if self.opts['verify'] and len(domains) > 0:
-            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+            self.log.info("Resolving " + str(len(set(domains))) + " domains ...")
 
         for domain in set(domains):
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):

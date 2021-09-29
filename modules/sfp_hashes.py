@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -34,6 +35,7 @@ class sfp_hashes(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
 
         for opt in userOpts.keys():
@@ -57,7 +59,7 @@ class sfp_hashes(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         hashes = self.sf.parseHashes(eventData)
         for hashtup in hashes:

@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import ipwhois
 import netaddr
 import whois
@@ -39,6 +40,7 @@ class sfp_whois(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -69,7 +71,7 @@ class sfp_whois(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"
@@ -82,7 +84,7 @@ class sfp_whois(SpiderFootPlugin):
         elif eventName == "SIMILARDOMAIN":
             typ = "SIMILARDOMAIN_WHOIS"
         else:
-            self.sf.error(f"Invalid event type: {eventName}")
+            self.log.error(f"Invalid event type: {eventName}")
             return
 
         data = None
@@ -91,33 +93,33 @@ class sfp_whois(SpiderFootPlugin):
             try:
                 netblock = netaddr.IPNetwork(eventData)
             except Exception as e:
-                self.sf.error(f"Invalid netblock {eventData}: {e}")
+                self.log.error(f"Invalid netblock {eventData}: {e}")
                 return
 
             ip = netblock[0]
-            self.sf.debug(f"Sending RDAP query for IP address: {ip}")
+            self.log.debug(f"Sending RDAP query for IP address: {ip}")
 
             try:
                 # TODO: this should use the configured proxy
                 r = ipwhois.IPWhois(ip)
                 data = str(r.lookup_rdap(depth=1))
             except Exception as e:
-                self.sf.error(f"Unable to perform WHOIS query on {ip}: {e}")
+                self.log.error(f"Unable to perform WHOIS query on {ip}: {e}")
         else:
-            self.sf.debug(f"Sending WHOIS query for domain: {eventData}")
+            self.log.debug(f"Sending WHOIS query for domain: {eventData}")
             try:
                 whoisdata = whois.whois(eventData)
                 data = str(whoisdata.text)
             except Exception as e:
-                self.sf.error(f"Unable to perform WHOIS query on {eventData}: {e}")
+                self.log.error(f"Unable to perform WHOIS query on {eventData}: {e}")
 
         if not data:
-            self.sf.error(f"No WHOIS record for {eventData}")
+            self.log.error(f"No WHOIS record for {eventData}")
             return
 
         # This is likely to be an error about being throttled rather than real data
         if len(str(data)) < 250:
-            self.sf.error(f"WHOIS data ({len(data)} bytes) is smaller than 250 bytes. Throttling from WHOIS server is probably happening. Ignoring response.")
+            self.log.error(f"WHOIS data ({len(data)} bytes) is smaller than 250 bytes. Throttling from WHOIS server is probably happening. Ignoring response.")
             return
 
         rawevt = SpiderFootEvent(typ, data, self.__name__, event)

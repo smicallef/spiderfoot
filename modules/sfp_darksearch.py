@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -62,6 +63,7 @@ class sfp_darksearch(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -95,7 +97,7 @@ class sfp_darksearch(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -108,12 +110,12 @@ class sfp_darksearch(SpiderFootPlugin):
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         page = 1
         pages = self.opts['max_pages']
@@ -159,7 +161,7 @@ class sfp_darksearch(SpiderFootPlugin):
                     continue
 
                 self.results[link] = True
-                self.sf.debug("Found a darknet mention: " + link)
+                self.log.debug("Found a darknet mention: " + link)
 
                 if self.opts['fetchlinks']:
                     res = self.sf.fetchUrl(link,
@@ -168,11 +170,11 @@ class sfp_darksearch(SpiderFootPlugin):
                                            verify=False)
 
                     if res['content'] is None:
-                        self.sf.debug("Ignoring " + link + " as no data returned")
+                        self.log.debug("Ignoring " + link + " as no data returned")
                         continue
 
                     if eventData not in res['content']:
-                        self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                        self.log.debug("Ignoring " + link + " as no mention of " + eventData)
                         continue
 
                     evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
@@ -184,7 +186,7 @@ class sfp_darksearch(SpiderFootPlugin):
                         startIndex = res['content'].index(eventData) - 120
                         endIndex = startIndex + len(eventData) + 240
                     except Exception:
-                        self.sf.debug("String not found in content.")
+                        self.log.debug("String not found in content.")
                         continue
 
                     data = res['content'][startIndex:endIndex]
@@ -200,7 +202,7 @@ class sfp_darksearch(SpiderFootPlugin):
                     found = True
 
                     if result.get('title') is None and result.get('description') is None:
-                        self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                        self.log.debug("Ignoring " + link + " as no mention of " + eventData)
                         continue
 
                     evt = SpiderFootEvent("DARKNET_MENTION_CONTENT",

@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from netaddr import IPNetwork
@@ -182,6 +183,7 @@ class sfp_template(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
         # instead since on SpiderFoot HX, different mechanisms are used to persist
@@ -245,7 +247,7 @@ class sfp_template(SpiderFootPlugin):
         # - error(message) if it's a bad thing and should cause the scan to abort
         # - fatal(message) if it's a horrible thing and should kill SpiderFoot completely
         if res['content'] is None:
-            self.sf.info(f"No SHODAN info found for {qry}")
+            self.log.info(f"No SHODAN info found for {qry}")
             return None
 
         # Always process external data which is expected to be in a specific format
@@ -253,7 +255,7 @@ class sfp_template(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.log.error(f"Error processing JSON response from SHODAN: {e}")
 
         return None
 
@@ -272,7 +274,7 @@ class sfp_template(SpiderFootPlugin):
 
         # Check if the module has already analysed this event data.
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         # Add the event data to results dictionary to prevent duplicate queries.
@@ -288,7 +290,7 @@ class sfp_template(SpiderFootPlugin):
             max_netblock = self.opts['maxnetblock']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_netblock:
-                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
+                self.log.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
                 return
 
         # When handling netblocks/subnets, assuming the user set

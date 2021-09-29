@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -61,6 +62,7 @@ class sfp_zoneh(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -90,7 +92,7 @@ class sfp_zoneh(SpiderFootPlugin):
         grps = re.findall(r"<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
             if target in m[0]:
-                self.sf.info("Found zoneh site: " + m[0])
+                self.log.info("Found zoneh site: " + m[0])
                 return m[0] + "\n<SFURL>" + m[1] + "</SFURL>"
 
         return False
@@ -101,13 +103,13 @@ class sfp_zoneh(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -129,7 +131,7 @@ class sfp_zoneh(SpiderFootPlugin):
         elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'DEFACED_AFFILIATE_IPADDR'
         else:
-            self.sf.debug(f"Unexpected event type {eventName}, skipping")
+            self.log.debug(f"Unexpected event type {eventName}, skipping")
 
         if self.checkForStop():
             return
@@ -139,7 +141,7 @@ class sfp_zoneh(SpiderFootPlugin):
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.log.error("Unable to fetch " + url)
                 self.errorState = True
                 return
 

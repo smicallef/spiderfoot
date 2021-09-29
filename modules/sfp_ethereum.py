@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -33,6 +34,7 @@ class sfp_ethereum(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -61,12 +63,12 @@ class sfp_ethereum(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-ethereum-addresses
         matches = re.findall(r"[\s:=\>](0x[a-fA-F0-9]{40})", eventData)
         for m in matches:
-            self.sf.debug("Ethereum address match: " + m)
+            self.log.debug("Ethereum address match: " + m)
             evt = SpiderFootEvent("ETHEREUM_ADDRESS", m, self.__name__, event)
             self.notifyListeners(evt)
 

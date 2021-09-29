@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import datetime
 import re
 import urllib.error
@@ -55,6 +56,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "Wikipedia"
@@ -86,7 +88,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         )
 
         if res['code'] in ["404", "403", "500"]:
-            self.sf.debug(f"Unexpected response code {res['code']} from Wikipedia")
+            self.log.debug(f"Unexpected response code {res['code']} from Wikipedia")
             return None
 
         if not res['content']:
@@ -106,7 +108,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
                     links.append(d)
             return set(links)
         except Exception as e:
-            self.sf.error(f"Error processing response from Wikipedia: {e}")
+            self.log.error(f"Error processing response from Wikipedia: {e}")
             return None
 
     def handleEvent(self, event):
@@ -114,10 +116,10 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -125,7 +127,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         data = self.query(eventData)
 
         if data is None:
-            self.sf.debug(f"No results from Wikipedia for {eventData}")
+            self.log.debug(f"No results from Wikipedia for {eventData}")
             return
 
         for link in data:

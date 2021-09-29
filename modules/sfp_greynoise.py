@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 from datetime import datetime
@@ -80,6 +81,7 @@ class sfp_greynoise(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -108,14 +110,14 @@ class sfp_greynoise(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=header)
 
         if res['code'] not in ["200"]:
-            self.sf.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.")
+            self.log.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Greynoise: {e}")
+            self.log.error(f"Error processing JSON response from Greynoise: {e}")
 
         return None
 
@@ -128,15 +130,15 @@ class sfp_greynoise(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_greynoise but did not set an API key!")
+            self.log.error("You enabled sfp_greynoise but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -146,7 +148,7 @@ class sfp_greynoise(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
+                    self.log.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
                     return
@@ -156,7 +158,7 @@ class sfp_greynoise(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
+                    self.log.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
                     return
@@ -177,13 +179,13 @@ class sfp_greynoise(SpiderFootPlugin):
         if len(ret["data"]) > 0:
             for rec in ret["data"]:
                 if rec.get("seen", None):
-                    self.sf.debug("Found threat info in Greynoise")
+                    self.log.debug("Found threat info in Greynoise")
                     lastseen = rec.get("last_seen", "1970-01-01")
                     lastseen_dt = datetime.strptime(lastseen, '%Y-%m-%d')
                     lastseen_ts = int(time.mktime(lastseen_dt.timetuple()))
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and lastseen_ts < age_limit_ts:
-                        self.sf.debug(f"Record found but too old ({lastseen_dt}), skipping.")
+                        self.log.debug("Record found but too old, skipping.")
                         return
 
                     # Only report meta data about the target, not affiliates

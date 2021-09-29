@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import dns.resolver
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -52,6 +53,7 @@ class sfp_opendns(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -75,9 +77,9 @@ class sfp_opendns(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.sf.debug("Addresses returned: " + str(addrs))
+            self.log.debug("Addresses returned: " + str(addrs))
         except Exception:
-            self.sf.debug(f"Unable to resolve {qaddr}")
+            self.log.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -92,7 +94,7 @@ class sfp_opendns(SpiderFootPlugin):
         parentEvent = event
         resolved = False
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib.error
 import urllib.parse
@@ -62,6 +63,7 @@ class sfp_phishstats(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -107,13 +109,13 @@ class sfp_phishstats(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.debug("No information found from Phishstats for IP Address")
+            self.log.debug("No information found from Phishstats for IP Address")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response: {e}")
+            self.log.error(f"Error processing JSON response: {e}")
             return None
 
     # Handle events sent to this module
@@ -125,11 +127,11 @@ class sfp_phishstats(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -139,7 +141,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
                 return
@@ -149,7 +151,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxsubnet']))
                 return
@@ -185,7 +187,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 continue
 
             if addr != maliciousIP:
-                self.sf.error("Reported address doesn't match requested, skipping")
+                self.log.error("Reported address doesn't match requested, skipping")
                 continue
 
             # Data is reported about the IP Address

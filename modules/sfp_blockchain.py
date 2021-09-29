@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -49,6 +50,7 @@ class sfp_blockchain(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -71,10 +73,10 @@ class sfp_blockchain(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -83,13 +85,13 @@ class sfp_blockchain(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://blockchain.info/balance?active=" + eventData,
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
-            self.sf.info("No Blockchain info found for " + eventData)
+            self.log.info("No Blockchain info found for " + eventData)
             return
         try:
             data = json.loads(res['content'])
             balance = float(data[eventData]['final_balance']) / 100000000
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return
 
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)

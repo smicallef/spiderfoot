@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -30,6 +31,7 @@ class sfp_email(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
 
         for opt in userOpts.keys():
@@ -54,7 +56,7 @@ class sfp_email(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         emails = self.sf.parseEmails(eventData)
         for email in set(emails):
@@ -64,11 +66,11 @@ class sfp_email(SpiderFootPlugin):
             # Get the domain and strip potential ending .
             mailDom = email.split('@')[1].strip('.')
             if not self.sf.validHost(mailDom, self.opts['_internettlds']):
-                self.sf.debug(f"Skipping {email} as not a valid e-mail.")
+                self.log.debug(f"Skipping {email} as not a valid e-mail.")
                 continue
 
             if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True) and not self.getTarget().matches(email):
-                self.sf.debug("External domain, so possible affiliate e-mail")
+                self.log.debug("External domain, so possible affiliate e-mail")
                 evttype = "AFFILIATE_EMAILADDR"
 
             if eventName.startswith("AFFILIATE_"):
@@ -77,7 +79,7 @@ class sfp_email(SpiderFootPlugin):
             if not evttype.startswith("AFFILIATE_") and email.split("@")[0] in self.opts['_genericusers'].split(","):
                 evttype = "EMAILADDR_GENERIC"
 
-            self.sf.info(f"Found e-mail address: {email}")
+            self.log.info(f"Found e-mail address: {email}")
             mail = email.strip('.')
 
             evt = SpiderFootEvent(evttype, mail, self.__name__, event)

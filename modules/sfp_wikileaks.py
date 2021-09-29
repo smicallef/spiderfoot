@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import datetime
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -53,6 +54,7 @@ class sfp_wikileaks(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -76,10 +78,10 @@ class sfp_wikileaks(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -102,7 +104,7 @@ class sfp_wikileaks(SpiderFootPlugin):
             "https://search.wikileaks.org/?" + wlurl
         )
         if res['content'] is None:
-            self.sf.error("Unable to fetch Wikileaks content.")
+            self.log.error("Unable to fetch Wikileaks content.")
             return
 
         # Fetch the paste site content
@@ -133,7 +135,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                 if "wikileaks.org/" not in link and "cryptome.org/" not in link:
                     continue
                 else:
-                    self.sf.debug("Found a link: " + link)
+                    self.log.debug("Found a link: " + link)
                     if self.checkForStop():
                         return
 

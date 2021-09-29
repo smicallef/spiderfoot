@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 
@@ -57,6 +58,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.indexBase = list()
@@ -73,12 +75,12 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                    useragent="SpiderFoot")
 
             if res['code'] in ["400", "401", "402", "403", "404"]:
-                self.sf.error("CommonCrawl search doesn't seem to be available.")
+                self.log.error("CommonCrawl search doesn't seem to be available.")
                 self.errorState = True
                 return None
 
             if not res['content']:
-                self.sf.error("CommonCrawl search doesn't seem to be available.")
+                self.log.error("CommonCrawl search doesn't seem to be available.")
                 self.errorState = True
                 return None
 
@@ -92,12 +94,12 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "401", "402", "403", "404"]:
-            self.sf.error("CommonCrawl index collection doesn't seem to be available.")
+            self.log.error("CommonCrawl index collection doesn't seem to be available.")
             self.errorState = True
             return list()
 
         if not res['content']:
-            self.sf.error("CommonCrawl index collection doesn't seem to be available.")
+            self.log.error("CommonCrawl index collection doesn't seem to be available.")
             self.errorState = True
             return list()
 
@@ -110,14 +112,14 @@ class sfp_commoncrawl(SpiderFootPlugin):
         topindexes = sorted(list(indexlist.keys()), reverse=True)[0:self.opts['indexes']]
 
         if len(topindexes) < self.opts['indexes']:
-            self.sf.error("Not able to find latest CommonCrawl indexes.")
+            self.log.error("Not able to find latest CommonCrawl indexes.")
             self.errorState = True
             return list()
 
         retindex = list()
         for i in topindexes:
             retindex.append("CC-MAIN-" + str(i)[0:4] + "-" + str(i)[4:6])
-        self.sf.debug("CommonCrawl indexes: " + str(retindex))
+        self.log.debug("CommonCrawl indexes: " + str(retindex))
         return retindex
 
     # What events is this module interested in for input
@@ -136,7 +138,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
@@ -150,16 +152,16 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.indexBase = self.getLatestIndexes()
 
         if not self.indexBase:
-            self.sf.error("Unable to fetch CommonCrawl index.")
+            self.log.error("Unable to fetch CommonCrawl index.")
             return
 
         if len(self.indexBase) == 0:
-            self.sf.error("Unable to fetch CommonCrawl index.")
+            self.log.error("Unable to fetch CommonCrawl index.")
             return
 
         data = self.search(eventData)
         if not data:
-            self.sf.error("Unable to obtain content from CommonCrawl.")
+            self.log.error("Unable to obtain content from CommonCrawl.")
             return
 
         sent = list()
@@ -186,7 +188,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                           self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e))
+                self.log.error("Malformed JSON from CommonCrawl.org: " + str(e))
                 return
 
 # End of sfp_commoncrawl class

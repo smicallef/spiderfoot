@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -43,6 +44,7 @@ class sfp_twitter(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.__dataSource__ = "Twitter"
         self.results = self.tempStorage()
@@ -69,18 +71,18 @@ class sfp_twitter(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            self.log.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
         if network != "Twitter":
-            self.sf.debug(f"Skipping social network profile, {url}, as not a Twitter profile")
+            self.log.debug(f"Skipping social network profile, {url}, as not a Twitter profile")
             return
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -90,7 +92,7 @@ class sfp_twitter(SpiderFootPlugin):
             return
 
         if res['code'] != "200":
-            self.sf.debug(url + " is not a valid Twitter profile")
+            self.log.debug(url + " is not a valid Twitter profile")
             return
 
         # Retrieve name
@@ -107,7 +109,7 @@ class sfp_twitter(SpiderFootPlugin):
 
         if location:
             if len(location[0]) < 3 or len(location[0]) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.log.debug("Skipping likely invalid location.")
             else:
                 e = SpiderFootEvent("GEOINFO", location[0], self.__name__, event)
                 self.notifyListeners(e)

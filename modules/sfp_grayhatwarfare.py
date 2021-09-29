@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib
@@ -64,6 +65,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -106,18 +108,18 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Unable to fetch data from Grayhat Warfare API.")
+            self.log.error("Unable to fetch data from Grayhat Warfare API.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Grayhat Warfare API.')
+            self.log.debug('No response from Grayhat Warfare API.')
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
     # Handle events sent to this module
@@ -134,10 +136,10 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_grayhatwarfare but did not set an API key!")
+            self.log.error("You enabled sfp_grayhatwarfare but did not set an API key!")
             self.errorState = True
             return
 
@@ -164,7 +166,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
             for row in data.get('buckets'):
                 bucketName = row.get('bucket')
                 bucketKeyword = bucketName.split('.')[0]
-                self.sf.debug(bucketKeyword)
+                self.log.debug(bucketKeyword)
                 if bucketKeyword.startswith(keyword) or bucketKeyword.endswith(keyword):
                     evt = SpiderFootEvent('CLOUD_STORAGE_BUCKET', bucketName, self.__name__, event)
                     self.notifyListeners(evt)

@@ -10,6 +10,7 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -56,6 +57,7 @@ class sfp_textmagic(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=None):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         if userOpts is None:
             userOpts = {}
         self.sf = sfc
@@ -86,7 +88,7 @@ class sfp_textmagic(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.log.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def queryPhoneNumber(self, qry):
         headers = {
@@ -106,13 +108,13 @@ class sfp_textmagic(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.sf.info(f"No TextMagic info found for {qry}")
+            self.log.info(f"No TextMagic info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from TextMagic: {e}")
+            self.log.error(f"Error processing JSON response from TextMagic: {e}")
 
         return None
 
@@ -124,10 +126,10 @@ class sfp_textmagic(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "" or self.opts["api_key_username"] == "":
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Username/Key!"
             )
             self.errorState = True

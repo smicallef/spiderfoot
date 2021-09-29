@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 import time
@@ -51,6 +52,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -79,13 +81,13 @@ class sfp_openstreetmap(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'], useragent='SpiderFoot')
 
         if res['content'] is None:
-            self.sf.info("No location info found for " + qry)
+            self.log.info("No location info found for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -95,10 +97,10 @@ class sfp_openstreetmap(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -107,7 +109,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         # Skip post office boxes
         if address.lower().startswith('po box'):
-            self.sf.debug("Skipping PO BOX address")
+            self.log.debug("Skipping PO BOX address")
             return
 
         rx1 = re.compile(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]', flags=re.IGNORECASE)
@@ -125,24 +127,24 @@ class sfp_openstreetmap(SpiderFootPlugin):
         time.sleep(1)
 
         if data is None:
-            self.sf.debug("Found no results for " + eventData)
+            self.log.debug("Found no results for " + eventData)
             return
 
-        self.sf.info("Found " + str(len(data)) + " matches for " + eventData)
+        self.log.info("Found " + str(len(data)) + " matches for " + eventData)
 
         for location in data:
             try:
                 lat = location.get('lat')
                 lon = location.get('lon')
             except Exception as e:
-                self.sf.debug("Failed to get lat/lon: " + str(e))
+                self.log.debug("Failed to get lat/lon: " + str(e))
                 continue
 
             if not lat or not lon:
                 continue
 
             coords = str(lat) + "," + str(lon)
-            self.sf.debug("Found coordinates: " + coords)
+            self.log.debug("Found coordinates: " + coords)
 
             evt = SpiderFootEvent("PHYSICAL_COORDINATES", coords, self.__name__, event)
             self.notifyListeners(evt)

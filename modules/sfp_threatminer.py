@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 from datetime import datetime
@@ -74,6 +75,7 @@ class sfp_threatminer(SpiderFootPlugin):
     checkedips = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.reportedhosts = self.tempStorage()
@@ -111,17 +113,17 @@ class sfp_threatminer(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.info("No ThreatMiner info found for " + qry)
+            self.log.info("No ThreatMiner info found for " + qry)
             return None
 
         if len(res['content']) == 0:
-            self.sf.info("No ThreatMiner info found for " + qry)
+            self.log.info("No ThreatMiner info found for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}")
+            self.log.error(f"Error processing JSON response from ThreatMiner: {e}")
 
         return None
 
@@ -131,10 +133,10 @@ class sfp_threatminer(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -143,7 +145,7 @@ class sfp_threatminer(SpiderFootPlugin):
             if not self.opts['netblocklookup']:
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
                 return
@@ -152,7 +154,7 @@ class sfp_threatminer(SpiderFootPlugin):
             if not self.opts['subnetlookup']:
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxsubnet']))
                 return
@@ -171,7 +173,7 @@ class sfp_threatminer(SpiderFootPlugin):
             evtType = "CO_HOSTED_SITE"
             ret = self.query(qry, "passive")
             if ret is None:
-                self.sf.info("No Passive DNS info for " + qry)
+                self.log.info("No Passive DNS info for " + qry)
                 return
 
             if "results" not in ret:
@@ -179,7 +181,7 @@ class sfp_threatminer(SpiderFootPlugin):
             if len(ret['results']) == 0:
                 continue
 
-            self.sf.debug("Found passive DNS results in ThreatMiner")
+            self.log.debug("Found passive DNS results in ThreatMiner")
             res = ret["results"]
             for rec in res:
                 # Skip stuff with no date
@@ -189,7 +191,7 @@ class sfp_threatminer(SpiderFootPlugin):
                 last_ts = int(time.mktime(last_seen.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                 if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                    self.sf.debug(f"Record found but too old ({last_seen}), skipping.")
+                    self.log.debug("Record found but too old, skipping.")
                     continue
 
                 host = rec['domain']
@@ -213,15 +215,15 @@ class sfp_threatminer(SpiderFootPlugin):
             evtType = "INTERNET_NAME"
             ret = self.query(eventData, "subs")
             if ret is None:
-                self.sf.debug("No hosts found")
+                self.log.debug("No hosts found")
                 return
 
             if len(ret.get("results", list())) == 0:
-                self.sf.debug("No hosts found")
+                self.log.debug("No hosts found")
                 return
 
             for host in ret.get("results"):
-                self.sf.debug("Found host results in ThreatMiner")
+                self.log.debug("Found host results in ThreatMiner")
 
                 if host in self.reportedhosts:
                     continue

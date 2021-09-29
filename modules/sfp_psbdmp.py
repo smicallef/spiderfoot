@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 
@@ -47,6 +48,7 @@ class sfp_psbdmp(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -70,13 +72,13 @@ class sfp_psbdmp(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=15, useragent="SpiderFoot")
 
         if res['code'] == "403" or res['content'] is None:
-            self.sf.info("Unable to fetch data from psbdmp.cc right now.")
+            self.log.info("Unable to fetch data from psbdmp.cc right now.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from psbdmp.cc: {e}")
+            self.log.error(f"Error processing JSON response from psbdmp.cc: {e}")
             return None
 
         ids = list()
@@ -96,10 +98,10 @@ class sfp_psbdmp(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -119,7 +121,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             )
 
             if res['content'] is None:
-                self.sf.debug(f"Ignoring {n} as no data returned")
+                self.log.debug(f"Ignoring {n} as no data returned")
                 continue
 
             if re.search(

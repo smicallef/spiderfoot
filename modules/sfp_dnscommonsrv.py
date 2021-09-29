@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -----------------------------------------------------------------------------
 
+import logging
 import dns.resolver
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -74,6 +75,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     ]
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
@@ -92,10 +94,10 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnscommonsrv":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.log.debug(f"Ignoring {eventName}, from self.")
             return
 
         eventDataHash = self.sf.hashstring(eventData)
@@ -110,7 +112,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         if self.opts.get('_dnsserver', "") != "":
             res.nameservers = [self.opts['_dnsserver']]
 
-        self.sf.debug("Iterating through possible SRV records.")
+        self.log.debug("Iterating through possible SRV records.")
 
         # Try resolving common names
         for srv in self.commonsrv:

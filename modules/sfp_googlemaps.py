@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib
 
@@ -60,6 +61,7 @@ class sfp_googlemaps(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -86,7 +88,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.info(f"No location info found for {address}")
+            self.log.info(f"No location info found for {address}")
             return None
 
         return res
@@ -100,15 +102,15 @@ class sfp_googlemaps(SpiderFootPlugin):
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
@@ -117,7 +119,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         res = self.query(eventData)
 
         if not res:
-            self.sf.debug(f"No information found for {eventData}")
+            self.log.debug(f"No information found for {eventData}")
             return
 
         evt = SpiderFootEvent(
@@ -131,7 +133,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])['results'][0]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return
 
         if srcModuleName == "sfp_googlemaps":

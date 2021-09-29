@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from netaddr import IPNetwork
@@ -71,6 +72,7 @@ class sfp_spur(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -117,16 +119,16 @@ class sfp_spur(SpiderFootPlugin):
         code = res.get('code')
 
         if code == '403':
-            self.sf.error("Invalid credentials. Please check API Token")
+            self.log.error("Invalid credentials. Please check API Token")
             self.errorState = True
             return None
 
         if code == '404':
-            self.sf.debug("IP Address not found.")
+            self.log.debug("IP Address not found.")
             return None
 
         if code != '200':
-            self.sf.error("Unable to fetch data from spur.us")
+            self.log.error("Unable to fetch data from spur.us")
             return None
 
         return res.get('content')
@@ -139,17 +141,17 @@ class sfp_spur(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_spur but did not set an API key!")
+            self.log.error("You enabled sfp_spur but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -159,7 +161,7 @@ class sfp_spur(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
                 return
@@ -169,7 +171,7 @@ class sfp_spur(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxsubnet']))
                 return

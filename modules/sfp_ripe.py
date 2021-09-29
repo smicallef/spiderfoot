@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 
@@ -56,6 +57,7 @@ class sfp_ripe(SpiderFootPlugin):
     lastContent = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.memCache = self.tempStorage()
@@ -110,18 +112,18 @@ class sfp_ripe(SpiderFootPlugin):
 
         res = self.fetchRir(f"https://stat.ripe.net/data/network-info/data.json?resource={ipaddr}")
         if res['content'] is None:
-            self.sf.debug(f"No netblock info found/available for {ipaddr} at RIPE.")
+            self.log.debug(f"No netblock info found/available for {ipaddr} at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         prefix = j["data"].get("prefix")
         if prefix is None:
-            self.sf.debug("Could not identify network prefix.")
+            self.log.debug("Could not identify network prefix.")
             return None
 
         return prefix
@@ -130,14 +132,14 @@ class sfp_ripe(SpiderFootPlugin):
     def queryWhois(self, qry):
         res = self.fetchRir(f"https://stat.ripe.net/data/whois/data.json?resource={qry}")
         if res['content'] is None:
-            self.sf.debug(f"No results for {qry} at RIPE.")
+            self.log.debug(f"No results for {qry} at RIPE.")
             return None
 
         try:
             data = json.loads(res['content'])
             return data.get("data")
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -154,7 +156,7 @@ class sfp_ripe(SpiderFootPlugin):
             else:
                 data = whois["records"][0]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         asn = None
@@ -178,7 +180,7 @@ class sfp_ripe(SpiderFootPlugin):
         try:
             data = whois["records"]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         ownerinfo = dict()
@@ -201,28 +203,28 @@ class sfp_ripe(SpiderFootPlugin):
                     else:
                         ownerinfo[key] = [value]
 
-        self.sf.debug(f"Found AS owner info: {ownerinfo}")
+        self.log.debug(f"Found AS owner info: {ownerinfo}")
         return ownerinfo
 
     # Netblocks owned by an AS
     def asNetblocks(self, asn):
         res = self.fetchRir(f"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS{asn}")
         if res['content'] is None:
-            self.sf.debug(f"No netblocks info found/available for AS{asn} at RIPE.")
+            self.log.debug(f"No netblocks info found/available for AS{asn} at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
             data = j["data"]["prefixes"]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         netblocks = list()
         for rec in data:
             prefix = rec["prefix"]
             netblocks.append(rec["prefix"])
-            self.sf.info(f"Additional netblock found from same AS: {prefix}")
+            self.log.info(f"Additional netblock found from same AS: {prefix}")
 
         return netblocks
 
@@ -230,14 +232,14 @@ class sfp_ripe(SpiderFootPlugin):
     def asNeighbours(self, asn):
         res = self.fetchRir(f"https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS{asn}")
         if res['content'] is None:
-            self.sf.debug(f"No neighbour info found/available for AS{asn} at RIPE.")
+            self.log.debug(f"No neighbour info found/available for AS{asn} at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
             data = j["data"]["neighbours"]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         neighbours = list()
@@ -306,11 +308,11 @@ class sfp_ripe(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -351,7 +353,7 @@ class sfp_ripe(SpiderFootPlugin):
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(eventData)
             if asn is None:
-                self.sf.debug(f"Could not identify BGP AS for {eventData}")
+                self.log.debug(f"Could not identify BGP AS for {eventData}")
                 return
 
             if eventName in ["NETBLOCK_OWNER", "NETBLOCKV6_OWNER"] and self.ownsAs(asn):
@@ -370,19 +372,19 @@ class sfp_ripe(SpiderFootPlugin):
             # Get the Netblock the IP is a part of
             prefix = self.ipNetblock(eventData)
             if prefix is None:
-                self.sf.debug(f"Could not identify network prefix for {eventData}")
+                self.log.debug(f"Could not identify network prefix for {eventData}")
                 return
 
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(prefix)
             if asn is None:
-                self.sf.debug(f"Could not identify BGP AS for {prefix}")
+                self.log.debug(f"Could not identify BGP AS for {prefix}")
                 return
 
             if not self.sf.validIpNetwork(prefix):
                 return
 
-            self.sf.info(f"Netblock found: {prefix} ({asn})")
+            self.log.info(f"Netblock found: {prefix} ({asn})")
 
             if ":" in prefix:
                 evt = SpiderFootEvent("NETBLOCKV6_MEMBER", prefix, self.__name__, event)

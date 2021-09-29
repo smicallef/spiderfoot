@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import ipaddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -43,6 +44,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     hostresults = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.domresults = self.tempStorage()
@@ -71,7 +73,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             return
@@ -83,14 +85,14 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             netmask = address.max_prefixlen - min(address.max_prefixlen, max(1, int(self.opts.get("lookasidebits"))))
             network = ipaddress.ip_network(f"{eventData}/{netmask}", strict=False)
         except ValueError:
-            self.sf.error(f"Invalid IP address received: {eventData}")
+            self.log.error(f"Invalid IP address received: {eventData}")
             return
 
-        self.sf.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
+        self.log.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
 
         for ip in network:
             sip = str(ip)
-            self.sf.debug("Attempting look-aside lookup of: " + sip)
+            self.log.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
                 return
 
@@ -99,7 +101,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
             addrs = self.sf.resolveIP(sip)
             if not addrs:
-                self.sf.debug("Look-aside resolve for " + sip + " failed.")
+                self.log.debug("Look-aside resolve for " + sip + " failed.")
                 continue
 
             # Report addresses that resolve to hostnames on the same
@@ -147,11 +149,11 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.hostresults[host] = [parentHash]
         else:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
-                self.sf.debug("Skipping host, " + host + ", already processed.")
+                self.log.debug("Skipping host, " + host + ", already processed.")
                 return None
             self.hostresults[host] = self.hostresults[host] + [parentHash]
 
-        self.sf.debug("Found host: " + host)
+        self.log.debug("Found host: " + host)
         # If the returned hostname is aliased to our
         # target in some way, flag it as an affiliate
         if affiliate is None:

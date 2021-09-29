@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import json
 import time
@@ -92,6 +93,7 @@ class sfp_xforce(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
@@ -138,46 +140,46 @@ class sfp_xforce(SpiderFootPlugin):
     # https://exchange.xforce.ibmcloud.com/api/doc/
     def parseAPIResponse(self, res):
         if res['content'] is None:
-            self.sf.info("No X-Force Exchange information found")
+            self.log.info("No X-Force Exchange information found")
             return None
 
         if res['code'] == '400':
-            self.sf.error("Bad request")
+            self.log.error("Bad request")
             return None
 
         if res['code'] == '404':
-            self.sf.info("No X-Force Exchange information found")
+            self.log.info("No X-Force Exchange information found")
             return None
 
         if res['code'] == '401':
-            self.sf.error("X-Force Exchange API key seems to have been rejected.")
+            self.log.error("X-Force Exchange API key seems to have been rejected.")
             self.errorState = True
             return None
 
         if res['code'] == '402':
-            self.sf.error("X-Force Exchange monthly quota exceeded")
+            self.log.error("X-Force Exchange monthly quota exceeded")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Access denied")
+            self.log.error("Access denied")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("Rate limit exceeded")
+            self.log.error("Rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from X-Force Exchange")
+            self.log.error("Failed to retrieve content from X-Force Exchange")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}")
+            self.log.error(f"Error processing JSON response from X-Force Exchange: {e}")
 
         return None
 
@@ -192,15 +194,15 @@ class sfp_xforce(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
-            self.sf.error("You enabled sfp_xforce but did not set an API key/password!")
+            self.log.error("You enabled sfp_xforce but did not set an API key/password!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -210,7 +212,7 @@ class sfp_xforce(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
+                    self.log.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
                     return
@@ -220,7 +222,7 @@ class sfp_xforce(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
+                    self.log.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
                     return
@@ -243,9 +245,9 @@ class sfp_xforce(SpiderFootPlugin):
 
             ret = self.query(eventData, "resolve")
             if ret is None:
-                self.sf.info("No Passive DNS info for " + eventData)
+                self.log.info("No Passive DNS info for " + eventData)
             elif "Passive" in ret:
-                self.sf.debug("Found passive DNS results in Xforce")
+                self.log.debug("Found passive DNS results in Xforce")
                 res = ret["Passive"]['records']
                 for rec in res:
                     if rec['recordType'] == "A":
@@ -258,12 +260,12 @@ class sfp_xforce(SpiderFootPlugin):
                         host = rec['value']
 
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                            self.sf.debug(f"Record found but too old ({last_dt}), skipping.")
+                            self.log.debug("Record found but too old, skipping.")
                             continue
 
                         if not self.opts["cohostsamedomain"]:
                             if self.getTarget().matches(host, includeParents=True):
-                                self.sf.debug(
+                                self.log.debug(
                                     f"Skipping {host} because it is on the same domain."
                                 )
                                 continue
@@ -288,7 +290,7 @@ class sfp_xforce(SpiderFootPlugin):
             if rec is not None:
                 rec_history = rec.get("history", list())
                 if len(rec_history) > 0:
-                    self.sf.debug("Found history results in XForce")
+                    self.log.debug("Found history results in XForce")
                     for result in rec_history:
                         created = result.get("created", None)
                         # 2014-11-06T10:45:00.000Z
@@ -298,14 +300,14 @@ class sfp_xforce(SpiderFootPlugin):
                         created_ts = int(time.mktime(created_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                            self.sf.debug(f"Record found but too old ({created_dt}), skipping.")
+                            self.log.debug("Record found but too old, skipping.")
                             continue
                         reason = result.get("reason", "")
                         score = result.get("score", 0)
                         cats = result.get("cats", None)
                         cats_description = ""
                         if int(score) < 2:
-                            self.sf.debug("Non-malicious results, skipping.")
+                            self.log.debug("Non-malicious results, skipping.")
                             continue
 
                         if cats is not None:
@@ -321,7 +323,7 @@ class sfp_xforce(SpiderFootPlugin):
             if rec is not None:
                 rec_malware = rec.get("malware", list())
                 if len(rec_malware) > 0:
-                    self.sf.debug("Found malware results in XForce")
+                    self.log.debug("Found malware results in XForce")
                     for result in rec_malware:
                         origin = result.get("origin", "")
                         domain = result.get("domain", "")
@@ -350,7 +352,7 @@ class sfp_xforce(SpiderFootPlugin):
                         host = rec['value']
 
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                            self.sf.debug(f"Record found but too old ({last_ts}), skipping.")
+                            self.log.debug("Record found but too old, skipping.")
                             continue
 
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)

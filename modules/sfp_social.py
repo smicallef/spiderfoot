@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -49,6 +50,7 @@ class sfp_social(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
@@ -67,7 +69,7 @@ class sfp_social(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in list(self.results.keys()):
             return
@@ -81,7 +83,7 @@ class sfp_social(SpiderFootPlugin):
                 if not bits:
                     continue
 
-                self.sf.info(f"Matched {regexpGrp} in {eventData}")
+                self.log.info(f"Matched {regexpGrp} in {eventData}")
                 evt = SpiderFootEvent(
                     "SOCIAL_MEDIA", f"{regexpGrp}: <SFURL>{eventData}</SFURL>",
                     self.__name__,

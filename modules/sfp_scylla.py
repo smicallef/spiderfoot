@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -58,6 +59,7 @@ class sfp_scylla(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -94,18 +96,18 @@ class sfp_scylla(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Syclla.sh is having problems.")
+            self.log.error("Syclla.sh is having problems.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Scylla.so')
+            self.log.debug('No response from Scylla.so')
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -123,7 +125,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])
@@ -163,7 +165,7 @@ class sfp_scylla(SpiderFootPlugin):
                     continue
 
                 if not self.sf.validEmail(email):
-                    self.sf.debug("Skipping invalid email address: " + email)
+                    self.log.debug("Skipping invalid email address: " + email)
                     continue
 
                 mailDom = email.lower().split('@')[1]
@@ -171,7 +173,7 @@ class sfp_scylla(SpiderFootPlugin):
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
                 if not self.getTarget().matches(mailDom):
-                    self.sf.debug("Skipped address: " + email)
+                    self.log.debug("Skipped address: " + email)
                     continue
 
                 breach = result.get('domain', 'Unknown')

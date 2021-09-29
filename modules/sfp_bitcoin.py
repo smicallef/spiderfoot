@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import codecs
 import re
 from hashlib import sha256
@@ -35,6 +36,7 @@ class sfp_bitcoin(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -78,12 +80,12 @@ class sfp_bitcoin(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-bitcoin-addresses
         matches = re.findall(r"[\s:=\>]([13][a-km-zA-HJ-NP-Z1-9]{25,34})", eventData)
         for m in matches:
-            self.sf.debug(f"Bitcoin potential match: {m}")
+            self.log.debug(f"Bitcoin potential match: {m}")
             if self.check_bc(m):
                 evt = SpiderFootEvent("BITCOIN_ADDRESS", m, self.__name__, event)
                 self.notifyListeners(evt)

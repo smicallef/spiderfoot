@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 from datetime import datetime
@@ -67,6 +68,7 @@ class sfp_fullcontact(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -101,13 +103,13 @@ class sfp_fullcontact(SpiderFootPlugin):
         )
 
         if res['code'] in ["401", "400"]:
-            self.sf.error("API key rejected by FullContact")
+            self.log.error("API key rejected by FullContact")
             self.errorState = True
             return None
 
         if res['code'] == "403":
             if failcount == 3:
-                self.sf.error("Throttled or other blocking by FullContact")
+                self.log.error("Throttled or other blocking by FullContact")
                 return None
 
             time.sleep(2)
@@ -115,13 +117,13 @@ class sfp_fullcontact(SpiderFootPlugin):
             return self.query(url, data, failcount)
 
         if not res['content']:
-            self.sf.error("No content returned from FullContact")
+            self.log.error("No content returned from FullContact")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from FullContact: {e}")
+            self.log.error(f"Error processing JSON response from FullContact: {e}")
             return None
 
         if "updated" in ret and int(self.opts['max_age_days']) > 0:
@@ -130,7 +132,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             age_limit_ts = int(time.time()) - (86400 * int(self.opts['max_age_days']))
 
             if last_ts < age_limit_ts:
-                self.sf.debug("FullContact record found but too old.")
+                self.log.debug("FullContact record found but too old.")
                 return None
 
         return ret
@@ -168,16 +170,16 @@ class sfp_fullcontact(SpiderFootPlugin):
             return
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

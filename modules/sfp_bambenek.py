@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_customfeed
-# Purpose:      Checks if an ASN, IP, hostname or domain is listed as malicious
-#               in a user-supplied data feed.
+# Name:         sfp_bambenek
+# Purpose:      Checks if an IP, hostname or domain is malicious.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     11/11/2018
+# Created:     07/09/2018
 # Copyright:   (c) Steve Micallef, 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -19,51 +18,79 @@ from netaddr import IPAddress, IPNetwork
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
-    'Custom Threat Data': {
-        'id': '_customfeed',
-        'checks': ['ip', 'netblock', 'asn', 'domain'],
-        'regex': '^{0}$'
+    'Bambenek C&C IP List': {
+        'id': 'bambip',
+        'checks': ['ip', 'netblock'],
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt',
+        'regex': '^{0},.*'
+    },
+    'Bambenek C&C Domain List': {
+        'id': 'bambdom',
+        'checks': ['domain'],
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt',
+        'regex': '^{0},.*'
     }
 }
 
 
-class sfp_customfeed(SpiderFootPlugin):
+class sfp_bambenek(SpiderFootPlugin):
 
     meta = {
-        'name': "Custom Threat Feed",
-        'summary': "Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.",
+        'name': "Bambenek C&C List",
+        'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "http://www.bambenekconsulting.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.bambenekconsulting.com/free-osint-tools/",
+                "https://osint.bambenekconsulting.com/feeds/",
+                "https://osint.bambenekconsulting.com/feeds/license.txt"
+            ],
+            'favIcon': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/mini-logo1.ico",
+            'logo': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/logo_transparent21-300x84.png",
+            'description': "Bambenek Consulting is an cybersecurity investigations and intelligence consulting firm "
+            "focusing on tackling major criminal threats. "
+            "Every day, there is another story about another company having their banking accounts drained, "
+            "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
+            "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
+            "you can be sure your organization and your customers’ data is safe.",
+        }
     }
 
     # Default options
     opts = {
+        'bambip': True,
+        'bambdom': True,
         'checkaffiliates': True,
         'checkcohosts': True,
-        'url': "",
-        'cacheperiod': 0
+        'cacheperiod': 18,
+        'checknetblocks': True,
+        'checksubnets': True
     }
 
     # Option descriptions
     optdescs = {
-        'url': "The URL where the feed can be found. Exact matching is performed so the format must be a single line per host, ASN, domain, IP or netblock.",
+        'bambip': "Enable Bambenek IP check?",
+        'bambdom': "Enable Bambenek Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
-        'cacheperiod': "Maximum age of data in hours before re-downloading. 0 to always download."
+        'cacheperiod': "Hours to cache list data before re-fetching.",
+        'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
+        'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
     results = None
-    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
-        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -74,8 +101,9 @@ class sfp_customfeed(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS", "AFFILIATE_INTERNET_NAME",
-                "AFFILIATE_IPADDR", "CO_HOSTED_SITE"]
+        return ["INTERNET_NAME", "IP_ADDRESS",
+                "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -83,7 +111,7 @@ class sfp_customfeed(SpiderFootPlugin):
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+                "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK"]
 
     # Look up 'list' type resources
     def resourceList(self, replaceme_id, target, targetType):
@@ -96,16 +124,17 @@ class sfp_customfeed(SpiderFootPlugin):
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
-            url = self.opts['url']
             if replaceme_id == cid:
                 data = dict()
+                url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
                         self.log.error("Unable to fetch " + url)
                         return None
-                    self.sf.cachePut("sfmal_" + cid, data['content'])
+                    else:
+                        self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -147,8 +176,8 @@ class sfp_customfeed(SpiderFootPlugin):
                             self.log.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
-                    # Check for the domain and the hostname
                     try:
+                        # Check for the domain and the hostname
                         rxDom = str(malchecks[check]['regex']).format(targetDom)
                         rxTgt = str(malchecks[check]['regex']).format(target)
                         for line in data['content'].split('\n'):
@@ -166,8 +195,7 @@ class sfp_customfeed(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.log.debug("Checking maliciousness of " + target + " ("
-                              + itemType + ") with: " + cid)
+                self.log.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -179,14 +207,6 @@ class sfp_customfeed(SpiderFootPlugin):
         eventData = event.data
 
         self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-        if self.errorState:
-            return
-
-        if self.opts['url'] == "":
-            self.log.error("You enabled sfp_customfeed but defined no custom feed URL!")
-            self.errorState = True
-            return
 
         if eventData in self.results:
             self.log.debug(f"Skipping {eventData}, already checked.")
@@ -214,12 +234,8 @@ class sfp_customfeed(SpiderFootPlugin):
                 else:
                     evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
-            if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                typeId = 'asn'
-                evtType = 'MALICIOUS_ASN'
-
             if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                             'AFFILIATE_INTERNET_NAME', ]:
+                             'AFFILIATE_INTERNET_NAME']:
                 typeId = 'domain'
                 if eventName == "INTERNET_NAME":
                     evtType = "MALICIOUS_INTERNET_NAME"
@@ -246,4 +262,4 @@ class sfp_customfeed(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-# End of sfp_customfeed class
+# End of sfp_bambenek class

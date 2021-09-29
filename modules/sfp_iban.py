@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -33,6 +34,7 @@ class sfp_iban(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -57,11 +59,11 @@ class sfp_iban(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         ibanNumbers = self.sf.parseIBANNumbers(eventData)
         for ibanNumber in set(ibanNumbers):
-            self.sf.info(f"Found IBAN number: {ibanNumber}")
+            self.log.info(f"Found IBAN number: {ibanNumber}")
             evt = SpiderFootEvent("IBAN_NUMBER", ibanNumber, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource

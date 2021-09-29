@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -51,6 +52,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -80,7 +82,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
                 return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -90,17 +92,17 @@ class sfp_duckduckgo(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}")
+            self.log.error(f"Unable to fetch {url}")
             return
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}")
+            self.log.error(f"Error processing JSON response from DuckDuckGo: {e}")
             return
 
         if not ret['Heading']:
-            self.sf.debug(f"No DuckDuckGo information for {eventData}")
+            self.log.debug(f"No DuckDuckGo information for {eventData}")
             return
 
         # Submit the DuckDuckGo results for analysis
@@ -127,13 +129,13 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
             for topic in related_topics:
                 if not isinstance(topic, dict):
-                    self.sf.debug("No category text found from DuckDuckGo.")
+                    self.log.debug("No category text found from DuckDuckGo.")
                     continue
 
                 category = topic.get('Text')
 
                 if not category:
-                    self.sf.debug("No category text found from DuckDuckGo.")
+                    self.log.debug("No category text found from DuckDuckGo.")
                     continue
 
                 evt = SpiderFootEvent(event_type, category, self.__name__, event)

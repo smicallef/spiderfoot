@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -67,6 +68,7 @@ class sfp_pastebin(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -91,7 +93,7 @@ class sfp_pastebin(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set a Google API key!")
+            self.log.error(f"You enabled {self.__class__.__name__} but did not set a Google API key!")
             self.errorState = True
             return
 
@@ -128,7 +130,7 @@ class sfp_pastebin(SpiderFootPlugin):
             ]
 
             for link in relevant_links:
-                self.sf.debug("Found a link: " + link)
+                self.log.debug("Found a link: " + link)
 
                 if self.checkForStop():
                     return
@@ -137,7 +139,7 @@ class sfp_pastebin(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.debug(f"Ignoring {link} as no data returned")
+                    self.log.debug(f"Ignoring {link} as no data returned")
                     continue
 
                 if re.search(

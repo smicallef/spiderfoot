@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib.error
 import urllib.parse
@@ -65,6 +66,7 @@ class sfp_viewdns(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.accum = list()
@@ -107,38 +109,38 @@ class sfp_viewdns(SpiderFootPlugin):
         )
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("ViewDNS.info API key seems to have been rejected or you have exceeded usage limits.")
+            self.log.error("ViewDNS.info API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return
 
         if res['content'] is None:
-            self.sf.info(f"No ViewDNS.info data found for {qry}")
+            self.log.info(f"No ViewDNS.info data found for {qry}")
             return
 
         if res['content'] == 'Query limit reached for the supplied API key.':
-            self.sf.error("ViewDNS.info API usage limit exceeded.")
+            self.log.error("ViewDNS.info API usage limit exceeded.")
             self.errorState = True
             return
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ViewDNS.info: {e}")
+            self.log.error(f"Error processing JSON response from ViewDNS.info: {e}")
             return
 
         if not info.get("query"):
-            self.sf.error("Error querying ViewDNS.info. Could be unavailable right now.")
+            self.log.error("Error querying ViewDNS.info. Could be unavailable right now.")
             self.errorState = True
             return
 
         response = info.get("response")
         if response:
             if response.get("error"):
-                self.sf.error(f"Error querying ViewDNS.info: {response.get('error')}")
+                self.log.error(f"Error querying ViewDNS.info: {response.get('error')}")
                 return
 
             if len(response.get(responsekey, list())) == pagesize:
-                self.sf.debug(f"Looping at ViewDNS page {page}")
+                self.log.debug(f"Looping at ViewDNS page {page}")
                 self.accum.extend(response.get(responsekey))
                 self.query(qry, querytype, page + 1)
 
@@ -153,15 +155,15 @@ class sfp_viewdns(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_viewdns but did not set an API key!")
+            self.log.error("You enabled sfp_viewdns but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -175,7 +177,7 @@ class sfp_viewdns(SpiderFootPlugin):
             valkey = "name"
         elif eventName == "PROVIDER_DNS":
             if not self.getTarget().matches(eventData):
-                self.sf.debug("DNS provider found but not related to target, skipping")
+                self.log.debug("DNS provider found but not related to target, skipping")
                 return
             ident = "reversens"
             valkey = "domain"
@@ -226,7 +228,7 @@ class sfp_viewdns(SpiderFootPlugin):
 
                 if eventName == "IP_ADDRESS" and self.opts['verify']:
                     if not self.sf.validateIP(h, eventData):
-                        self.sf.debug(f"Host {h} no longer resolves to IP address: {eventData}")
+                        self.log.debug(f"Host {h} no longer resolves to IP address: {eventData}")
                         continue
                 e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)
 

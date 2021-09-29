@@ -13,6 +13,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -39,6 +40,7 @@ class sfp_crossref(SpiderFootPlugin):
     fetched = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.fetched = self.tempStorage()
 
@@ -64,7 +66,7 @@ class sfp_crossref(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # SIMILARDOMAIN and CO_HOSTED_SITE events are domains, not URLs.
         # Assume HTTP.
@@ -79,20 +81,20 @@ class sfp_crossref(SpiderFootPlugin):
 
         # We are only interested in external sites for the crossref
         if self.getTarget().matches(fqdn):
-            self.sf.debug(f"Ignoring {url} as not external")
+            self.log.debug(f"Ignoring {url} as not external")
             return
 
         if eventData in self.fetched:
-            self.sf.debug(f"Ignoring {url} as already tested")
+            self.log.debug(f"Ignoring {url} as already tested")
             return
 
         if not self.sf.resolveHost(fqdn) and not self.sf.resolveHost6(fqdn):
-            self.sf.debug(f"Ignoring {url} as {fqdn} does not resolve")
+            self.log.debug(f"Ignoring {url} as {fqdn} does not resolve")
             return
 
         self.fetched[url] = True
 
-        self.sf.debug(f"Testing URL for affiliation: {url}")
+        self.log.debug(f"Testing URL for affiliation: {url}")
 
         res = self.sf.fetchUrl(
             url,
@@ -103,7 +105,7 @@ class sfp_crossref(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.debug(f"Ignoring {url} as no data returned")
+            self.log.debug(f"Ignoring {url} as no data returned")
             return
 
         matched = False
@@ -156,7 +158,7 @@ class sfp_crossref(SpiderFootPlugin):
         if not event.moduleDataSource:
             event.moduleDataSource = "Unknown"
 
-        self.sf.info(f"Found link to target from affiliate: {url}")
+        self.log.info(f"Found link to target from affiliate: {url}")
 
         evt1 = SpiderFootEvent(
             "AFFILIATE_INTERNET_NAME",

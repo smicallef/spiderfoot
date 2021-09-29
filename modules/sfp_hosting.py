@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from netaddr import IPAddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -38,6 +39,7 @@ class sfp_hosting(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "DNS"
@@ -63,7 +65,7 @@ class sfp_hosting(SpiderFootPlugin):
         if data['content'] is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.log.error("Unable to fetch " + url)
                 return None
             else:
                 self.sf.cachePut("sfipcat", data['content'])
@@ -80,7 +82,7 @@ class sfp_hosting(SpiderFootPlugin):
                 if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                     return [title, url]
             except Exception as e:
-                self.sf.debug("Encountered an issue processing an IP: " + str(e))
+                self.log.debug("Encountered an issue processing an IP: " + str(e))
                 continue
 
         return None
@@ -91,7 +93,7 @@ class sfp_hosting(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

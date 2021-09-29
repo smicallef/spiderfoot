@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from netaddr import IPAddress, IPNetwork
@@ -85,6 +86,7 @@ class sfp_coinblocker(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -127,7 +129,7 @@ class sfp_coinblocker(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url)
+                        self.log.error("Unable to fetch " + url)
                         return None
                     self.sf.cachePut("sfmal_" + cid, data['content'])
 
@@ -140,11 +142,11 @@ class sfp_coinblocker(SpiderFootPlugin):
                     if 'regex' in malchecks[check]:
                         rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
+                        self.log.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                # self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.log.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -156,10 +158,10 @@ class sfp_coinblocker(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
+                                self.log.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug(f"Error encountered parsing: {e}")
+                            self.log.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -168,7 +170,7 @@ class sfp_coinblocker(SpiderFootPlugin):
                 if 'regex' not in malchecks[check]:
                     for line in data['content'].split('\n'):
                         if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            self.log.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
                     try:
@@ -178,10 +180,10 @@ class sfp_coinblocker(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                self.log.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
                     except Exception as e:
-                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        self.log.debug("Error encountered parsing 2: " + str(e))
                         continue
 
         return None
@@ -190,7 +192,7 @@ class sfp_coinblocker(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                self.log.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -201,10 +203,10 @@ class sfp_coinblocker(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

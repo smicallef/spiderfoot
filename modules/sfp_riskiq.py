@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import json
 
@@ -74,6 +75,7 @@ class sfp_riskiq(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
@@ -129,21 +131,21 @@ class sfp_riskiq(SpiderFootPlugin):
                                postData=post)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.")
+            self.log.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No RiskIQ info found for " + qry)
+            self.log.info("No RiskIQ info found for " + qry)
             return None
 
         try:
             ret = json.loads(res['content'])
             if 'results' not in ret:
-                self.sf.info("No RiskIQ info found for " + qry)
+                self.log.info("No RiskIQ info found for " + qry)
                 return None
         except Exception as e:
-            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}")
+            self.log.error(f"Invalid JSON returned by RiskIQ: {e}")
             return None
 
         return ret['results']
@@ -157,20 +159,20 @@ class sfp_riskiq(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Ignore messages from myself
         if srcModuleName == "sfp_riskiq":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
+            self.log.debug("Ignoring " + eventName + ", from self.")
             return
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_riskiq but did not set an credentials!")
+            self.log.error("You enabled sfp_riskiq but did not set an credentials!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -178,7 +180,7 @@ class sfp_riskiq(SpiderFootPlugin):
         if eventName == 'DOMAIN_NAME':
             ret = self.query(eventData, "PSSL")
             if not ret:
-                self.sf.info(f"No RiskIQ passive SSL data found for {eventData}")
+                self.log.info(f"No RiskIQ passive SSL data found for {eventData}")
             else:
                 # Generate an event for the IP first, and then link the cert
                 # to that event.
@@ -205,7 +207,7 @@ class sfp_riskiq(SpiderFootPlugin):
         if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")
             if not ret:
-                self.sf.info("No RiskIQ passive DNS data found for " + eventData)
+                self.log.info("No RiskIQ passive DNS data found for " + eventData)
                 return
 
             for r in ret:
@@ -226,7 +228,7 @@ class sfp_riskiq(SpiderFootPlugin):
         if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
             if not ret:
-                self.sf.info("No RiskIQ passive DNS data found for " + eventData)
+                self.log.info("No RiskIQ passive DNS data found for " + eventData)
                 return
 
             cohosts = list()
@@ -254,7 +256,7 @@ class sfp_riskiq(SpiderFootPlugin):
                     continue
 
                 if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.sf.validateIP(co, eventData)):
-                    self.sf.debug("Host no longer resolves to our IP.")
+                    self.log.debug("Host no longer resolves to our IP.")
                     continue
 
                 if not self.opts['cohostsamedomain']:

@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -49,6 +50,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -72,7 +74,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.debug("No content returned from h1.nobbd.de")
+            self.log.debug("No content returned from h1.nobbd.de")
             return None
 
         try:
@@ -82,7 +84,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error(f"Error processing response from h1.nobbd.de: {e}")
+            self.log.error(f"Error processing response from h1.nobbd.de: {e}")
             return None
 
         return ret
@@ -93,10 +95,10 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

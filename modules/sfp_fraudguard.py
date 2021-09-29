@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import json
 import time
@@ -76,6 +77,7 @@ class sfp_fraudguard(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -110,18 +112,18 @@ class sfp_fraudguard(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.")
+            self.log.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No Fraudguard.io info found for " + qry)
+            self.log.info("No Fraudguard.io info found for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Fraudguard.io: {e}")
+            self.log.error(f"Error processing JSON response from Fraudguard.io: {e}")
 
         return None
 
@@ -134,16 +136,16 @@ class sfp_fraudguard(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['fraudguard_api_key_account'] == "" or self.opts['fraudguard_api_key_password'] == "":
-            self.sf.error("You enabled sfp_fraudguard but did not set an API username/password!")
+            self.log.error("You enabled sfp_fraudguard but did not set an API username/password!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -152,7 +154,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             if not self.opts['netblocklookup']:
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
+                self.log.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
                 return
@@ -174,13 +176,13 @@ class sfp_fraudguard(SpiderFootPlugin):
 
             rec = self.query(addr)
             if rec is not None:
-                self.sf.debug("Found results in Fraudguard.io")
+                self.log.debug("Found results in Fraudguard.io")
                 # 2016-12-24T07:25:35+00:00'
                 created_dt = datetime.strptime(rec.get('discover_date'), '%Y-%m-%d %H:%M:%S')
                 created_ts = int(time.mktime(created_dt.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                 if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                    self.sf.debug(f"Record found but too old ({created_dt}), skipping.")
+                    self.log.debug("Record found but too old, skipping.")
                     continue
 
                 # For netblocks, we need to create the IP address event so that

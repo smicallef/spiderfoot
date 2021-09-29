@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 
@@ -44,6 +45,7 @@ class sfp_venmo(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -67,19 +69,19 @@ class sfp_venmo(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from api.venmo.com')
+            self.log.debug('No response from api.venmo.com')
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         json_data = data.get('data')
 
         if not json_data:
-            self.sf.debug(qry + " is not a valid Venmo username")
+            self.log.debug(qry + " is not a valid Venmo username")
             return None
 
         return json_data
@@ -95,7 +97,7 @@ class sfp_venmo(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -83,6 +84,7 @@ class sfp_pulsedive(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -122,12 +124,12 @@ class sfp_pulsedive(SpiderFootPlugin):
         time.sleep(self.opts['delay'])
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Pulsedive")
+            self.log.error("You are being rate-limited by Pulsedive")
             self.errorState = True
             return None
 
         if res['code'] == "403":
-            self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.")
+            self.log.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -137,7 +139,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Pulsedive: {e}")
+            self.log.error(f"Error processing JSON response from Pulsedive: {e}")
 
         return None
 
@@ -150,16 +152,16 @@ class sfp_pulsedive(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_pulsedive but did not set an API key!")
+            self.log.error("You enabled sfp_pulsedive but did not set an API key!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -178,7 +180,7 @@ class sfp_pulsedive(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
@@ -191,7 +193,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                 max_subnet = self.opts['maxsubnet']
 
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         qrylist = list()
@@ -235,7 +237,7 @@ class sfp_pulsedive(SpiderFootPlugin):
             if not threats:
                 continue
 
-            self.sf.debug(f"Found threat info for {addr} in Pulsedive")
+            self.log.debug(f"Found threat info for {addr} in Pulsedive")
 
             for result in threats:
                 descr = addr
@@ -253,10 +255,10 @@ class sfp_pulsedive(SpiderFootPlugin):
                     created_ts = int(time.mktime(created_dt.timetuple()))
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug(f"Threat found but too old ({created_dt}), skipping.")
+                        self.log.debug(f"Threat found but too old ({created_dt}), skipping.")
                         continue
                 except Exception:
-                    self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
+                    self.log.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
                 e = SpiderFootEvent(evtType, descr, self.__name__, event)
                 self.notifyListeners(e)
 

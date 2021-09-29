@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from netaddr import IPAddress, IPNetwork
@@ -47,6 +48,7 @@ class sfp_torexits(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -82,13 +84,13 @@ class sfp_torexits(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in exit_addresses:
-                self.sf.debug(f"IP address {target} found in TOR exit node list.")
+                self.log.debug(f"IP address {target} found in TOR exit node list.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in exit_addresses:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in TOR exit node list.")
+                    self.log.debug(f"IP address {ip} found within netblock/subnet {target} in TOR exit node list.")
                     return True
 
         return False
@@ -106,12 +108,12 @@ class sfp_torexits(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
+            self.log.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from check.torproject.org.")
+            self.log.error("Received no content from check.torproject.org.")
             self.errorState = True
             return None
 
@@ -146,10 +148,10 @@ class sfp_torexits(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -178,7 +180,7 @@ class sfp_torexits(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
+        self.log.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
 
         if self.queryExitNodes(eventData, targetType):
             url = "https://check.torproject.org/exit-addresses"

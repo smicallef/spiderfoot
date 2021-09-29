@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from bs4 import BeautifulSoup
@@ -46,6 +47,7 @@ class sfp_reversewhois(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -72,7 +74,7 @@ class sfp_reversewhois(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts.get("_fetchtimeout", 30))
 
         if res["code"] not in ["200"]:
-            self.sf.error("You may have exceeded ReverseWhois usage limits.")
+            self.log.error("You may have exceeded ReverseWhois usage limits.")
             self.errorState = True
             return ret
 
@@ -92,13 +94,13 @@ class sfp_reversewhois(SpiderFootPlugin):
                     if registrar:
                         registrars.add(registrar)
             except IndexError:
-                self.sf.debug(f"Invalid row {table_row}")
+                self.log.debug(f"Invalid row {table_row}")
                 continue
 
         ret = (list(domains), list(registrars))
 
         if not registrars and not domains:
-            self.sf.info(f"No ReverseWhois info found for {qry}")
+            self.log.info(f"No ReverseWhois info found for {qry}")
 
         return ret
 
@@ -111,10 +113,10 @@ class sfp_reversewhois(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

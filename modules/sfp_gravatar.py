@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import hashlib
 import json
 import time
@@ -53,6 +54,7 @@ class sfp_gravatar(SpiderFootPlugin):
     reportedUsers = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.reportedUsers = self.tempStorage()
@@ -84,7 +86,7 @@ class sfp_gravatar(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from gravatar.com')
+            self.log.debug('No response from gravatar.com')
             return None
 
         if res['code'] != '200':
@@ -93,7 +95,7 @@ class sfp_gravatar(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('entry') is None or len(data.get('entry')) == 0:
@@ -112,12 +114,12 @@ class sfp_gravatar(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 
         if data is None:
-            self.sf.debug("No user information found for " + eventData)
+            self.log.debug("No user information found for " + eventData)
             return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
@@ -147,7 +149,7 @@ class sfp_gravatar(SpiderFootPlugin):
         # if data.get('currentLocation') is not None:
         #     location = data.get('currentLocation')
         #     if len(location) < 3 or len(location) > 100:
-        #         self.sf.debug("Skipping likely invalid location.")
+        #         self.log.debug("Skipping likely invalid location.")
         #     else:
         #         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
         #         self.notifyListeners(evt)
