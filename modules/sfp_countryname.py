@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 import phonenumbers
@@ -46,6 +47,7 @@ class sfp_countryname(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -71,13 +73,13 @@ class sfp_countryname(SpiderFootPlugin):
         try:
             phoneNumber = phonenumbers.parse(srcPhoneNumber)
         except Exception:
-            self.sf.debug(f"Skipped invalid phone number: {srcPhoneNumber}")
+            self.log.debug(f"Skipped invalid phone number: {srcPhoneNumber}")
             return None
 
         try:
             countryCode = region_code_for_country_code(phoneNumber.country_code)
         except Exception:
-            self.sf.debug(f"Lookup of region code failed for phone number: {srcPhoneNumber}")
+            self.log.debug(f"Lookup of region code failed for phone number: {srcPhoneNumber}")
             return None
 
         if not countryCode:
@@ -187,12 +189,12 @@ class sfp_countryname(SpiderFootPlugin):
         else:
             moduleDataSource = "Unknown"
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         eventDataHash = self.sf.hashstring(eventData)
 
         if eventDataHash in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventDataHash] = True
@@ -220,14 +222,14 @@ class sfp_countryname(SpiderFootPlugin):
             countryNames.extend(self.detectCountryFromData(eventData))
 
         if not countryNames:
-            self.sf.debug(f"Found no country names associated with {eventName}: {eventData}")
+            self.log.debug(f"Found no country names associated with {eventName}: {eventData}")
             return
 
         for countryName in set(countryNames):
             if not countryName:
                 continue
 
-            self.sf.debug(f"Found country name: {countryName}")
+            self.log.debug(f"Found country name: {countryName}")
 
             evt = SpiderFootEvent("COUNTRY_NAME", countryName, self.__name__, event)
             evt.moduleDataSource = moduleDataSource

@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import random
 import threading
 import time
@@ -49,6 +50,7 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
     lock = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.gosresults = dict()
         self.results = self.tempStorage()
@@ -74,7 +76,7 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
             return
 
         if "NoSuchBucket" in res['content']:
-            self.sf.debug(f"Not a valid bucket: {url}")
+            self.log.debug(f"Not a valid bucket: {url}")
             return
 
         # Bucket found
@@ -98,7 +100,7 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            self.sf.info("Spawning thread to check bucket: " + site)
+            self.log.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name='thread_sfp_googleobjectstorage_' + tname,
                                       target=self.checkSite, args=(site,)))
@@ -154,7 +156,7 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".storage.googleapis.com" in eventData:

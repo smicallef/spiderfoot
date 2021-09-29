@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -39,8 +40,9 @@ class sfp_sublist3r(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
-        self.sf.debug("Setting up sfp_sublist3r")
+        self.log.debug("Setting up sfp_sublist3r")
         self.results = self.tempStorage()
         self.opts.update(userOpts)
 
@@ -66,12 +68,12 @@ class sfp_sublist3r(SpiderFootPlugin):
         try:
             ret = [s.strip().lower() for s in json.loads(res["content"])]
         except json.decoder.JSONDecodeError as e:
-            self.sf.error(f"Error decoding JSON response: {e}")
+            self.log.error(f"Error decoding JSON response: {e}")
         except TypeError:
-            self.sf.error("Error querying Sublist3r API")
+            self.log.error("Error querying Sublist3r API")
 
         if res["code"] not in ["200"]:
-            self.sf.error(f"Bad response code \"{res['code']}\" from Sublist3r API")
+            self.log.error(f"Bad response code \"{res['code']}\" from Sublist3r API")
 
         return list(set(ret))
 
@@ -85,7 +87,7 @@ class sfp_sublist3r(SpiderFootPlugin):
     def handleEvent(self, event):
         query = str(event.data).lower()
 
-        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
+        self.log.debug(f"Received event, {event.eventType}, from {event.module}")
 
         # skip if we've already processed this event (or its parent domain/subdomain)
         target = self.getTarget()
@@ -93,7 +95,7 @@ class sfp_sublist3r(SpiderFootPlugin):
         if eventDataHash in self.results or \
                 (target.matches(query, includeParents=True) and not
                  target.matches(query, includeChildren=False)):
-            self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
+            self.log.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
         self.results[eventDataHash] = True
 
@@ -102,4 +104,4 @@ class sfp_sublist3r(SpiderFootPlugin):
                     target.matches(hostname, includeChildren=False):
                 self.sendEvent(event, hostname)
             else:
-                self.sf.debug(f"Invalid subdomain: {hostname}")
+                self.log.debug(f"Invalid subdomain: {hostname}")

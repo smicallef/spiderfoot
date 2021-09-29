@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import string
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -53,6 +54,7 @@ class sfp_binstring(SpiderFootPlugin):
     fq = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = list()
         self.__dataSource__ = "Target Website"
@@ -118,7 +120,7 @@ class sfp_binstring(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return
@@ -138,7 +140,7 @@ class sfp_binstring(SpiderFootPlugin):
                 if not res:
                     continue
 
-                self.sf.debug(f"Searching {eventData} for strings")
+                self.log.debug(f"Searching {eventData} for strings")
                 words = self.getStrings(res['content'])
 
                 if words:

@@ -93,7 +93,7 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
     error_handler.addFilter(lambda x: x.levelno >= logging.WARN)
 
     # Set log format
-    log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s : %(message)s")
     console_handler.setFormatter(log_format)
     debug_handler.setFormatter(log_format)
     error_handler.setFormatter(log_format)

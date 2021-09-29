@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import json
 import re
@@ -57,6 +58,7 @@ class sfp_trashpanda(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -104,7 +106,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from Trashpanda(got-hacked.wtf)")
+            self.log.error("Error retrieving search results from Trashpanda(got-hacked.wtf)")
             return None
 
         return json.loads(res['content'])
@@ -115,18 +117,18 @@ class sfp_trashpanda(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key_username'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_trashpanda but did not set an API username / password!")
+            self.log.error("You enabled sfp_trashpanda but did not set an API username / password!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -145,7 +147,7 @@ class sfp_trashpanda(SpiderFootPlugin):
 
         for leaksiteUrl in leaksiteUrls:
             try:
-                self.sf.debug("Found a link: " + leaksiteUrl)
+                self.log.debug("Found a link: " + leaksiteUrl)
 
                 if self.checkForStop():
                     return
@@ -154,7 +156,7 @@ class sfp_trashpanda(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.debug(f"Ignoring {leaksiteUrl} as no data returned")
+                    self.log.debug(f"Ignoring {leaksiteUrl} as no data returned")
                     continue
 
                 if re.search(
@@ -170,6 +172,6 @@ class sfp_trashpanda(SpiderFootPlugin):
                 evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt)
                 self.notifyListeners(evt)
             except Exception as e:
-                self.sf.debug(f"Error while fetching leaksite content : {str(e)}")
+                self.log.debug(f"Error while fetching leaksite content : {str(e)}")
 
 # End of sfp_trashpanda class

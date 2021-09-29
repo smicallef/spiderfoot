@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -70,6 +71,7 @@ class sfp_whatcms(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -120,69 +122,69 @@ class sfp_whatcms(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['content'] is None:
-            self.sf.debug('No response from WhatCMS.org')
+            self.log.debug('No response from WhatCMS.org')
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from WhatCMS.org: ' + res['code'])
+            self.log.error('Unexpected reply from WhatCMS.org: ' + res['code'])
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         result = data.get('result')
         if result is None:
-            self.sf.error('API error: no results')
+            self.log.error('API error: no results')
             return None
 
         code = str(result.get('code'))
 
         if code == '0':
-            self.sf.error('API error: Server failure')
+            self.log.error('API error: Server failure')
             self.errorState = True
             return None
 
         if code == '101':
-            self.sf.error('API error: Invalid API Key')
+            self.log.error('API error: Invalid API Key')
             self.errorState = True
             return None
 
         if code == '102':
-            self.sf.error('API error: Unauthenticated request. Invalid API key?')
+            self.log.error('API error: Unauthenticated request. Invalid API key?')
             self.errorState = True
             return None
 
         if code == '111':
-            self.sf.error('API error: Invalid URL')
+            self.log.error('API error: Invalid URL')
             self.errorState = True
             return None
 
         if code == '120':
-            self.sf.error('API error: Too many requests')
+            self.log.error('API error: Too many requests')
             self.errorState = True
             return None
 
         if code == '121':
-            self.sf.error('API error: You have exceeded your monthly request quota')
+            self.log.error('API error: You have exceeded your monthly request quota')
             self.errorState = True
             return None
 
         if code == '123':
-            self.sf.error('API error: Account disabled per violation of Terms and Conditions')
+            self.log.error('API error: Account disabled per violation of Terms and Conditions')
             self.errorState = True
             return None
 
         if code == '201':
-            self.sf.error('API error: CMS or Host not found')
+            self.log.error('API error: CMS or Host not found')
             self.errorState = True
             return None
 
         if code != '200':
-            self.sf.error('Unexpected status code from WhatCMS.org: ' + code)
+            self.log.error('Unexpected status code from WhatCMS.org: ' + code)
             self.errorState = True
             return None
 
@@ -198,7 +200,7 @@ class sfp_whatcms(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == '':
-            self.sf.error('You enabled sfp_whatcms but did not set an API key!')
+            self.log.error('You enabled sfp_whatcms but did not set an API key!')
             self.errorState = True
             return
 
@@ -207,18 +209,18 @@ class sfp_whatcms(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.queryCmsTechnology(eventData)
 
         if data is None:
-            self.sf.debug('No web technology found for ' + eventData)
+            self.log.debug('No web technology found for ' + eventData)
             return
 
         results = data.get('results')
 
         if results is None:
-            self.sf.debug('No web technology found for ' + eventData)
+            self.log.debug('No web technology found for ' + eventData)
             return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
@@ -230,6 +232,6 @@ class sfp_whatcms(SpiderFootPlugin):
                 evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', software, self.__name__, event)
                 self.notifyListeners(evt)
             else:
-                self.sf.debug('No web technology found for ' + eventData)
+                self.log.debug('No web technology found for ' + eventData)
 
 # End of sfp_whatcms class

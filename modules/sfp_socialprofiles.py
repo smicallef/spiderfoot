@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 import urllib.error
 import urllib.parse
@@ -107,6 +108,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.keywords = None
@@ -135,15 +137,15 @@ class sfp_socialprofiles(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
-            self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!")
+            self.log.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -161,7 +163,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             res = None
 
             if self.opts["method"].lower() == "yahoo":
-                self.sf.error(
+                self.log.error(
                     "Yahoo is no longer supported. Please try 'bing' or 'google'."
                 )
                 return
@@ -191,7 +193,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.__dataSource__ = "Bing"
 
             if res is None:
-                self.sf.info("No data returned from " + self.opts["method"] + ".")
+                self.log.info("No data returned from " + self.opts["method"] + ".")
                 continue
 
             if self.checkForStop():
@@ -216,7 +218,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     continue
 
                 for match in matches:
-                    self.sf.debug("Match found: " + match)
+                    self.log.debug("Match found: " + match)
                     if match in instances:
                         continue
                     else:
@@ -230,7 +232,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     # Keywords might be empty if the target was an IP, subnet or name.
                     if self.opts["tighten"] and self.keywords:
                         match = urllib.parse.unquote(match)
-                        self.sf.debug(
+                        self.log.debug(
                             "Tightening results to look for " + str(self.keywords)
                         )
                         pres = self.sf.fetchUrl(
@@ -254,7 +256,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             if not found:
                                 continue
 
-                    self.sf.info("Social Media Profile found at " + site + ": " + match)
+                    self.log.info("Social Media Profile found at " + site + ": " + match)
                     match = urllib.parse.unquote(match)
                     evt = SpiderFootEvent(
                         "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event

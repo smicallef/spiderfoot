@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import adblockparser
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -62,6 +63,7 @@ class sfp_adblock(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.rules = None
@@ -90,12 +92,12 @@ class sfp_adblock(SpiderFootPlugin):
         res = self.sf.fetchUrl(blocklist_url, timeout=30)
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} for {blocklist_url}")
+            self.log.error(f"Unexpected HTTP response code {res['code']} for {blocklist_url}")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error(f"Unable to download AdBlock Plus blocklist: {blocklist_url}")
+            self.log.error(f"Unable to download AdBlock Plus blocklist: {blocklist_url}")
             self.errorState = True
             return None
 
@@ -113,12 +115,12 @@ class sfp_adblock(SpiderFootPlugin):
             return
 
         lines = blocklist.split('\n')
-        self.sf.debug(f"Retrieved {len(lines)} AdBlock blocklist rules")
+        self.log.debug(f"Retrieved {len(lines)} AdBlock blocklist rules")
         try:
             self.rules = adblockparser.AdblockRules(lines)
         except adblockparser.AdblockParsingError as e:
             self.errorState = True
-            self.sf.error(f"Parsing error handling AdBlock list: {e}")
+            self.log.error(f"Parsing error handling AdBlock list: {e}")
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -126,10 +128,10 @@ class sfp_adblock(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Already checked this URL for AdBlock matching, skipping.")
+            self.log.debug("Already checked this URL for AdBlock matching, skipping.")
             return
 
         self.results[eventData] = True
@@ -138,7 +140,7 @@ class sfp_adblock(SpiderFootPlugin):
             return
 
         if not self.opts["blocklist"]:
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set a blocklist URL!"
             )
             self.errorState = True
@@ -148,7 +150,7 @@ class sfp_adblock(SpiderFootPlugin):
             self.retrieveBlocklist(self.opts['blocklist'])
 
         if not self.rules:
-            self.sf.error("No AdBlock Plus rules loaded")
+            self.log.error("No AdBlock Plus rules loaded")
             self.errorState = True
             return
 
@@ -169,7 +171,7 @@ class sfp_adblock(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         except ValueError as e:
-            self.sf.error(f"Parsing error handling AdBlock list: {e}")
+            self.log.error(f"Parsing error handling AdBlock list: {e}")
             self.errorState = True
 
 # End of sfp_adblock class

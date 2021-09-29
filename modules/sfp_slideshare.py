@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -48,6 +49,7 @@ class sfp_slideshare(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -77,18 +79,18 @@ class sfp_slideshare(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            self.log.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
         if network != "SlideShare":
-            self.sf.debug(f"Skipping social network profile, {url}, as not a SlideShare profile")
+            self.log.debug(f"Skipping social network profile, {url}, as not a SlideShare profile")
             return
 
         res = self.sf.fetchUrl(
@@ -104,7 +106,7 @@ class sfp_slideshare(SpiderFootPlugin):
         human_name = self.extractMeta('slideshare:name', res['content'])
 
         if not human_name:
-            self.sf.debug(f"{url} is not a valid SlideShare profile")
+            self.log.debug(f"{url} is not a valid SlideShare profile")
             return
 
         e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {human_name[0]}", self.__name__, event)
@@ -117,7 +119,7 @@ class sfp_slideshare(SpiderFootPlugin):
             return
 
         if len(location[0]) < 3 or len(location[0]) > 100:
-            self.sf.debug("Skipping likely invalid location.")
+            self.log.debug("Skipping likely invalid location.")
             return
 
         e = SpiderFootEvent("GEOINFO", location[0], self.__name__, event)

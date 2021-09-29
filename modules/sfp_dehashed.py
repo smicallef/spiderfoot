@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import json
 import time
@@ -69,6 +70,7 @@ class sfp_dehashed(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -114,28 +116,28 @@ class sfp_dehashed(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] == "400":
-            self.sf.error("Too many requests were performed in a small amount of time. Please wait a bit before querying the API.")
+            self.log.error("Too many requests were performed in a small amount of time. Please wait a bit before querying the API.")
             time.sleep(5)
             res = self.sf.fetchUrl(queryString, headers=headers, timeout=15, useragent=self.opts['_useragent'], verify=True)
 
         if res['code'] == "401":
-            self.sf.error("Invalid API credentials")
+            self.log.error("Invalid API credentials")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Unable to fetch data from Dehashed.")
+            self.log.error("Unable to fetch data from Dehashed.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Dehashed')
+            self.log.debug('No response from Dehashed')
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
     # Handle events sent to this module
@@ -155,10 +157,10 @@ class sfp_dehashed(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "" or self.opts['api_key_username'] == "":
-            self.sf.error("You enabled sfp_dehashed but did not set an API key/API Key Username!")
+            self.log.error("You enabled sfp_dehashed but did not set an API key/API Key Username!")
             self.errorState = True
             return
 

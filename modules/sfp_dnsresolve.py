@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 import urllib
 
@@ -52,6 +53,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     hostresults = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.domresults = self.tempStorage()
@@ -64,13 +66,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def enrichTarget(self, target):
         ret = list()
         # If it's an IP, get the hostname it reverse resolves to
-        self.sf.info("Identifying aliases for specified target(s)")
+        self.log.info("Identifying aliases for specified target(s)")
         ret = self.resolveTargets(target, self.opts['validatereverse'])
         if not ret:
             return target
 
         for host in ret:
-            self.sf.debug("Found an alias: " + host)
+            self.log.debug("Found an alias: " + host)
             if self.sf.validIP(host):
                 target.setAlias(host, "IP_ADDRESS")
             elif self.sf.validIP6(host):
@@ -88,7 +90,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 #     dom = self.sf.hostDomain(host, self.opts['_internettlds'])
                 #     target.setAlias(dom, "INTERNET_NAME")
 
-        self.sf.info(f"Target aliases identified: {target.targetAliases}")
+        self.log.info(f"Target aliases identified: {target.targetAliases}")
 
         return target
 
@@ -124,7 +126,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if t == "NETBLOCK_OWNER":
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(v).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
                 return list(set(ret))
 
             for addr in IPNetwork(v):
@@ -156,7 +158,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if t == "NETBLOCKV6_OWNER":
             max_netblock = self.opts['maxv6netblock']
             if IPNetwork(v).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
                 return list(set(ret))
 
             for addr in IPNetwork(v):
@@ -218,10 +220,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if srcModuleName in ["sfp_dnsresolve"] and "_NAME" in eventName:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
-            self.sf.debug("Skipping duplicate event.")
+            self.log.debug("Skipping duplicate event.")
             return
 
         self.events[eventDataHash] = True
@@ -328,10 +330,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 max_netblock = self.opts['maxnetblock']
 
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
-            self.sf.debug(f"Looking up IPs in owned netblock: {eventData}")
+            self.log.debug(f"Looking up IPs in owned netblock: {eventData}")
             for ip in IPNetwork(eventData):
                 if self.checkForStop():
                     return
@@ -349,7 +351,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if not addrs:
                     continue
 
-                self.sf.debug(f"Found {len(addrs)} reversed hostnames from {ipaddr} ({addrs})")
+                self.log.debug(f"Found {len(addrs)} reversed hostnames from {ipaddr} ({addrs})")
                 for addr in addrs:
                     if self.checkForStop():
                         return
@@ -399,7 +401,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     try:
                         matches = re.findall(pat, chunkhost)
                     except Exception as e:
-                        self.sf.error(f"Error applying regex to data ({e})")
+                        self.log.error(f"Error applying regex to data ({e})")
 
                     if matches:
                         for match in matches:
@@ -417,13 +419,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
         parentHash = self.sf.hashstring(parentEvent.data)
         if host in self.hostresults:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
-                self.sf.debug(f"Skipping host, {host}, already processed.")
+                self.log.debug(f"Skipping host, {host}, already processed.")
                 return
             self.hostresults[host] = self.hostresults[host] + [parentHash]
         else:
             self.hostresults[host] = [parentHash]
 
-        self.sf.debug(f"Found host: {host}")
+        self.log.debug(f"Found host: {host}")
 
         # If the returned hostname is aliased to our
         # target in some way, flag it as an affiliate
@@ -496,7 +498,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     self.hostresults[ip6] = [parentHash]
                 else:
                     if parentHash in self.hostresults[ip6] or evt.data == ip6:
-                        self.sf.debug(f"Skipping host, {ip6}, already processed.")
+                        self.log.debug(f"Skipping host, {ip6}, already processed.")
                         continue
                     self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
 
@@ -513,7 +515,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
     def processDomain(self, domainName, parentEvent, affil=False, host=None) -> None:
         if domainName in self.domresults:
-            self.sf.debug(f"Skipping domain, {domainName}, already processed.")
+            self.log.debug(f"Skipping domain, {domainName}, already processed.")
             return
 
         self.domresults[domainName] = True

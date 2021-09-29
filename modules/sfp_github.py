@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -48,6 +49,7 @@ class sfp_github(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -69,17 +71,17 @@ class sfp_github(SpiderFootPlugin):
         # Get repos matching the name
         name = item.get('name')
         if name is None:
-            self.sf.debug("Incomplete Github information found (name).")
+            self.log.debug("Incomplete Github information found (name).")
             return None
 
         html_url = item.get('html_url')
         if html_url is None:
-            self.sf.debug("Incomplete Github information found (url).")
+            self.log.debug("Incomplete Github information found (url).")
             return None
 
         description = item.get('description')
         if description is None:
-            self.sf.debug("Incomplete Github information found (description).")
+            self.log.debug("Incomplete Github information found (description).")
             return None
 
         return "\n".join([f"Name: {name}", f"URL: {html_url}", f"Description: {description}"])
@@ -89,10 +91,10 @@ class sfp_github(SpiderFootPlugin):
         eventData = event.data
         srcModuleName = event.module
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Already did a search for {eventData}, skipping.")
+            self.log.debug(f"Already did a search for {eventData}, skipping.")
             return
 
         self.results[eventData] = True
@@ -103,18 +105,18 @@ class sfp_github(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
             except Exception as e:
-                self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+                self.log.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
                 return
 
             if network != "Github":
-                self.sf.debug(f"Skipping social network profile, {url}, as not a GitHub profile")
+                self.log.debug(f"Skipping social network profile, {url}, as not a GitHub profile")
                 return
 
             try:
                 urlParts = url.split("/")
                 username = urlParts[len(urlParts) - 1]
             except Exception:
-                self.sf.debug(f"Couldn't get a username out of {url}")
+                self.log.debug(f"Couldn't get a username out of {url}")
                 return
 
             res = self.sf.fetchUrl(
@@ -129,17 +131,17 @@ class sfp_github(SpiderFootPlugin):
             try:
                 json_data = json.loads(res['content'])
             except Exception as e:
-                self.sf.debug(f"Error processing JSON response: {e}")
+                self.log.debug(f"Error processing JSON response: {e}")
                 return
 
             if not json_data.get('login'):
-                self.sf.debug(f"{username} is not a valid GitHub profile")
+                self.log.debug(f"{username} is not a valid GitHub profile")
                 return
 
             full_name = json_data.get('name')
 
             if not full_name:
-                self.sf.debug(f"{username} is not a valid GitHub profile")
+                self.log.debug(f"{username} is not a valid GitHub profile")
                 return
 
             e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
@@ -151,7 +153,7 @@ class sfp_github(SpiderFootPlugin):
                 return
 
             if len(location) < 3 or len(location) > 100:
-                self.sf.debug(f"Skipping likely invalid location: {location}")
+                self.log.debug(f"Skipping likely invalid location: {location}")
                 return
 
             e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
@@ -167,7 +169,7 @@ class sfp_github(SpiderFootPlugin):
         if eventName == "USERNAME":
             username = eventData
 
-        self.sf.debug(f"Looking at {username}")
+        self.log.debug(f"Looking at {username}")
         failed = False
 
         # Get all the repositories based on direct matches with the
@@ -180,23 +182,23 @@ class sfp_github(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}")
+            self.log.error(f"Unable to fetch {url}")
             failed = True
 
         if not failed:
             try:
                 ret = json.loads(res['content'])
             except Exception as e:
-                self.sf.debug(f"Error processing JSON response from GitHub: {e}")
+                self.log.debug(f"Error processing JSON response from GitHub: {e}")
                 ret = None
 
             if ret is None:
-                self.sf.error(f"Unable to process empty response from Github for: {username}")
+                self.log.error(f"Unable to process empty response from Github for: {username}")
                 failed = True
 
         if not failed:
             if ret.get('total_count', "0") == "0" or len(ret['items']) == 0:
-                self.sf.debug(f"No Github information for {username}")
+                self.log.debug(f"No Github information for {username}")
                 failed = True
 
         if not failed:
@@ -219,29 +221,29 @@ class sfp_github(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}")
+            self.log.error(f"Unable to fetch {url}")
             failed = True
 
         if not failed:
             try:
                 ret = json.loads(res['content'])
                 if ret is None:
-                    self.sf.error(f"Unable to process empty response from Github for: {username}")
+                    self.log.error(f"Unable to process empty response from Github for: {username}")
                     failed = True
             except Exception:
-                self.sf.error(f"Unable to process invalid response from Github for: {username}")
+                self.log.error(f"Unable to process invalid response from Github for: {username}")
                 failed = True
 
         if not failed:
             if ret.get('total_count', "0") == "0" or len(ret['items']) == 0:
-                self.sf.debug("No Github information for " + username)
+                self.log.debug("No Github information for " + username)
                 failed = True
 
         if not failed:
             # For each user matching the username, get their repos
             for item in ret['items']:
                 if item.get('repos_url') is None:
-                    self.sf.debug("Incomplete Github information found (repos_url).")
+                    self.log.debug("Incomplete Github information found (repos_url).")
                     continue
 
                 url = item['repos_url']
@@ -249,22 +251,22 @@ class sfp_github(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error(f"Unable to fetch {url}")
+                    self.log.error(f"Unable to fetch {url}")
                     continue
 
                 try:
                     repret = json.loads(res['content'])
                 except Exception as e:
-                    self.sf.error(f"Invalid JSON returned from Github: {e}")
+                    self.log.error(f"Invalid JSON returned from Github: {e}")
                     continue
 
                 if repret is None:
-                    self.sf.error(f"Unable to process empty response from Github for: {username}")
+                    self.log.error(f"Unable to process empty response from Github for: {username}")
                     continue
 
                 for item in repret:
                     if type(item) != dict:
-                        self.sf.debug("Encountered an unexpected or empty response from Github.")
+                        self.log.debug("Encountered an unexpected or empty response from Github.")
                         continue
 
                     repo_info = self.buildRepoInfo(item)

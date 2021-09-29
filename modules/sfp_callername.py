@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 import time
 
@@ -53,6 +54,7 @@ class sfp_callername(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -82,18 +84,18 @@ class sfp_callername(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Only US numbers are supported (+1)
         if not eventData.startswith('+1'):
-            self.sf.debug('Unsupported phone number: ' + eventData)
+            self.log.debug('Unsupported phone number: ' + eventData)
             return
 
         # Strip country code (+1) and formatting
         number = eventData.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
 
         if not number.isdigit():
-            self.sf.debug('Invalid phone number: ' + number)
+            self.log.debug('Invalid phone number: ' + number)
             return
 
         # Query CallerName.com for the specified phone number
@@ -103,11 +105,11 @@ class sfp_callername(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from CallerName.com')
+            self.log.debug('No response from CallerName.com')
             return
 
         if res['code'] != '200':
-            self.sf.debug('No phone information found for ' + eventData)
+            self.log.debug('No phone information found for ' + eventData)
             return
 
         location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', str(res['content']), re.MULTILINE | re.DOTALL)
@@ -116,7 +118,7 @@ class sfp_callername(SpiderFootPlugin):
             location = location_match[0]
 
             if len(location) < 5 or len(location) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.log.debug("Skipping likely invalid location.")
             else:
                 evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                 self.notifyListeners(evt)

@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import io
 import json
 import os.path
@@ -51,6 +52,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -75,19 +77,19 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already scanned.")
+            self.log.debug(f"Skipping {eventData} as already scanned.")
             return
 
         self.results[eventData] = True
 
         if not self.opts['cmseekpath']:
-            self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!")
+            self.log.error("You enabled sfp_tool_cmseek but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -104,13 +106,13 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error(f"File does not exist: {exe}")
+            self.log.error(f"File does not exist: {exe}")
             self.errorState = True
             return
 
         # Sanitize domain name.
         if not SpiderFootHelpers.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.")
+            self.log.error("Invalid input, refusing to run.")
             return
 
         args = [
@@ -125,27 +127,27 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
-            self.sf.error(f"Unable to run CMSeeK: {e}")
+            self.log.error(f"Unable to run CMSeeK: {e}")
             return
 
         if p.returncode != 0:
-            self.sf.error(f"Unable to read CMSeeK output\nstderr: {stderr}\nstdout: {stdout}")
+            self.log.error(f"Unable to read CMSeeK output\nstderr: {stderr}\nstdout: {stdout}")
             return
 
         if b"CMS Detection failed" in stdout:
-            self.sf.debug(f"Could not detect the CMS for {eventData}")
+            self.log.debug(f"Could not detect the CMS for {eventData}")
             return
 
         log_path = f"{resultpath}/{eventData}/cms.json"
         if not os.path.isfile(log_path):
-            self.sf.error(f"File does not exist: {log_path}")
+            self.log.error(f"File does not exist: {log_path}")
             return
 
         try:
             f = io.open(log_path, encoding='utf-8')
             j = json.loads(f.read())
         except Exception as e:
-            self.sf.error(f"Could not parse CMSeeK output file {log_path} as JSON: {e}")
+            self.log.error(f"Could not parse CMSeeK output file {log_path} as JSON: {e}")
             return
 
         cms_name = j.get('cms_name')

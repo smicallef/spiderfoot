@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -62,6 +63,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -91,19 +93,19 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['code'] in ["403", "500"]:
-            self.sf.info("Unable to fetch data from iknowwhatyoudownload.com right now.")
+            self.log.info("Unable to fetch data from iknowwhatyoudownload.com right now.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}")
+            self.log.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}")
             return None
 
         if 'error' in ret:
             if ret['error'] == "INVALID_DAYS":
                 self.errorState = True
-                self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.")
+                self.log.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.")
                 return None
 
         if 'contents' not in ret:
@@ -124,19 +126,19 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
+            self.log.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

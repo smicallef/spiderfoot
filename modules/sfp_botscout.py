@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -58,6 +59,7 @@ class sfp_botscout(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -83,15 +85,15 @@ class sfp_botscout(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_botscout but did not set an API key!")
+            self.log.error("You enabled sfp_botscout but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already searched.")
+            self.log.debug(f"Skipping {eventData} as already searched.")
             return
 
         self.results[eventData] = True
@@ -105,11 +107,11 @@ class sfp_botscout(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
-            self.sf.error("Error encountered processing " + eventData)
+            self.log.error("Error encountered processing " + eventData)
             return
 
         if res['content'].startswith("Y|"):
-            self.sf.info("Found Botscout entry for " + eventData + ": " + res['content'])
+            self.log.info("Found Botscout entry for " + eventData + ": " + res['content'])
             if eventName == "IP_ADDRESS":
                 t = "MALICIOUS_IPADDR"
             else:

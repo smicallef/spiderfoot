@@ -10,6 +10,7 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -59,6 +60,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=None):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         if userOpts is None:
             userOpts = {}
         self.sf = sfc
@@ -99,7 +101,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.log.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def query(self, qry, eventName):
         queryString = ""
@@ -117,7 +119,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         )
 
         if not res['content']:
-            self.sf.info(f"No IPQualityScore info found for {qry}")
+            self.log.info(f"No IPQualityScore info found for {qry}")
             return None
 
         try:
@@ -127,7 +129,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from IPQualityScore: {e}")
+            self.log.error(f"Error processing JSON response from IPQualityScore: {e}")
 
         return None
 
@@ -160,17 +162,17 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
+            self.log.debug(f"Skipping {eventData} as already mapped.")
             return
         self.results[eventData] = True
 

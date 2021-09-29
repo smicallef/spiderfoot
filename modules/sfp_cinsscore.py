@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from netaddr import IPAddress, IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -53,6 +54,7 @@ class sfp_cinsscore(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -81,12 +83,12 @@ class sfp_cinsscore(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error(f"Unable to fetch {url}")
+                self.log.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.log.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -98,15 +100,15 @@ class sfp_cinsscore(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in cinsscore.com list.")
+                        self.log.debug(f"{ip} found within netblock/subnet {qry} in cinsscore.com list.")
                         return url
                 except Exception as e:
-                    self.sf.debug(f"Error encountered parsing: {e}")
+                    self.log.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug(f"{qry} found in cinsscore.com list.")
+                    self.log.debug(f"{qry} found in cinsscore.com list.")
                     return url
 
         return None
@@ -117,10 +119,10 @@ class sfp_cinsscore(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -149,7 +151,7 @@ class sfp_cinsscore(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
+        self.log.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
 
         url = self.query(eventData, targetType)
 

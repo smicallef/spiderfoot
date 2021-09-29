@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 import dns.query
@@ -37,6 +38,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     events = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
@@ -57,14 +59,14 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnszonexfer":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.log.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventDataHash in self.events:
-            self.sf.debug("Skipping duplicate event for " + eventData)
+            self.log.debug("Skipping duplicate event for " + eventData)
             return
 
         self.events[eventDataHash] = True
@@ -82,7 +84,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                 return
 
             if not nsips:
-                self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.")
+                self.log.error("Couldn't resolve the name server, so not attempting zone transfer.")
                 return
 
             for n in nsips:
@@ -93,7 +95,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
             nsip = eventData
 
         for name in self.getTarget().getNames():
-            self.sf.debug("Trying for name: " + name)
+            self.log.debug("Trying for name: " + name)
             try:
                 ret = list()
                 z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
@@ -110,7 +112,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                     grps = re.findall(pat, row)
                     if len(grps) > 0:
                         for strdata in grps:
-                            self.sf.debug("Matched: " + strdata)
+                            self.log.debug("Matched: " + strdata)
                             if strdata.endswith("."):
                                 strdata = strdata[:-1]
                             else:
@@ -120,6 +122,6 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                             self.notifyListeners(evt)
 
             except Exception as e:
-                self.sf.info(f"Unable to perform DNS zone transfer for {eventData} ({name}): {e}")
+                self.log.info(f"Unable to perform DNS zone transfer for {eventData} ({name}): {e}")
 
 # End of sfp_dnszonexfer class

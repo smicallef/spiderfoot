@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootPlugin
 
 
@@ -35,6 +36,7 @@ class sfp__stor_db(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
 
         for opt in list(userOpts.keys()):
@@ -53,11 +55,11 @@ class sfp__stor_db(SpiderFootPlugin):
 
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
-                self.sf.debug("Storing an event: " + sfEvent.eventType)
+                self.log.debug("Storing an event: " + sfEvent.eventType)
                 self.__sfdb__.scanEventStore(self.getScanId(), sfEvent, self.opts['maxstorage'])
                 return
 
-        self.sf.debug("Storing an event: " + sfEvent.eventType)
+        self.log.debug("Storing an event: " + sfEvent.eventType)
         self.__sfdb__.scanEventStore(self.getScanId(), sfEvent)
 
 # End of sfp__stor_db class

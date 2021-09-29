@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -77,6 +78,7 @@ class sfp_virustotal(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -125,13 +127,13 @@ class sfp_virustotal(SpiderFootPlugin):
             time.sleep(15)
 
         if res['content'] is None:
-            self.sf.info(f"No VirusTotal info found for {qry}")
+            self.log.info(f"No VirusTotal info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
+            self.log.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
 
         return None
@@ -149,7 +151,7 @@ class sfp_virustotal(SpiderFootPlugin):
         )
 
         if res['code'] == "204":
-            self.sf.error("Your request to VirusTotal was throttled.")
+            self.log.error("Your request to VirusTotal was throttled.")
             return None
 
         # Public API is limited to 4 queries per minute
@@ -157,13 +159,13 @@ class sfp_virustotal(SpiderFootPlugin):
             time.sleep(15)
 
         if res['content'] is None:
-            self.sf.info(f"No VirusTotal info found for {qry}")
+            self.log.info(f"No VirusTotal info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
+            self.log.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
 
         return None
@@ -176,17 +178,17 @@ class sfp_virustotal(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.log.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -204,7 +206,7 @@ class sfp_virustotal(SpiderFootPlugin):
             net_size = IPNetwork(eventData).prefixlen
             max_netblock = self.opts['maxnetblock']
             if net_size < max_netblock:
-                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
+                self.log.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -214,7 +216,7 @@ class sfp_virustotal(SpiderFootPlugin):
             net_size = IPNetwork(eventData).prefixlen
             max_subnet = self.opts['maxsubnet']
             if net_size < max_subnet:
-                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_subnet}")
+                self.log.debug(f"Network size {net_size} bigger than permitted: {max_subnet}")
                 return
 
         qrylist = list()
@@ -238,7 +240,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 continue
 
             if len(info.get('detected_urls', [])) > 0:
-                self.sf.info(f"Found VirusTotal URL data for {addr}")
+                self.log.info(f"Found VirusTotal URL data for {addr}")
 
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
@@ -293,7 +295,7 @@ class sfp_virustotal(SpiderFootPlugin):
                     evt_type = 'AFFILIATE_INTERNET_NAME'
 
                 if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                    self.sf.debug(f"Host {domain} could not be resolved")
+                    self.log.debug(f"Host {domain} could not be resolved")
                     evt_type += '_UNRESOLVED'
 
                 evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

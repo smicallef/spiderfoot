@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -56,6 +57,7 @@ class sfp_arin(SpiderFootPlugin):
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.currentEventSrc = None
@@ -98,7 +100,7 @@ class sfp_arin(SpiderFootPlugin):
                     lname = t
                 url += "pocs;first=" + fname + ";last=" + lname
         except Exception as e:
-            self.sf.debug("Couldn't process name: " + value + " (" + str(e) + ")")
+            self.log.debug("Couldn't process name: " + value + " (" + str(e) + ")")
             return None
 
         if qtype == "contact":
@@ -106,13 +108,13 @@ class sfp_arin(SpiderFootPlugin):
 
         res = self.fetchRir(url)
         if not res:
-            self.sf.debug("No info found/available for " + value + " at ARIN.")
+            self.log.debug("No info found/available for " + value + " at ARIN.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, self.currentEventSrc)
@@ -126,11 +128,11 @@ class sfp_arin(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

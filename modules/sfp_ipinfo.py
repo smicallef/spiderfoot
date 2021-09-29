@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -56,6 +57,7 @@ class sfp_ipinfo(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -84,18 +86,18 @@ class sfp_ipinfo(SpiderFootPlugin):
                                headers=headers)
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by ipinfo.io.")
+            self.log.error("You are being rate-limited by ipinfo.io.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No GeoIP info found for " + ip)
+            self.log.info("No GeoIP info found for " + ip)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -108,15 +110,15 @@ class sfp_ipinfo(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipinfo but did not set an API key!")
+            self.log.error("You enabled sfp_ipinfo but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -130,7 +132,7 @@ class sfp_ipinfo(SpiderFootPlugin):
             return
 
         location = ', '.join([_f for _f in [data.get('city'), data.get('region'), data.get('country')] if _f])
-        self.sf.info("Found GeoIP for " + eventData + ": " + location)
+        self.log.info("Found GeoIP for " + eventData + ": " + location)
 
         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
         self.notifyListeners(evt)

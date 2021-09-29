@@ -9,6 +9,7 @@
 # Copyright:   (c) Steve Micallef 2017
 # -------------------------------------------------------------------------------
 
+import logging
 import base64
 import re
 import urllib.parse
@@ -37,6 +38,7 @@ class sfp_base64(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.__dataSource__ = "Target Website"
 
@@ -57,7 +59,7 @@ class sfp_base64(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         decoded_data = urllib.parse.unquote(eventData)
 
@@ -83,12 +85,12 @@ class sfp_base64(SpiderFootPlugin):
             else:
                 string = str(match)
 
-            self.sf.info(f"Found Base64 string: {match}")
+            self.log.info(f"Found Base64 string: {match}")
 
             try:
                 string += f" ({base64.b64decode(match).decode('utf-8')})"
             except Exception as e:
-                self.sf.debug(f"Unable to base64-decode string: {e}")
+                self.log.debug(f"Unable to base64-decode string: {e}")
                 continue
 
             evt = SpiderFootEvent("BASE64_DATA", string, self.__name__, event)

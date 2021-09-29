@@ -12,6 +12,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import phonenumbers
 from phonenumbers import carrier
 
@@ -35,6 +36,7 @@ class sfp_phone(SpiderFootPlugin):
     optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -58,7 +60,7 @@ class sfp_phone(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
             # Make potential phone numbers more friendly to parse
@@ -77,17 +79,17 @@ class sfp_phone(SpiderFootPlugin):
             try:
                 number = phonenumbers.parse(eventData)
             except Exception as e:
-                self.sf.debug(f"Error parsing phone number: {e}")
+                self.log.debug(f"Error parsing phone number: {e}")
                 return
 
             try:
                 number_carrier = carrier.name_for_number(number, 'en')
             except Exception as e:
-                self.sf.debug(f"Error retrieving phone number carrier: {e}")
+                self.log.debug(f"Error retrieving phone number carrier: {e}")
                 return
 
             if not number_carrier:
-                self.sf.debug(f"No carrier information found for {eventData}")
+                self.log.debug(f"No carrier information found for {eventData}")
                 return
 
             evt = SpiderFootEvent("PROVIDER_TELCO", number_carrier, self.__name__, event)
@@ -102,13 +104,13 @@ class sfp_phone(SpiderFootPlugin):
             # try:
             #     location = geocoder.description_for_number(number, 'en')
             # except Exception as e:
-            #     self.sf.debug('Error retrieving phone number location: ' + str(e))
+            #     self.log.debug('Error retrieving phone number location: ' + str(e))
             #     return
 
             # if location:
             #     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             #     self.notifyListeners(evt)
             # else:
-            #     self.sf.debug("No location information found for " + eventData)
+            #     self.log.debug("No location information found for " + eventData)
 
 # End of sfp_phone class

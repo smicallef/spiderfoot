@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -58,6 +59,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -80,13 +82,13 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info("No DNS info found in chaos projectdiscovery API for " + qry)
+            self.log.info("No DNS info found in chaos projectdiscovery API for " + qry)
             return None
 
         try:
             return json.loads(res["content"])
         except json.JSONDecodeError as e:
-            self.sf.error(
+            self.log.error(
                 f"Error processing JSON response from Chaos projectdiscovery: {e}"
             )
 
@@ -101,17 +103,17 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.log.error(
                 "You enabled sfp_projectdiscovery but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -139,7 +141,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
                 continue
             completeSubdomain = f"{subdomain}.{eventData}"
             if self.opts["verify"] and not self.sf.resolveHost(completeSubdomain) and not self.sf.resolveHost6(completeSubdomain):
-                self.sf.debug(f"Host {completeSubdomain} could not be resolved")
+                self.log.debug(f"Host {completeSubdomain} could not be resolved")
                 evt = SpiderFootEvent(
                     "INTERNET_NAME_UNRESOLVED", completeSubdomain, self.__name__, event
                 )

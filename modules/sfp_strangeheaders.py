@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -95,6 +96,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
@@ -117,7 +119,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
             return
 
@@ -125,13 +127,13 @@ class sfp_strangeheaders(SpiderFootPlugin):
 
         fqdn = self.sf.urlFQDN(eventSource)
         if not self.getTarget().matches(fqdn):
-            self.sf.debug(f"Not collecting header information for external sites. Ignoring HTTP headers from {fqdn}")
+            self.log.debug(f"Not collecting header information for external sites. Ignoring HTTP headers from {fqdn}")
             return
 
         try:
             data = json.loads(eventData)
         except Exception:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            self.log.error("Received HTTP headers from another module in an unexpected format.")
             return
 
         for key in data:

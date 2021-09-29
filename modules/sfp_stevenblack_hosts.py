@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -46,6 +47,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -76,7 +78,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
             return False
 
         if target.lower() in blocklist:
-            self.sf.debug(f"Host name {target} found in Steven Black Hosts block list.")
+            self.log.debug(f"Host name {target} found in Steven Black Hosts block list.")
             return True
 
         return False
@@ -95,12 +97,12 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from {url}")
+            self.log.error(f"Unexpected HTTP response code {res['code']} from {url}")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error(f"Received no content from {url}")
+            self.log.error(f"Received no content from {url}")
             self.errorState = True
             return None
 
@@ -143,10 +145,10 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -167,7 +169,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Steven Black Hosts blocklist")
+        self.log.debug(f"Checking maliciousness of {eventData} ({eventName}) with Steven Black Hosts blocklist")
 
         if self.queryBlocklist(eventData):
             url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"

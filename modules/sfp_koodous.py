@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 import time
@@ -50,6 +51,7 @@ class sfp_koodous(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -86,14 +88,14 @@ class sfp_koodous(SpiderFootPlugin):
             return None
 
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from Koodous: {res['code']}")
+            self.log.error(f"Unexpected reply from Koodous: {res['code']}")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from Koodous: {e}")
+            self.log.debug(f"Error processing JSON response from Koodous: {e}")
             return None
 
         return None
@@ -106,10 +108,10 @@ class sfp_koodous(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():
@@ -161,7 +163,7 @@ class sfp_koodous(SpiderFootPlugin):
                     and not package_name.lower().endswith(f".{domain_reversed}")
                     and f".{domain_reversed}." not in package_name.lower()
                 ):
-                    self.sf.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
+                    self.log.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
                     continue
 
                 sha256 = result.get('sha256')

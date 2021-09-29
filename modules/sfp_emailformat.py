@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from bs4 import BeautifulSoup
@@ -49,6 +50,7 @@ class sfp_emailformat(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -71,7 +73,7 @@ class sfp_emailformat(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl(f"https://www.email-format.com/d/{eventData}/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -95,15 +97,15 @@ class sfp_emailformat(SpiderFootPlugin):
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
             if not self.getTarget().matches(mailDom):
-                self.sf.debug(f"Skipped address: {email}")
+                self.log.debug(f"Skipped address: {email}")
                 continue
 
             # Skip masked emails
             if re.match(r"^[0-9a-f]{8}\.[0-9]{7}@", email):
-                self.sf.debug(f"Skipped address: {email}")
+                self.log.debug(f"Skipped address: {email}")
                 continue
 
-            self.sf.info(f"Found e-mail address: {email}")
+            self.log.info(f"Found e-mail address: {email}")
             if email.split("@")[0] in self.opts['_genericusers'].split(","):
                 evttype = "EMAILADDR_GENERIC"
             else:

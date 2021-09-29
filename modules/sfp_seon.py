@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -58,6 +59,7 @@ class sfp_seon(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -116,15 +118,15 @@ class sfp_seon(SpiderFootPlugin):
         )
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by seon.io")
+            self.log.error("You are being rate-limited by seon.io")
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from seon.io")
+            self.log.error("Error retrieving search results from seon.io")
             return None
 
         if res['code'] == '404':
-            self.sf.error("API Endpoint not found")
+            self.log.error("API Endpoint not found")
             return None
 
         return json.loads(res['content'])
@@ -135,18 +137,18 @@ class sfp_seon(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_seon but did not set an API key!")
+            self.log.error("You enabled sfp_seon but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

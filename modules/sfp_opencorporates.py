@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib
 
@@ -61,6 +62,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -103,17 +105,17 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.")
+            self.log.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.")
+            self.log.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -134,17 +136,17 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.")
+            self.log.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.")
+            self.log.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -160,7 +162,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         if location:
             if len(location) < 3 or len(location) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.log.debug("Skipping likely invalid location.")
             else:
                 if company.get('registered_address'):
                     country = company.get('registered_address').get('country')
@@ -169,7 +171,7 @@ class sfp_opencorporates(SpiderFootPlugin):
                             location += ", " + country
 
                 location = location.replace("\n", ',')
-                self.sf.info("Found company address: " + location)
+                self.log.info("Found company address: " + location)
                 e = SpiderFootEvent("PHYSICAL_ADDRESS", location, self.__name__, sevt)
                 self.notifyListeners(e)
 
@@ -180,7 +182,7 @@ class sfp_opencorporates(SpiderFootPlugin):
             for previous_name in previous_names:
                 p = previous_name.get('company_name')
                 if p:
-                    self.sf.info("Found previous company name: " + p)
+                    self.log.info("Found previous company name: " + p)
                     e = SpiderFootEvent("COMPANY_NAME", p, self.__name__, sevt)
                     self.notifyListeners(e)
 
@@ -191,7 +193,7 @@ class sfp_opencorporates(SpiderFootPlugin):
             for officer in officers:
                 n = officer.get('name')
                 if n:
-                    self.sf.info("Found company officer: " + n)
+                    self.log.info("Found company officer: " + n)
                     e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, self.__name__, sevt)
                     self.notifyListeners(e)
 
@@ -201,26 +203,26 @@ class sfp_opencorporates(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
-            self.sf.error(f"Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
+            self.log.error(f"Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
 
         res = self.searchCompany(f"{eventData}*")
 
         if res is None:
-            self.sf.debug("Found no results for " + eventData)
+            self.log.debug("Found no results for " + eventData)
             return
 
         companies = res.get('companies')
 
         if not companies:
-            self.sf.debug("Found no results for " + eventData)
+            self.log.debug("Found no results for " + eventData)
             return
 
         for c in companies:

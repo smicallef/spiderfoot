@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 
@@ -63,6 +64,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -174,19 +176,19 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         """
 
         if res['code'] == '400':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
-            self.sf.debug(f"API response: {res['content']}")
+            self.log.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
+            self.log.debug(f"API response: {res['content']}")
             return None
 
         # Future proofing - Hybrid Analysis does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
+            self.log.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error(f"Failed to retrieve content from Hybrid Analysis: Unexpected response status {res['code']}")
+            self.log.error(f"Failed to retrieve content from Hybrid Analysis: Unexpected response status {res['code']}")
             self.errorState = True
             return None
 
@@ -196,7 +198,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -213,7 +215,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
             return
@@ -226,7 +228,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             return
 
         if data is None:
-            self.sf.debug(f"No information found for{eventData}")
+            self.log.debug(f"No information found for{eventData}")
             return
 
         results = data.get("result")
@@ -244,7 +246,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         if not hashes:
             return
 
-        self.sf.info(f"Found {len(hashes)} results for {eventData}")
+        self.log.info(f"Found {len(hashes)} results for {eventData}")
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -256,7 +258,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             results = self.queryHash(file_hash)
 
             if not results:
-                self.sf.debug(f"No information found for hash {file_hash}")
+                self.log.debug(f"No information found for hash {file_hash}")
                 continue
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
@@ -300,7 +302,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
                 continue
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.log.debug(f"Host {domain} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)
             else:

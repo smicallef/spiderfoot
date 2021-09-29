@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -66,6 +67,7 @@ class sfp_onioncity(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -95,15 +97,15 @@ class sfp_onioncity(SpiderFootPlugin):
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_onioncity but did not set a Google API key!")
+            self.log.error("You enabled sfp_onioncity but did not set a Google API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Already did a search for {eventData}, skipping.")
+            self.log.debug(f"Already did a search for {eventData}, skipping.")
             return
 
         self.results[eventData] = True
@@ -142,7 +144,7 @@ class sfp_onioncity(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
         else:
-            self.sf.error("Failed to fetch Google web search URL")
+            self.log.error("Failed to fetch Google web search URL")
 
         # Check if we've been asked to stop
         if self.checkForStop():
@@ -153,7 +155,7 @@ class sfp_onioncity(SpiderFootPlugin):
         ]
 
         for link in darknet_links:
-            self.sf.debug("Found a darknet mention: " + link)
+            self.log.debug("Found a darknet mention: " + link)
             torlink = link.replace(".onion.link", ".onion")
             if self.opts['fetchlinks']:
                 res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
@@ -161,13 +163,13 @@ class sfp_onioncity(SpiderFootPlugin):
                                        verify=False)
 
                 if res['content'] is None:
-                    self.sf.debug("Ignoring " + link + " as no data returned")
+                    self.log.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 # Sometimes onion city search results false positives
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
                              + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
-                    self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                    self.log.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
@@ -177,7 +179,7 @@ class sfp_onioncity(SpiderFootPlugin):
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
                 except Exception:
-                    self.sf.debug("String not found in content.")
+                    self.log.debug("String not found in content.")
                     continue
 
                 data = res['content'][startIndex:endIndex]

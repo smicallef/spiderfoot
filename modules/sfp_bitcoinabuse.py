@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 from urllib.parse import urlencode
 
@@ -57,6 +58,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=None):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -78,17 +80,17 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
             useragent="SpiderFoot",
         )
         if res["code"] != "200":
-            self.sf.info(f"Failed to get results for {address}, code {res['code']}")
+            self.log.info(f"Failed to get results for {address}, code {res['code']}")
             return None
 
         if res["content"] is None:
-            self.sf.info(f"Failed to get results for {address}, empty content")
+            self.log.info(f"Failed to get results for {address}, empty content")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}")
+            self.log.error(f"Error processing JSON response from BitcoinAbuse: {e}")
 
         return None
 
@@ -100,15 +102,15 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!")
+            self.log.error("You enabled sfp_bitcoinabuse but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

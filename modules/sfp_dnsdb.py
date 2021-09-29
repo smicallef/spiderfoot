@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import re
 import time
@@ -68,6 +69,7 @@ class sfp_dnsdb(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
@@ -94,11 +96,11 @@ class sfp_dnsdb(SpiderFootPlugin):
 
     def query(self, endpoint, queryType, query):
         if endpoint not in ("rrset", "rdata"):
-            self.sf.error(f"Endpoint MUST be rrset or rdata, you sent {endpoint}")
+            self.log.error(f"Endpoint MUST be rrset or rdata, you sent {endpoint}")
             return None
 
         if queryType not in ("name", "ip"):
-            self.sf.error(f"Query type MUST be name or ip, you sent {queryType}")
+            self.log.error(f"Query type MUST be name or ip, you sent {queryType}")
             return None
 
         headers = {"Accept": "application/x-ndjson", "X-API-Key": self.opts["api_key"]}
@@ -111,21 +113,21 @@ class sfp_dnsdb(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("You are being rate-limited by DNSDB")
+            self.log.error("You are being rate-limited by DNSDB")
             self.errorState = True
             return None
 
         if res["content"] is None:
-            self.sf.info(f"No DNSDB record found for {query}")
+            self.log.info(f"No DNSDB record found for {query}")
             return None
 
         splittedContent = res["content"].strip().split("\n")
         if len(splittedContent) == 2:
-            self.sf.info(f"No DNSDB record found for {query}")
+            self.log.info(f"No DNSDB record found for {query}")
             return None
 
         if len(splittedContent) < 2:
-            self.sf.info(f"Unexpected DNSDB response {query}")
+            self.log.info(f"Unexpected DNSDB response {query}")
             return None
 
         try:
@@ -133,7 +135,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             for content in splittedContent:
                 records.append(json.loads(content))
         except json.JSONDecodeError as e:
-            self.sf.error(f"Error processing JSON response from DNSDB: {e}")
+            self.log.error(f"Error processing JSON response from DNSDB: {e}")
             return None
 
         return records[1:-1]
@@ -141,7 +143,7 @@ class sfp_dnsdb(SpiderFootPlugin):
     def isTooOld(self, lastSeen):
         ageLimitTs = int(time.time()) - (86400 * self.opts["age_limit_days"])
         if self.opts["age_limit_days"] > 0 and lastSeen < ageLimitTs:
-            self.sf.debug(f"Record found but too old ({lastSeen}), skipping.")
+            self.log.debug("Record found but too old, skipping.")
             return True
         return False
 
@@ -153,15 +155,15 @@ class sfp_dnsdb(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_dnsdb but did not set an API key!")
+            self.log.error("You enabled sfp_dnsdb but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
         self.results[eventData] = True
 
@@ -202,13 +204,13 @@ class sfp_dnsdb(SpiderFootPlugin):
 
                     if record.get("rrtype") == "A":
                         if not self.sf.validIP(data):
-                            self.sf.debug(f"Skipping invalid IP address {data}")
+                            self.log.debug(f"Skipping invalid IP address {data}")
                             continue
 
                         if self.opts["verify"] and not self.sf.validateIP(
                             eventData, data
                         ):
-                            self.sf.debug(
+                            self.log.debug(
                                 f"Host {eventData} no longer resolves to {data}"
                             )
                             continue
@@ -223,13 +225,13 @@ class sfp_dnsdb(SpiderFootPlugin):
                             continue
 
                         if not self.sf.validIP6(data):
-                            self.sf.debug("Skipping invalid IPv6 address " + data)
+                            self.log.debug("Skipping invalid IPv6 address " + data)
                             continue
 
                         if self.opts["verify"] and not self.sf.validateIP(
                             eventData, data
                         ):
-                            self.sf.debug(
+                            self.log.debug(
                                 "Host " + eventData + " no longer resolves to " + data
                             )
                             continue
@@ -305,7 +307,7 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
 
                 if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
-                    self.sf.debug(f"Host {data} could not be resolved")
+                    self.log.debug(f"Host {data} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 else:
                     evt = SpiderFootEvent("INTERNET_NAME", data, self.__name__, event)
@@ -315,12 +317,12 @@ class sfp_dnsdb(SpiderFootPlugin):
             if eventName == "IP_ADDRESS" and (
                 self.opts["verify"] and not self.sf.validateIP(co, eventData)
             ):
-                self.sf.debug("Host no longer resolves to our IP.")
+                self.log.debug("Host no longer resolves to our IP.")
                 continue
 
             if not self.opts["cohostsamedomain"]:
                 if self.getTarget().matches(co, includeParents=True):
-                    self.sf.debug(
+                    self.log.debug(
                         "Skipping " + co + " because it is on the same domain."
                     )
                     continue

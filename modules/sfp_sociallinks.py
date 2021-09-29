@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -54,6 +55,7 @@ class sfp_sociallinks(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -97,17 +99,17 @@ class sfp_sociallinks(SpiderFootPlugin):
         )
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Social Links")
+            self.log.error("You are being rate-limited by Social Links")
             self.errorState = True
             return None
 
         if res['code'] == '404':
-            self.sf.error("API Endpoint not found")
+            self.log.error("API Endpoint not found")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("No search results from Social Links")
+            self.log.error("No search results from Social Links")
             return None
 
         if res['content'] is None:
@@ -143,18 +145,18 @@ class sfp_sociallinks(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_sociallinks but did not set an API key!")
+            self.log.error("You enabled sfp_sociallinks but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -267,7 +269,7 @@ class sfp_sociallinks(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if failedModules == 3:
-                self.sf.info(f"No data found for {eventData}")
+                self.log.info(f"No data found for {eventData}")
                 return
 
 # End of sfp_sociallinks class

@@ -12,6 +12,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 from netaddr import IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -82,6 +83,7 @@ class sfp_dronebl(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -111,13 +113,13 @@ class sfp_dronebl(SpiderFootPlugin):
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
-                self.sf.debug(f"Checking Blacklist: {lookup}")
+                self.log.debug(f"Checking Blacklist: {lookup}")
                 addrs = self.sf.resolveHost(lookup)
 
                 if not addrs:
                     continue
 
-                self.sf.debug(f"Addresses returned: {addrs}")
+                self.log.debug(f"Addresses returned: {addrs}")
 
                 text = None
                 for addr in addrs:
@@ -130,7 +132,7 @@ class sfp_dronebl(SpiderFootPlugin):
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
 
-                    self.sf.debug("Return code not found in list: " + str(addr))
+                    self.log.debug("Return code not found in list: " + str(addr))
 
                 if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
@@ -146,7 +148,7 @@ class sfp_dronebl(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             except Exception as e:
-                self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+                self.log.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -155,7 +157,7 @@ class sfp_dronebl(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return
@@ -168,7 +170,7 @@ class sfp_dronebl(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -177,7 +179,7 @@ class sfp_dronebl(SpiderFootPlugin):
 
             max_subnet = self.opts['maxsubnet']
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         if eventName.startswith("NETBLOCK_"):

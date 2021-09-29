@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import datetime
 import json
 import time
@@ -73,6 +74,7 @@ class sfp_spyonweb(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
@@ -99,43 +101,43 @@ class sfp_spyonweb(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
             return None
 
         status = data.get('status')
 
         if status != 'found':
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         api_result = data.get('result')
 
         if not api_result:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         endpoint_result = api_result.get(endpoint)
 
         if not endpoint_result:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         results = endpoint_result.get(qry)
 
         if not results:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         items = results.get('items')
 
         if not items:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
         return items
@@ -145,10 +147,10 @@ class sfp_spyonweb(SpiderFootPlugin):
         items = self.query('analytics', qry, limit)
 
         if not items:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
-        self.sf.info("Retrieved " + str(len(items)) + " results")
+        self.log.info("Retrieved " + str(len(items)) + " results")
 
         return items
 
@@ -157,10 +159,10 @@ class sfp_spyonweb(SpiderFootPlugin):
         items = self.query('adsense', qry, limit)
 
         if not items:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
-        self.sf.info("Retrieved " + str(len(items)) + " results")
+        self.log.info("Retrieved " + str(len(items)) + " results")
 
         return items
 
@@ -169,10 +171,10 @@ class sfp_spyonweb(SpiderFootPlugin):
         items = self.query('ip', qry, limit)
 
         if not items:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
-        self.sf.info("Retrieved " + str(len(items)) + " results")
+        self.log.info("Retrieved " + str(len(items)) + " results")
 
         return items
 
@@ -181,10 +183,10 @@ class sfp_spyonweb(SpiderFootPlugin):
         items = self.query('summary', qry, limit)
 
         if not items:
-            self.sf.debug("No results found for " + qry)
+            self.log.debug("No results found for " + qry)
             return None
 
-        self.sf.info("Retrieved " + str(len(items)) + " results")
+        self.log.info("Retrieved " + str(len(items)) + " results")
 
         return items
 
@@ -202,10 +204,10 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_spyonweb but did not set an API key!")
+            self.log.error("You enabled sfp_spyonweb but did not set an API key!")
             self.errorState = True
             return
 
@@ -216,7 +218,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             data = self.querySummary(eventData, limit=self.opts['limit'])
 
             if data is None:
-                self.sf.info(f"No data found for {eventData}")
+                self.log.info(f"No data found for {eventData}")
                 return
 
             google_adsense = data.get('adsense')
@@ -239,7 +241,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
             except Exception as e:
-                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
+                self.log.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
                 return
 
             data = dict()
@@ -251,14 +253,14 @@ class sfp_spyonweb(SpiderFootPlugin):
                 return
 
             if data is None:
-                self.sf.info("No data found for " + eventData)
+                self.log.info("No data found for " + eventData)
                 return
 
             for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
 
                 if last_seen < agelimit:
-                    self.sf.debug("Record found too old, skipping.")
+                    self.log.debug("Record found too old, skipping.")
                     continue
 
                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", r, self.__name__, event)
@@ -273,7 +275,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             data = self.queryIP(eventData, limit=self.opts['limit'])
 
             if data is None:
-                self.sf.info("No data found for " + eventData)
+                self.log.info("No data found for " + eventData)
                 return
 
             self.cohostcount = 0
@@ -282,11 +284,11 @@ class sfp_spyonweb(SpiderFootPlugin):
                 last_seen = int(datetime.datetime.strptime(data[co], '%Y-%m-%d').strftime('%s')) * 1000
 
                 if last_seen < agelimit:
-                    self.sf.debug("Record found too old, skipping.")
+                    self.log.debug("Record found too old, skipping.")
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                    self.sf.debug(f"Host {co} no longer resolves to {eventData}")
+                    self.log.debug(f"Host {co} no longer resolves to {eventData}")
                     continue
 
                 if not self.opts['cohostsamedomain']:

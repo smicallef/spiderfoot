@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 
@@ -70,6 +71,7 @@ class sfp_securitytrails(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
@@ -113,12 +115,12 @@ class sfp_securitytrails(SpiderFootPlugin):
                                postData=request)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.")
+            self.log.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No SecurityTrails info found for " + qry)
+            self.log.info("No SecurityTrails info found for " + qry)
             return None
 
         try:
@@ -141,7 +143,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             else:
                 return info.get('records', [])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SecurityTrails: " + str(e))
+            self.log.error("Error processing JSON response from SecurityTrails: " + str(e))
             return None
 
     # Handle events sent to this module
@@ -153,16 +155,16 @@ class sfp_securitytrails(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_securitytrails but did not set an API uid/secret!")
+            self.log.error("You enabled sfp_securitytrails but did not set an API uid/secret!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -189,12 +191,12 @@ class sfp_securitytrails(SpiderFootPlugin):
                         h = r['hostname']
                         if not self.opts['cohostsamedomain']:
                             if self.getTarget().matches(h, includeParents=True):
-                                self.sf.debug("Skipping " + h + " because it is on the same domain.")
+                                self.log.debug("Skipping " + h + " because it is on the same domain.")
                                 continue
 
                         if h not in myres and h != ip:
                             if self.opts['verify'] and not self.sf.validateIP(h, ip):
-                                self.sf.debug("Host " + h + " no longer resolves to our IP.")
+                                self.log.debug("Host " + h + " no longer resolves to our IP.")
                                 continue
                         myres.append(h.lower())
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)

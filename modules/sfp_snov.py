@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import urllib.error
 import urllib.parse
@@ -65,6 +66,7 @@ class sfp_snov(SpiderFootPlugin):
     limit = 100
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -100,7 +102,7 @@ class sfp_snov(SpiderFootPlugin):
         )
 
         if res['code'] != '200':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.log.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
         try:
@@ -109,12 +111,12 @@ class sfp_snov(SpiderFootPlugin):
             accessToken = json.loads(content).get('access_token')
 
             if accessToken is None:
-                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+                self.log.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
                 return None
 
             return str(accessToken)
         except Exception:
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.log.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
 
@@ -139,7 +141,7 @@ class sfp_snov(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
         if res['code'] != '200':
-            self.sf.debug("Could not fetch email addresses")
+            self.log.debug("Could not fetch email addresses")
             return None
 
         return res.get('content')
@@ -153,17 +155,17 @@ class sfp_snov(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_client_id'] == "" or self.opts['api_key_client_secret'] == "":
-            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
+            self.log.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -171,7 +173,7 @@ class sfp_snov(SpiderFootPlugin):
         # Get access token from Snov IO API
         accessToken = self.queryAccessToken()
         if accessToken is None or accessToken == '':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.log.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return
 
@@ -184,13 +186,13 @@ class sfp_snov(SpiderFootPlugin):
 
             data = self.queryDomainName(eventData, accessToken, currentLastId)
             if data is None:
-                self.sf.debug("No email address found for target domain")
+                self.log.debug("No email address found for target domain")
                 break
 
             try:
                 data = json.loads(data)
             except Exception:
-                self.sf.debug("No email address found for target domain")
+                self.log.debug("No email address found for target domain")
                 break
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)

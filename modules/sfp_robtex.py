@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 
@@ -72,6 +73,7 @@ class sfp_robtex(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -102,17 +104,17 @@ class sfp_robtex(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.cohostcount > self.opts['maxcohost']:
             return
 
         if srcModuleName == "sfp_robtex":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.log.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
@@ -126,7 +128,7 @@ class sfp_robtex(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
@@ -139,7 +141,7 @@ class sfp_robtex(SpiderFootPlugin):
                 max_subnet = self.opts['maxsubnet']
 
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.log.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         qrylist = list()
@@ -173,13 +175,13 @@ class sfp_robtex(SpiderFootPlugin):
                 retry += 1
 
             if res['content'] is None:
-                self.sf.error("No reply from robtex API.")
+                self.log.error("No reply from robtex API.")
                 continue
 
             try:
                 data = json.loads(res['content'])
             except Exception as e:
-                self.sf.error(f"Error parsing JSON from Robtex API: {e}")
+                self.log.error(f"Error parsing JSON from Robtex API: {e}")
                 return
 
             if not data:
@@ -188,7 +190,7 @@ class sfp_robtex(SpiderFootPlugin):
             status = data.get("status")
 
             if status and status == "ratelimited":
-                self.sf.error("You are being rate-limited by robtex API.")
+                self.log.error("You are being rate-limited by robtex API.")
                 self.errorState = True
                 continue
 
@@ -198,7 +200,7 @@ class sfp_robtex(SpiderFootPlugin):
             pas = data.get('pas')
 
             if not pas:
-                self.sf.info(f"No results from robtex API for {ip}")
+                self.log.info(f"No results from robtex API for {ip}")
                 continue
 
             if not len(pas):
@@ -212,11 +214,11 @@ class sfp_robtex(SpiderFootPlugin):
 
                 if not self.opts['cohostsamedomain']:
                     if self.getTarget().matches(host, includeParents=True):
-                        self.sf.debug(f"Skipping {host} because it is on the same domain.")
+                        self.log.debug(f"Skipping {host} because it is on the same domain.")
                         continue
 
                 if self.opts['verify'] and not self.sf.validateIP(host, ip):
-                    self.sf.debug(f"Host {host} no longer resolves to {ip}")
+                    self.log.debug(f"Host {host} no longer resolves to {ip}")
                     continue
 
                 if eventName == "NETBLOCK_OWNER":

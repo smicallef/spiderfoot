@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 
@@ -63,6 +64,7 @@ class sfp_metadefender(SpiderFootPlugin):
 
     # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -113,14 +115,14 @@ class sfp_metadefender(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['code'] == "401":
-            self.sf.error("Invalid MetaDefender API key")
+            self.log.error("Invalid MetaDefender API key")
             self.errorState = True
             return None
 
         # https://onlinehelp.opswat.com/mdcloud/3._Rate_Limiting.html
         # https://onlinehelp.opswat.com/mdcloud/4._Throttling.html
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by MetaDefender")
+            self.log.error("You are being rate-limited by MetaDefender")
             self.errorState = True
             return None
 
@@ -133,7 +135,7 @@ class sfp_metadefender(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.log.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -150,19 +152,19 @@ class sfp_metadefender(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_metadefender but did not set an API key!")
+            self.log.error("You enabled sfp_metadefender but did not set an API key!")
             self.errorState = True
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == 'IP_ADDRESS':
             data = self.queryIp(eventData)
 
             if data is None:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             geo_info = data.get('geo_info')
@@ -175,13 +177,13 @@ class sfp_metadefender(SpiderFootPlugin):
             res = data.get('lookup_results')
 
             if not res:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             sources = res.get('sources')
 
             if not sources:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             for m in sources:
@@ -194,19 +196,19 @@ class sfp_metadefender(SpiderFootPlugin):
             data = self.queryDomain(eventData)
 
             if data is None:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             res = data.get('lookup_results')
 
             if not res:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             sources = res.get('sources')
 
             if not sources:
-                self.sf.debug("No matches found for " + eventData)
+                self.log.debug("No matches found for " + eventData)
                 return
 
             for m in sources:

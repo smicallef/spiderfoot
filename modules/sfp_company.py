@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -35,6 +36,7 @@ class sfp_company(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
 
         for opt in list(userOpts.keys()):
@@ -86,17 +88,17 @@ class sfp_company(SpiderFootPlugin):
         if eventName == "TARGET_WEB_CONTENT":
             url = event.actualSource
             if self.opts['filterjscss'] and (".js" in url or ".css" in url):
-                self.sf.debug("Ignoring web content from CSS/JS.")
+                self.log.debug("Ignoring web content from CSS/JS.")
                 return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName} ({len(eventData)} bytes)")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName} ({len(eventData)} bytes)")
 
         # Strip out everything before the O=
         try:
             if eventName == "SSL_CERTIFICATE_ISSUED":
                 eventData = eventData.split("O=")[1]
         except Exception:
-            self.sf.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
+            self.log.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
 
         # Find chunks of text containing what might be a company name first.
         # This is to avoid running very expensive regexps on large chunks of
@@ -139,10 +141,10 @@ class sfp_company(SpiderFootPlugin):
 
                     fullcompany = re.sub(r"\s+", " ", fullcompany.strip())
 
-                    self.sf.info("Found company name: " + fullcompany)
+                    self.log.info("Found company name: " + fullcompany)
 
                     if fullcompany in myres:
-                        self.sf.debug("Already found from this source.")
+                        self.log.debug("Already found from this source.")
                         continue
 
                     myres.append(fullcompany)

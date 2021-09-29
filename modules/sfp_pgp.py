@@ -12,6 +12,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -47,6 +48,7 @@ class sfp_pgp(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -74,7 +76,7 @@ class sfp_pgp(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
@@ -99,7 +101,7 @@ class sfp_pgp(SpiderFootPlugin):
                     if not self.getTarget().matches(mailDom):
                         evttype = "AFFILIATE_EMAILADDR"
 
-                    self.sf.info("Found e-mail address: " + email)
+                    self.log.info("Found e-mail address: " + email)
                     evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -117,9 +119,9 @@ class sfp_pgp(SpiderFootPlugin):
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, str(res['content']))
                 for match in matches:
-                    self.sf.debug("Found public key: " + match)
+                    self.log.debug("Found public key: " + match)
                     if len(match) < 300:
-                        self.sf.debug("Likely invalid public key.")
+                        self.log.debug("Likely invalid public key.")
                         continue
 
                     evt = SpiderFootEvent("PGP_KEY", match, self.__name__, event)

@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import json
 import time
 import urllib.error
@@ -50,6 +51,7 @@ class sfp_crxcavator(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -91,11 +93,11 @@ class sfp_crxcavator(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from CRXcavator: {e}")
+            self.log.debug(f"Error processing JSON response from CRXcavator: {e}")
             return None
 
         if not data:
-            self.sf.debug(f"No results found for {qry}")
+            self.log.debug(f"No results found for {qry}")
             return None
 
         return data
@@ -115,11 +117,11 @@ class sfp_crxcavator(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from CRXcavator: {e}")
+            self.log.debug(f"Error processing JSON response from CRXcavator: {e}")
             return None
 
         if not data:
-            self.sf.debug(f"No results found for extension {extension_id}")
+            self.log.debug(f"No results found for extension {extension_id}")
             return None
 
         return data
@@ -132,10 +134,10 @@ class sfp_crxcavator(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():
@@ -147,7 +149,7 @@ class sfp_crxcavator(SpiderFootPlugin):
         results = self.query(domain_keyword)
 
         if not results:
-            self.sf.info(f"No results found for {domain_keyword}")
+            self.log.info(f"No results found for {domain_keyword}")
             return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(results), self.__name__, event)
@@ -219,7 +221,7 @@ class sfp_crxcavator(SpiderFootPlugin):
                     and not self.getTarget().matches(self.sf.urlFQDN(offered_by), includeChildren=True, includeParents=True)
                     and not self.getTarget().matches(self.sf.urlFQDN(support_site), includeChildren=True, includeParents=True)
                 ):
-                    self.sf.debug(f"Extension {app_full_name} does not match {eventData}, skipping")
+                    self.log.debug(f"Extension {app_full_name} does not match {eventData}, skipping")
                     continue
 
                 app_data = f"{name} {version}\n<SFURL>https://chrome.google.com/webstore/detail/{extension_id}</SFURL>"
@@ -269,7 +271,7 @@ class sfp_crxcavator(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
-                self.sf.debug(f"Host {host} could not be resolved")
+                self.log.debug(f"Host {host} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, host, self.__name__, event)

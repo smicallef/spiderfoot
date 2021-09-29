@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 import urllib.error
 import urllib.parse
@@ -62,6 +63,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -86,7 +88,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
             return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
+            self.log.debug("Already did a search for " + eventData + ", skipping.")
             return
 
         self.results[eventData] = True
@@ -110,7 +112,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                     timeout=self.opts['timeout'])
 
             if data is None or not data.get('content'):
-                self.sf.info("No results returned from onionsearchengine.com.")
+                self.log.info("No results returned from onionsearchengine.com.")
                 return
 
             page += 1
@@ -144,12 +146,12 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 blacklist = False
                 for r in self.opts['blacklist']:
                     if re.match(r, link, re.IGNORECASE):
-                        self.sf.debug("Skipping " + link + " as it matches blacklist " + r)
+                        self.log.debug("Skipping " + link + " as it matches blacklist " + r)
                         blacklist = True
                 if blacklist:
                     continue
 
-                self.sf.debug("Found a darknet mention: " + link)
+                self.log.debug("Found a darknet mention: " + link)
 
                 if not self.sf.urlFQDN(link).endswith(".onion"):
                     continue
@@ -165,11 +167,11 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                        verify=False)
 
                 if res['content'] is None:
-                    self.sf.debug("Ignoring " + link + " as no data returned")
+                    self.log.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 if eventData not in res['content']:
-                    self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                    self.log.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
@@ -179,7 +181,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
                 except Exception:
-                    self.sf.debug('String "' + eventData + '" not found in content.')
+                    self.log.debug('String "' + eventData + '" not found in content.')
                     continue
 
                 data = res['content'][startIndex:endIndex]

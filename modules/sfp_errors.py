@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -51,6 +52,7 @@ class sfp_errors(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
@@ -81,14 +83,14 @@ class sfp_errors(SpiderFootPlugin):
 
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventSource not in list(self.results.keys()):
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web content information for external sites.")
+            self.log.debug("Not collecting web content information for external sites.")
             return
 
         for regexpGrp in list(regexps.keys()):
@@ -99,7 +101,7 @@ class sfp_errors(SpiderFootPlugin):
                 pat = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.log.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource] = self.results[eventSource] + [regexpGrp]
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
                                           self.__name__, event)

@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import hashlib
 import json
 
@@ -46,6 +47,7 @@ class sfp_punkspider(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -69,13 +71,13 @@ class sfp_punkspider(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
         if res['content'] is None:
-            self.sf.debug("No content returned from PunkSpider")
+            self.log.debug("No content returned from PunkSpider")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing response from PunkSpider: {e}")
+            self.log.error(f"Error processing response from PunkSpider: {e}")
 
         return None
 
@@ -85,10 +87,10 @@ class sfp_punkspider(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

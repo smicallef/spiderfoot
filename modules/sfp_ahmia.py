@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import logging
 import re
 import urllib.error
 import urllib.parse
@@ -64,6 +65,7 @@ class sfp_ahmia(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
@@ -83,14 +85,14 @@ class sfp_ahmia(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            self.sf.debug(f"Skipping HUMAN_NAME: {eventData}")
+            self.log.debug(f"Skipping HUMAN_NAME: {eventData}")
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.log.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -106,13 +108,13 @@ class sfp_ahmia(SpiderFootPlugin):
         )
 
         if not data:
-            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
+            self.log.info(f"No results for {eventData} returned from Ahmia.fi.")
             return
 
         content = data.get('content')
 
         if not content:
-            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
+            self.log.info(f"No results for {eventData} returned from Ahmia.fi.")
             return
 
         # We don't bother with pagination as Ahmia seems fairly limited in coverage
@@ -120,7 +122,7 @@ class sfp_ahmia(SpiderFootPlugin):
         links = re.findall("redirect_url=(.[^\"]+)\"", content, re.IGNORECASE | re.DOTALL)
 
         if not links:
-            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
+            self.log.info(f"No results for {eventData} returned from Ahmia.fi.")
             return
 
         reported = False
@@ -133,7 +135,7 @@ class sfp_ahmia(SpiderFootPlugin):
 
             self.results[link] = True
 
-            self.sf.debug(f"Found a darknet mention: {link}")
+            self.log.debug(f"Found a darknet mention: {link}")
 
             if not self.sf.urlFQDN(link).endswith(".onion"):
                 continue
@@ -152,11 +154,11 @@ class sfp_ahmia(SpiderFootPlugin):
             )
 
             if res['content'] is None:
-                self.sf.debug(f"Ignoring {link} as no data returned")
+                self.log.debug(f"Ignoring {link} as no data returned")
                 continue
 
             if eventData not in res['content']:
-                self.sf.debug(f"Ignoring {link} as no mention of {eventData}")
+                self.log.debug(f"Ignoring {link} as no mention of {eventData}")
                 continue
 
             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
@@ -167,7 +169,7 @@ class sfp_ahmia(SpiderFootPlugin):
                 startIndex = res['content'].index(eventData) - 120
                 endIndex = startIndex + len(eventData) + 240
             except Exception:
-                self.sf.debug(f"String '{eventData}' not found in content.")
+                self.log.debug(f"String '{eventData}' not found in content.")
                 continue
 
             wdata = res['content'][startIndex:endIndex]
