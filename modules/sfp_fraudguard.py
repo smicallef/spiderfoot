@@ -155,8 +155,8 @@ class sfp_fraudguard(SpiderFootPlugin):
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.log.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxnetblock']))
+                               + str(IPNetwork(eventData).prefixlen) + " > "
+                               + str(self.opts['maxnetblock']))
                 return
 
         qrylist = list()

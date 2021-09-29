@@ -146,8 +146,8 @@ class sfp_threatminer(SpiderFootPlugin):
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.log.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxnetblock']))
+                               + str(IPNetwork(eventData).prefixlen) + " > "
+                               + str(self.opts['maxnetblock']))
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -155,8 +155,8 @@ class sfp_threatminer(SpiderFootPlugin):
                 return
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.log.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxsubnet']))
+                               + str(IPNetwork(eventData).prefixlen) + " > "
+                               + str(self.opts['maxsubnet']))
                 return
 
         qrylist = list()

@@ -167,7 +167,7 @@ class sfp_customfeed(SpiderFootPlugin):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.log.debug("Checking maliciousness of " + target + " ("
-                              + itemType + ") with: " + cid)
+                               + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
