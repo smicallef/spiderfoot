@@ -118,11 +118,11 @@ class sfp_hackertarget(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.log.error(f"Unable to fetch HTTP headers for {ip} from HackerTarget.com.")
+            self.error(f"Unable to fetch HTTP headers for {ip} from HackerTarget.com.")
             return None
 
         if not res['content'].startswith('HTTP/'):
-            self.log.debug(f"Found no HTTP headers for {ip}")
+            self.debug(f"Found no HTTP headers for {ip}")
             return None
 
         headers = dict()
@@ -156,7 +156,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.log.error(f"Unable to fetch DNS zone for {ip} from HackerTarget.com.")
+            self.error(f"Unable to fetch DNS zone for {ip} from HackerTarget.com.")
             return None
 
         records = list()
@@ -190,7 +190,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.log.error("Unable to fetch hackertarget.com content.")
+            self.error("Unable to fetch hackertarget.com content.")
             return None
 
         if "No records" in res['content']:
@@ -198,7 +198,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         hosts = res['content'].split('\n')
 
-        self.log.debug(f"Found {len(hosts)} on {ip}")
+        self.debug(f"Found {len(hosts)} on {ip}")
 
         return hosts
 
@@ -208,14 +208,14 @@ class sfp_hackertarget(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
-            self.log.debug(f"Ignoring {eventName}, from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName == 'NETBLOCK_OWNER':
@@ -225,7 +225,7 @@ class sfp_hackertarget(SpiderFootPlugin):
             max_netblock = self.opts['maxnetblock']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_netblock:
-                self.log.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
                 return
 
         if eventName == 'DOMAIN_NAME_PARENT':
@@ -248,7 +248,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                 hosts = list()
 
                 for strdata in grps:
-                    self.log.debug("Matched: " + strdata)
+                    self.debug("Matched: " + strdata)
                     if strdata.endswith("."):
                         hosts.append(strdata[:-1])
                     else:
@@ -261,7 +261,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                         evt_type = 'AFFILIATE_INTERNET_NAME'
 
                     if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
-                        self.log.debug(f"Host {host} could not be resolved")
+                        self.debug(f"Host {host} could not be resolved")
                         evt_type += '_UNRESOLVED'
 
                     evt = SpiderFootEvent(evt_type, host, self.__name__, event)
@@ -301,16 +301,16 @@ class sfp_hackertarget(SpiderFootPlugin):
                 if " " in h:
                     continue
 
-                self.log.info(f"Found something on same IP: {h}")
+                self.info(f"Found something on same IP: {h}")
 
                 if not self.opts['cohostsamedomain']:
                     if self.getTarget().matches(h, includeParents=True):
-                        self.log.debug(f"Skipping {h} because it is on the same domain.")
+                        self.debug(f"Skipping {h} because it is on the same domain.")
                         continue
 
                 if h not in myres and h != ip:
                     if self.opts['verify'] and not self.sf.validateIP(h, ip):
-                        self.log.debug(f"Host {h} no longer resolves to {ip}")
+                        self.debug(f"Host {h} no longer resolves to {ip}")
                         continue
 
                     if self.cohostcount < self.opts['maxcohost']:

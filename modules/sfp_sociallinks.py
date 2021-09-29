@@ -97,17 +97,17 @@ class sfp_sociallinks(SpiderFootPlugin):
         )
 
         if res['code'] == '429':
-            self.log.error("You are being rate-limited by Social Links")
+            self.error("You are being rate-limited by Social Links")
             self.errorState = True
             return None
 
         if res['code'] == '404':
-            self.log.error("API Endpoint not found")
+            self.error("API Endpoint not found")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.log.error("No search results from Social Links")
+            self.error("No search results from Social Links")
             return None
 
         if res['content'] is None:
@@ -143,18 +143,18 @@ class sfp_sociallinks(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.log.error("You enabled sfp_sociallinks but did not set an API key!")
+            self.error("You enabled sfp_sociallinks but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -267,7 +267,7 @@ class sfp_sociallinks(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if failedModules == 3:
-                self.log.info(f"No data found for {eventData}")
+                self.info(f"No data found for {eventData}")
                 return
 
 # End of sfp_sociallinks class

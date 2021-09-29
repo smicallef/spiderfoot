@@ -98,15 +98,15 @@ class sfp_maltiverse(SpiderFootPlugin):
         )
 
         if res['code'] == "400":
-            self.log.error("Bad request. " + qry + " is not a valid IP Address")
+            self.error("Bad request. " + qry + " is not a valid IP Address")
             return None
 
         if res['code'] == "404":
-            self.log.error("API endpoint not found")
+            self.error("API endpoint not found")
             return None
 
         if res['code'] != "200":
-            self.log.debug("No information found from Maltiverse for IP Address")
+            self.debug("No information found from Maltiverse for IP Address")
             return None
 
         try:
@@ -114,7 +114,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             data = str(res['content']).replace("\\n", " ")
             return json.loads(data)
         except Exception:
-            self.log.error("Incorrectly formatted data received as JSON response")
+            self.error("Incorrectly formatted data received as JSON response")
             return None
 
     # Handle events sent to this module
@@ -126,11 +126,11 @@ class sfp_maltiverse(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -140,9 +140,9 @@ class sfp_maltiverse(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.log.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxnetblock']))
+                self.debug("Network size bigger than permitted: "
+                           + str(IPNetwork(eventData).prefixlen) + " > "
+                           + str(self.opts['maxnetblock']))
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -150,9 +150,9 @@ class sfp_maltiverse(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.log.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxsubnet']))
+                self.debug("Network size bigger than permitted: "
+                           + str(IPNetwork(eventData).prefixlen) + " > "
+                           + str(self.opts['maxsubnet']))
                 return
 
         qrylist = list()
@@ -182,13 +182,13 @@ class sfp_maltiverse(SpiderFootPlugin):
                 continue
 
             if addr != maliciousIP:
-                self.log.error("Reported address doesn't match requested, skipping")
+                self.error("Reported address doesn't match requested, skipping")
                 continue
 
             blacklistedRecords = data.get('blacklist')
 
             if blacklistedRecords is None or len(blacklistedRecords) == 0:
-                self.log.debug("No blacklist information found for IP")
+                self.debug("No blacklist information found for IP")
                 continue
 
             # Data is reported about the IP Address
@@ -213,7 +213,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                 try:
                     lastSeenDate = datetime.strptime(str(lastSeen), "%Y-%m-%d %H:%M:%S")
                 except Exception:
-                    self.log.error("Invalid date in JSON response, skipping")
+                    self.error("Invalid date in JSON response, skipping")
                     continue
 
                 today = datetime.now()
@@ -221,7 +221,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                 difference = (today - lastSeenDate).days
 
                 if difference > int(self.opts["age_limit_days"]):
-                    self.log.debug("Record found is older than age limit, skipping")
+                    self.debug("Record found is older than age limit, skipping")
                     continue
 
                 maliciousIPDesc += " - DESCRIPTION : " + str(blacklistedRecord.get("description")) + "\n"

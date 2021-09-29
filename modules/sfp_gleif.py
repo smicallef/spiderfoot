@@ -87,13 +87,13 @@ class sfp_gleif(SpiderFootPlugin):
         )
 
         if res['code'] == "429":
-            self.log.error("You are being rate-limited by GLEIF.")
+            self.error("You are being rate-limited by GLEIF.")
             return None
 
         try:
             results = json.loads(res['content'])
         except Exception as e:
-            self.log.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         data = results.get('data')
@@ -131,13 +131,13 @@ class sfp_gleif(SpiderFootPlugin):
         )
 
         if res['code'] == "429":
-            self.log.error("You are being rate-limited by GLEIF.")
+            self.error("You are being rate-limited by GLEIF.")
             return None
 
         try:
             results = json.loads(res['content'])
         except Exception as e:
-            self.log.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         data = results.get('data')
@@ -161,17 +161,17 @@ class sfp_gleif(SpiderFootPlugin):
         )
 
         if res['code'] == "404":
-            self.log.error(f"No record for LEI: {lei}")
+            self.error(f"No record for LEI: {lei}")
             return None
 
         if res['code'] == "429":
-            self.log.error("You are being rate-limited by GLEIF.")
+            self.error("You are being rate-limited by GLEIF.")
             return None
 
         try:
             results = json.loads(res['content'])
         except Exception as e:
-            self.log.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         data = results.get('data')
@@ -189,12 +189,12 @@ class sfp_gleif(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         leis = list()
 
@@ -204,7 +204,7 @@ class sfp_gleif(SpiderFootPlugin):
             res = self.searchAutocompletions(eventData)
 
             if res is None:
-                self.log.debug(f"Found no results for {eventData}")
+                self.debug(f"Found no results for {eventData}")
                 return
 
             e = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
@@ -229,7 +229,7 @@ class sfp_gleif(SpiderFootPlugin):
 
                 leis.append(lei)
 
-            self.log.info(f"Found {len(leis)} LEIs matching {eventData}")
+            self.info(f"Found {len(leis)} LEIs matching {eventData}")
 
         for lei in set(leis):
             if lei in self.results:
@@ -245,7 +245,7 @@ class sfp_gleif(SpiderFootPlugin):
 
             res = self.retrieveRecord(lei)
             if not res:
-                self.log.debug(f"Found no results for {eventData}")
+                self.debug(f"Found no results for {eventData}")
                 return
 
             attributes = res.get('attributes')

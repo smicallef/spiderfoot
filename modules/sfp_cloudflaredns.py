@@ -73,9 +73,9 @@ class sfp_cloudflaredns(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.log.debug(f"Addresses returned: {addrs}")
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
-            self.log.debug(f"Unable to resolve {qaddr}")
+            self.debug(f"Unable to resolve {qaddr}")
             return False
 
         if not addrs:
@@ -94,7 +94,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         parentEvent = event
         resolved = False
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

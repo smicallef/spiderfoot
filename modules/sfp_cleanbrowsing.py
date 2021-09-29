@@ -81,9 +81,9 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.log.debug(f"Addresses returned: {addrs}")
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
-            self.log.debug(f"Unable to resolve {qaddr}")
+            self.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -96,7 +96,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

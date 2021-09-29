@@ -74,13 +74,13 @@ class sfp_debounce(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.log.info(f"No Debounce info found for {qry}")
+            self.info(f"No Debounce info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.log.error(f"Error processing JSON response from Debounce: {e}")
+            self.error(f"Error processing JSON response from Debounce: {e}")
 
         return None
 
@@ -93,7 +93,7 @@ class sfp_debounce(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         self.results[eventData] = True
 

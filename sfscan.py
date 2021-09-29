@@ -9,6 +9,7 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 # -----------------------------------------------------------------
+import logging
 import socket
 import sys
 import time
@@ -22,7 +23,7 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, logger
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootPluginLogger, SpiderFootTarget, SpiderFootHelpers, logger
 
 
 def startSpiderFootScanner(loggingQueue, *args, **kwargs):
@@ -299,6 +300,13 @@ class SpiderFootScanner():
                 self.__modconfig[modName] = deepcopy(self.__config['__modules__'][modName]['opts'])
                 for opt in list(self.__config.keys()):
                     self.__modconfig[modName][opt] = deepcopy(self.__config[opt])
+
+                # for logging
+                mod.__scanId__ = self.__scanId
+                logging.setLoggerClass(SpiderFootPluginLogger)  # temporarily set logger class
+                mod.log = logging.getLogger(f"spiderfoot.{mod.__module__}")  # init SpiderFootPluginLogger
+                logging.setLoggerClass(logging.Logger)  # reset logger class to default
+                mod.log._srcfile = module.__file__
 
                 # clear any listener relationships from the past
                 mod.clearListeners()

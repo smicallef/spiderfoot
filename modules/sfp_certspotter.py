@@ -118,23 +118,23 @@ class sfp_certspotter(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.log.debug('No response from CertSpotter API')
+            self.debug('No response from CertSpotter API')
             return None
 
         if res['code'] == '429':
-            self.log.error("You are being rate-limited by CertSpotter")
+            self.error("You are being rate-limited by CertSpotter")
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.log.error(f"Unexpected HTTP response code {res['code']} from CertSpotter")
+            self.error(f"Unexpected HTTP response code {res['code']} from CertSpotter")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.log.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -151,13 +151,13 @@ class sfp_certspotter(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.log.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return
 
         self.results[eventData] = True
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         max_pages = int(self.opts['max_pages'])
         page = 1
@@ -189,7 +189,7 @@ class sfp_certspotter(SpiderFootPlugin):
                             hosts.append(d.replace("*.", ""))
 
                 if result.get('cert') is None:
-                    self.log.debug('Response data contains no certificate data')
+                    self.debug('Response data contains no certificate data')
                     continue
 
                 try:
@@ -197,11 +197,11 @@ class sfp_certspotter(SpiderFootPlugin):
                     pemcert = self.sf.sslDerToPem(dercert)
                     cert = self.sf.parseCert(pemcert, eventData, self.opts['certexpiringdays'])
                 except Exception as e:
-                    self.log.info(f"Error parsing certificate: {e}")
+                    self.info(f"Error parsing certificate: {e}")
                     continue
 
                 if not cert.get('text'):
-                    self.log.info("Failed to parse the SSL certificate")
+                    self.info("Failed to parse the SSL certificate")
                     continue
 
                 evt = SpiderFootEvent('SSL_CERTIFICATE_RAW', cert['text'], self.__name__, event)
@@ -238,7 +238,7 @@ class sfp_certspotter(SpiderFootPlugin):
             return
 
         if self.opts['verify']:
-            self.log.info(f"Resolving {len(set(hosts))} hostnames ...")
+            self.info(f"Resolving {len(set(hosts))} hostnames ...")
 
         for domain in set(hosts):
             if self.checkForStop():
@@ -253,7 +253,7 @@ class sfp_certspotter(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.log.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

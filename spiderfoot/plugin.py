@@ -1,8 +1,76 @@
 from contextlib import suppress
+import io
 import logging
+import os
 import queue
+import sys
 import threading
 from time import sleep
+import traceback
+
+# begin logging overrides
+# these are copied from the python logging module
+# https://github.com/python/cpython/blob/main/Lib/logging/__init__.py
+
+if hasattr(sys, 'frozen'):  # support for py2exe
+    _srcfile = f"logging{os.sep}__init__{__file__[-4:]}"
+elif __file__[-4:].lower() in ['.pyc', '.pyo']:
+    _srcfile = __file__[:-4] + '.py'
+else:
+    _srcfile = __file__
+_srcfile = os.path.normcase(_srcfile)
+
+
+class SpiderFootPluginLogger(logging.Logger):
+    """Used only in SpiderFootPlugin to prevent modules
+    from having to initialize their own loggers.
+
+    Preserves filename, module, line numbers, etc. from the caller.
+    """
+
+    def findCaller(self, stack_info=False, stacklevel=1):
+        """Find the stack frame of the caller so that we can note the source
+        file name, line number and function name.
+
+        Args:
+            stack_info: boolean
+            stacklevel: int
+
+        Returns:
+            rv: tuple, filename, line number, module name, and stack trace
+        """
+        f = logging.currentframe()
+        # On some versions of IronPython, currentframe() returns None if
+        # IronPython isn't run with -X:Frames.
+        if f is not None:
+            f = f.f_back
+        orig_f = f
+        while f and stacklevel > 1:
+            f = f.f_back
+            stacklevel -= 1
+        if not f:
+            f = orig_f
+        rv = "(unknown file)", 0, "(unknown function)", None
+        while hasattr(f, "f_code"):
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename in (logging._srcfile, _srcfile):  # This is the only change
+                f = f.f_back
+                continue
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                sio.write('Stack (most recent call last):\n')
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+                sio.close()
+            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+            break
+        return rv  # noqa R504
+
+# end of logging overrides
 
 
 class SpiderFootPlugin():
@@ -74,8 +142,6 @@ class SpiderFootPlugin():
         # module threading
         self.__threadPool = None
 
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
-
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with
         one that uses the supplied SOCKS server.
@@ -100,6 +166,36 @@ class SpiderFootPlugin():
             userOpts (dict): TBD
         """
         pass
+
+    def debug(self, *args, **kwargs):
+        """For logging.
+        A wrapper around logging.debug() that adds the scanId to LogRecord
+
+        Args:
+            *args: passed through to logging.debug()
+            *kwargs: passed through to logging.debug()
+        """
+        self.log.debug(*args, extra={'scanId': self.__scanId__}, **kwargs)
+
+    def info(self, *args, **kwargs):
+        """For logging.
+        A wrapper around logging.info() that adds the scanId to LogRecord
+
+        Args:
+            *args: passed through to logging.info()
+            *kwargs: passed through to logging.info()
+        """
+        self.log.info(*args, extra={'scanId': self.__scanId__}, **kwargs)
+
+    def error(self, *args, **kwargs):
+        """For logging.
+        A wrapper around logging.error() that adds the scanId to LogRecord
+
+        Args:
+            *args: passed through to logging.error()
+            *kwargs: passed through to logging.error()
+        """
+        self.log.error(*args, extra={'scanId': self.__scanId__}, **kwargs)
 
     def enrichTarget(self, target):
         """Find aliases for a target.
