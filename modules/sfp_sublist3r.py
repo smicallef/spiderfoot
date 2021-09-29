@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -40,7 +39,6 @@ class sfp_sublist3r(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.log.debug("Setting up sfp_sublist3r")
         self.results = self.tempStorage()

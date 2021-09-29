@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 from netaddr import IPAddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -39,7 +38,6 @@ class sfp_hosting(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.__dataSource__ = "DNS"

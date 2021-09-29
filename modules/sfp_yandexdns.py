@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import dns.resolver
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -50,7 +49,6 @@ class sfp_yandexdns(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

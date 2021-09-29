@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 from spiderfoot import SpiderFootPlugin
 
 
@@ -36,7 +35,6 @@ class sfp__stor_db(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
 
         for opt in list(userOpts.keys()):

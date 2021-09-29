@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import re
 
 from bs4 import BeautifulSoup
@@ -40,7 +39,6 @@ class sfp_dnsdumpster(SpiderFootPlugin):
     optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.log.debug("Setting up sfp_dnsdumpster")
         self.results = self.tempStorage()

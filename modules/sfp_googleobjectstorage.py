@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import random
 import threading
 import time
@@ -50,7 +49,6 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
     lock = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.gosresults = dict()
         self.results = self.tempStorage()

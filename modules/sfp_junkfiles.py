@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import random
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -49,7 +48,6 @@ class sfp_junkfiles(SpiderFootPlugin):
     bases = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.hosts = self.tempStorage()

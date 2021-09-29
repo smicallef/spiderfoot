@@ -12,7 +12,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import phonenumbers
 from phonenumbers import carrier
 
@@ -36,7 +35,6 @@ class sfp_phone(SpiderFootPlugin):
     optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

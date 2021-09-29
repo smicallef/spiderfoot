@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import ipaddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -44,7 +43,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     hostresults = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.domresults = self.tempStorage()

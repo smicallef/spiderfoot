@@ -13,7 +13,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -40,7 +39,6 @@ class sfp_crossref(SpiderFootPlugin):
     fetched = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.fetched = self.tempStorage()
 

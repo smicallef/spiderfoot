@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -----------------------------------------------------------------------------
 
-import logging
 import dns.resolver
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -75,7 +74,6 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     ]
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"

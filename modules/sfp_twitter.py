@@ -9,7 +9,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -44,7 +43,6 @@ class sfp_twitter(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.__dataSource__ = "Twitter"
         self.results = self.tempStorage()

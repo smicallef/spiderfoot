@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import re
 
 import dns.query
@@ -38,7 +37,6 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     events = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"

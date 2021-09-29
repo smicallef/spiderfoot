@@ -9,7 +9,6 @@
 # Copyright:   (c) Steve Micallef 2017
 # -------------------------------------------------------------------------------
 
-import logging
 import base64
 import re
 import urllib.parse
@@ -38,7 +37,6 @@ class sfp_base64(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.__dataSource__ = "Target Website"
 

@@ -9,7 +9,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import datetime
 import json
 import urllib.error
@@ -71,7 +70,6 @@ class sfp_wigle(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False

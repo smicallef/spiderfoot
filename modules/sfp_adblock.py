@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import adblockparser
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -63,7 +62,6 @@ class sfp_adblock(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.rules = None
