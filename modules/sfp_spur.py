@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 
 from netaddr import IPNetwork
@@ -72,7 +71,6 @@ class sfp_spur(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

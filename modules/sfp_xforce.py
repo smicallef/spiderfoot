@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import base64
 import json
 import time
@@ -93,7 +92,6 @@ class sfp_xforce(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0

@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 import urllib.parse
 
@@ -60,7 +59,6 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=None):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

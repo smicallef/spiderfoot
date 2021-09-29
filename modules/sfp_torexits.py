@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import re
 
 from netaddr import IPAddress, IPNetwork
@@ -48,7 +47,6 @@ class sfp_torexits(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False

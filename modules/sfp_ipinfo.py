@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -57,7 +56,6 @@ class sfp_ipinfo(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False

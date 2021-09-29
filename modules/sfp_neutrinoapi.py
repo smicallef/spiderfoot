@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -65,7 +64,6 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
     # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.__dataSource__ = "NeutrinoAPI"
         self.results = self.tempStorage()

@@ -12,7 +12,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 import re
 import urllib.error
@@ -53,7 +52,6 @@ class sfp_keybase(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

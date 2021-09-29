@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import random
 import threading
 import time
@@ -49,7 +48,6 @@ class sfp_azureblobstorage(SpiderFootPlugin):
     s3results = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.s3results = self.tempStorage()
         self.results = self.tempStorage()

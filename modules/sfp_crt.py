@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 import urllib.parse
 
@@ -54,7 +53,6 @@ class sfp_crt(SpiderFootPlugin):
     cert_ids = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.cert_ids = self.tempStorage()

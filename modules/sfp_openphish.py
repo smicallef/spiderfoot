@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -56,7 +55,6 @@ class sfp_openphish(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False

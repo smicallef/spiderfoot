@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 import os.path
 from subprocess import PIPE, Popen
@@ -48,7 +47,6 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = dict()
         self.errorState = False

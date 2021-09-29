@@ -10,7 +10,6 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-import logging
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -57,7 +56,6 @@ class sfp_textmagic(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=None):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         if userOpts is None:
             userOpts = {}
         self.sf = sfc

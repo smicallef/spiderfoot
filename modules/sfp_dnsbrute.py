@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import random
 import threading
 import time
@@ -56,7 +55,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
     lock = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.sublist = self.tempStorage()
         self.events = self.tempStorage()

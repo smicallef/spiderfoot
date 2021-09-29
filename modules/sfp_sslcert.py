@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 from urllib.parse import urlparse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -48,7 +47,6 @@ class sfp_sslcert(SpiderFootPlugin):
     results = None
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 

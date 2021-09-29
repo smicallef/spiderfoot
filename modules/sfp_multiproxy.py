@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 from netaddr import IPAddress, IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -61,7 +60,6 @@ class sfp_multiproxy(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False

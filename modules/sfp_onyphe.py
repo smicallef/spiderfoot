@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import logging
 import json
 import time
 from datetime import datetime
@@ -75,7 +74,6 @@ class sfp_onyphe(SpiderFootPlugin):
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
-        self.log = logging.getLogger(f"spiderfoot.{__name__}")
         self.sf = sfc
         self.results = self.tempStorage()
 
