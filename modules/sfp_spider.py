@@ -370,7 +370,7 @@ class sfp_spider(SpiderFootPlugin):
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
                         self.log.info("Maximum number of pages (" + str(self.opts['maxpages'])
-                                     + ") reached.")
+                                      + ") reached.")
                         keepSpidering = False
                         break
 
