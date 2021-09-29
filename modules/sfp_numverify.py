@@ -99,32 +99,32 @@ class sfp_numverify(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.log.debug('No response from apilayer.net')
+            self.debug('No response from apilayer.net')
             return None
 
         if res['code'] == '101':
-            self.log.error('API error: invalid API key')
+            self.error('API error: invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '102':
-            self.log.error('API error: user account deactivated')
+            self.error('API error: user account deactivated')
             self.errorState = True
             return None
 
         if res['code'] == '104':
-            self.log.error('API error: usage limit exceeded')
+            self.error('API error: usage limit exceeded')
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.log.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('error') is not None:
-            self.log.error('API error: ' + str(data.get('error')))
+            self.error('API error: ' + str(data.get('error')))
             return None
 
         return data
@@ -139,7 +139,7 @@ class sfp_numverify(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.log.error("You enabled sfp_numverify but did not set an API key!")
+            self.error("You enabled sfp_numverify but did not set an API key!")
             self.errorState = True
             return
 
@@ -148,12 +148,12 @@ class sfp_numverify(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 
         if data is None:
-            self.log.debug("No phone information found for " + eventData)
+            self.debug("No phone information found for " + eventData)
             return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
@@ -165,12 +165,12 @@ class sfp_numverify(SpiderFootPlugin):
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
-            self.log.debug("No location information found for " + eventData)
+            self.debug("No location information found for " + eventData)
 
         if data.get('carrier'):
             evt = SpiderFootEvent("PROVIDER_TELCO", data.get('carrier'), self.__name__, event)
             self.notifyListeners(evt)
         else:
-            self.log.debug("No carrier information found for " + eventData)
+            self.debug("No carrier information found for " + eventData)
 
 # End of sfp_numverify class

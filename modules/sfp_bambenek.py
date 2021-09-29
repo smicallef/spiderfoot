@@ -129,7 +129,7 @@ class sfp_bambenek(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.log.error("Unable to fetch " + url)
+                        self.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -143,11 +143,11 @@ class sfp_bambenek(SpiderFootPlugin):
                     if 'regex' in malchecks[check]:
                         rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
-                        self.log.debug("New regex for " + check + ": " + rx)
+                        self.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                # self.log.debug("Adding " + grp[0] + " to list.")
+                                # self.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -159,10 +159,10 @@ class sfp_bambenek(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.log.debug(f"{ip} found within netblock/subnet {target} in {check}")
+                                self.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.log.debug(f"Error encountered parsing: {e}")
+                            self.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -171,7 +171,7 @@ class sfp_bambenek(SpiderFootPlugin):
                 if 'regex' not in malchecks[check]:
                     for line in data['content'].split('\n'):
                         if line == target or (targetType == "domain" and line == targetDom):
-                            self.log.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            self.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
                     try:
@@ -181,10 +181,10 @@ class sfp_bambenek(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
-                                self.log.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                self.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
                     except Exception as e:
-                        self.log.debug("Error encountered parsing 2: " + str(e))
+                        self.debug("Error encountered parsing 2: " + str(e))
                         continue
 
         return None
@@ -193,7 +193,7 @@ class sfp_bambenek(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.log.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                self.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -204,10 +204,10 @@ class sfp_bambenek(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

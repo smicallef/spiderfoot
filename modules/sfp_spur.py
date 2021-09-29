@@ -117,16 +117,16 @@ class sfp_spur(SpiderFootPlugin):
         code = res.get('code')
 
         if code == '403':
-            self.log.error("Invalid credentials. Please check API Token")
+            self.error("Invalid credentials. Please check API Token")
             self.errorState = True
             return None
 
         if code == '404':
-            self.log.debug("IP Address not found.")
+            self.debug("IP Address not found.")
             return None
 
         if code != '200':
-            self.log.error("Unable to fetch data from spur.us")
+            self.error("Unable to fetch data from spur.us")
             return None
 
         return res.get('content')
@@ -139,17 +139,17 @@ class sfp_spur(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.log.error("You enabled sfp_spur but did not set an API key!")
+            self.error("You enabled sfp_spur but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -159,9 +159,9 @@ class sfp_spur(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.log.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxnetblock']))
+                self.debug("Network size bigger than permitted: "
+                           + str(IPNetwork(eventData).prefixlen) + " > "
+                           + str(self.opts['maxnetblock']))
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -169,9 +169,9 @@ class sfp_spur(SpiderFootPlugin):
                 return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.log.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxsubnet']))
+                self.debug("Network size bigger than permitted: "
+                           + str(IPNetwork(eventData).prefixlen) + " > "
+                           + str(self.opts['maxsubnet']))
                 return
 
         qrylist = list()

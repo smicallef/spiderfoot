@@ -79,7 +79,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.log.debug("No content returned from openbugbounty.org")
+            self.debug("No content returned from openbugbounty.org")
             return None
 
         try:
@@ -89,7 +89,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
                 if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
-            self.log.error("Error processing response from openbugbounty.org: " + str(e))
+            self.error("Error processing response from openbugbounty.org: " + str(e))
             return None
         return ret
 
@@ -100,10 +100,10 @@ class sfp_openbugbounty(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

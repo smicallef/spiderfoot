@@ -33,7 +33,7 @@ class SpiderFootSqliteLogHandler(logging.Handler):
             # Create a new database handle when the first log record is received
             self.makeDbh()
         scanId = getattr(record, "scanId", None)
-        component = getattr(record, "component", None)
+        component = getattr(record, "module", None)
         if scanId:
             level = ("STATUS" if record.levelname == "INFO" else record.levelname)
             logResult = self.dbh.scanLogEvent(scanId, level, record.getMessage(), component=component)
@@ -94,7 +94,7 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
 
     # Set log format
     log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(module)s : %(message)s")
-    debug_format = logging.Formatter("%(asctime)s [%(levelname)s] %(pathname)s:%(lineno)s : %(message)s")
+    debug_format = logging.Formatter("%(asctime)s [%(levelname)s] %(filename)s:%(lineno)s : %(message)s")
     console_handler.setFormatter(log_format)
     debug_handler.setFormatter(debug_format)
     error_handler.setFormatter(debug_format)

@@ -73,12 +73,12 @@ class sfp_fortinet(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.log.error(f"Unexpected HTTP response code {res['code']} from FortiGuard Antispam.")
+            self.error(f"Unexpected HTTP response code {res['code']} from FortiGuard Antispam.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.log.error("Received no content from FortiGuard Antispam")
+            self.error("Received no content from FortiGuard Antispam")
             self.errorState = True
             return None
 
@@ -90,10 +90,10 @@ class sfp_fortinet(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.log.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.log.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
