@@ -235,7 +235,7 @@ class sfp_onyphe(SpiderFootPlugin):
         age_limit_ts = int(time.time()) - (86400 * limit)
 
         if last_ts < age_limit_ts:
-            self.sf.debug("Record found but too old, skipping.")
+            self.sf.debug(f"Record found but too old ({last_dt}), skipping.")
             return False
 
         return True

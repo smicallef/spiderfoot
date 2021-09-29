@@ -258,7 +258,7 @@ class sfp_xforce(SpiderFootPlugin):
                         host = rec['value']
 
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
+                            self.sf.debug(f"Record found but too old ({last_dt}), skipping.")
                             continue
 
                         if not self.opts["cohostsamedomain"]:
@@ -298,7 +298,7 @@ class sfp_xforce(SpiderFootPlugin):
                         created_ts = int(time.mktime(created_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
+                            self.sf.debug(f"Record found but too old ({created_dt}), skipping.")
                             continue
                         reason = result.get("reason", "")
                         score = result.get("score", 0)
@@ -350,7 +350,7 @@ class sfp_xforce(SpiderFootPlugin):
                         host = rec['value']
 
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
+                            self.sf.debug(f"Record found but too old ({last_ts}), skipping.")
                             continue
 
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
