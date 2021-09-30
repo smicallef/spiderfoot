@@ -47,6 +47,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = None
+    threaded = True
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -57,13 +58,6 @@ class sfp_sslcert(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-
-        self.certPool = self.threadPool(
-            threads=int(self.opts["maxthreads"]),
-            name="sfp_sslcert",
-            saveResults=False
-        )
-        self.certPool.start(self.getCert)
 
     # What events is this module interested in for input
     # * = be notified about all events.
@@ -83,114 +77,102 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        self.certPool.submit(event)
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
 
-    def getCert(self, event):
-        try:
-            eventName = event.eventType
-            srcModuleName = event.module
-            eventData = event.data
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-            self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-            if eventName == "LINKED_URL_INTERNAL":
-                if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
-                    return
-
-                try:
-                    # Handle URLs containing port numbers
-                    u = urlparse(eventData)
-                    port = 443
-                    if u.port:
-                        port = u.port
-                    fqdn = self.sf.urlFQDN(eventData.lower())
-                except Exception:
-                    self.sf.debug("Couldn't parse URL: " + eventData)
-                    return
-            else:
-                fqdn = eventData
-                port = 443
-
-            if fqdn not in self.results:
-                self.results[fqdn] = True
-            else:
+        if eventName == "LINKED_URL_INTERNAL":
+            if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
                 return
 
-            self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
-            # Re-fetch the certificate from the site and process
             try:
-                sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
-                sock.do_handshake()
-                dercert = sock.getpeercert(True)
-                pemcert = self.sf.sslDerToPem(dercert)
-                cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
-            except Exception as x:
-                self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
+                # Handle URLs containing port numbers
+                u = urlparse(eventData)
+                port = 443
+                if u.port:
+                    port = u.port
+                fqdn = self.sf.urlFQDN(eventData.lower())
+            except Exception:
+                self.sf.debug("Couldn't parse URL: " + eventData)
                 return
+        else:
+            fqdn = eventData
+            port = 443
 
-            if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
-                evt = SpiderFootEvent('TCP_PORT_OPEN', fqdn + ':' + str(port), self.__name__, event)
-                self.notifyListeners(evt)
+        if fqdn not in self.results:
+            self.results[fqdn] = True
+        else:
+            return
 
-            if not cert.get('text'):
-                self.sf.info("Failed to parse the SSL cert for " + fqdn)
-                return
+        self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
+        # Re-fetch the certificate from the site and process
+        try:
+            sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
+            sock.do_handshake()
+            dercert = sock.getpeercert(True)
+            pemcert = self.sf.sslDerToPem(dercert)
+            cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
+        except Exception as x:
+            self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
+            return
 
-            # Generate the event for the raw cert (in text form)
-            # Cert raw data text contains a lot of gems..
-            rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
-            self.notifyListeners(rawevt)
+        if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
+            evt = SpiderFootEvent('TCP_PORT_OPEN', fqdn + ':' + str(port), self.__name__, event)
+            self.notifyListeners(evt)
 
-            if cert.get('issued'):
-                evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', cert['issued'], self.__name__, event)
-                self.notifyListeners(evt)
+        if not cert.get('text'):
+            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            return
 
-            if cert.get('issuer'):
-                evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', cert['issuer'], self.__name__, event)
-                self.notifyListeners(evt)
+        # Generate the event for the raw cert (in text form)
+        # Cert raw data text contains a lot of gems..
+        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
+        self.notifyListeners(rawevt)
 
-            if eventName != "IP_ADDRESS" and cert.get('mismatch'):
-                evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(cert.get('hosts')), self.__name__, event)
-                self.notifyListeners(evt)
+        if cert.get('issued'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', cert['issued'], self.__name__, event)
+            self.notifyListeners(evt)
 
-            for san in set(cert.get('altnames', list())):
-                domain = san.replace("*.", "")
+        if cert.get('issuer'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', cert['issuer'], self.__name__, event)
+            self.notifyListeners(evt)
 
-                if self.getTarget().matches(domain, includeChildren=True):
-                    evt_type = 'INTERNET_NAME'
+        if eventName != "IP_ADDRESS" and cert.get('mismatch'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(cert.get('hosts')), self.__name__, event)
+            self.notifyListeners(evt)
+
+        for san in set(cert.get('altnames', list())):
+            domain = san.replace("*.", "")
+
+            if self.getTarget().matches(domain, includeChildren=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_INTERNET_NAME'
+
+            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                self.sf.debug(f"Host {domain} could not be resolved")
+                evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+            self.notifyListeners(evt)
+
+            if self.sf.isDomain(domain, self.opts['_internettlds']):
+                if evt_type.startswith('AFFILIATE'):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
                 else:
-                    evt_type = 'AFFILIATE_INTERNET_NAME'
+                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
 
-                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                    self.sf.debug(f"Host {domain} could not be resolved")
-                    evt_type += '_UNRESOLVED'
+        if cert.get('expired'):
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)
+            self.notifyListeners(evt)
+            return
 
-                evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
-                self.notifyListeners(evt)
-
-                if self.sf.isDomain(domain, self.opts['_internettlds']):
-                    if evt_type.startswith('AFFILIATE'):
-                        evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
-                        self.notifyListeners(evt)
-                    else:
-                        evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
-                        self.notifyListeners(evt)
-
-            if cert.get('expired'):
-                evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)
-                self.notifyListeners(evt)
-                return
-
-            if cert.get('expiring'):
-                evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", cert.get('expirystr', 'Unknown'), self.__name__, event)
-                self.notifyListeners(evt)
-
-        except Exception:
-            import traceback
-            self.sf.debug(f"Error in sfp_sslcert: {traceback.format_exc()}")
-
-    @property
-    def running(self):
-        return not self.certPool.finished
+        if cert.get('expiring'):
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", cert.get('expirystr', 'Unknown'), self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_sslcert class
