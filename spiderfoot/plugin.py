@@ -2,7 +2,6 @@ from contextlib import suppress
 import logging
 import queue
 import threading
-from contextlib import suppress
 from time import sleep
 
 
