@@ -131,8 +131,6 @@ class SpiderFootPlugin():
     opts = dict()
 
     def __init__(self):
-        """Not really needed in most cases."""
-
         # Whether the module is currently processing data
         self._running = False
         # Holds the thread object when module threading is enabled
@@ -141,6 +139,14 @@ class SpiderFootPlugin():
         self._log = None
         # module threading
         self.__threadPool = None
+
+    @property
+    def log(self):
+        if self._log is None:
+            logging.setLoggerClass(SpiderFootPluginLogger)  # temporarily set logger class
+            self._log = logging.getLogger(f"spiderfoot.{self.__name__}")  # init SpiderFootPluginLogger
+            logging.setLoggerClass(logging.Logger)  # reset logger class to default
+        return self._log
 
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with
