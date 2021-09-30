@@ -391,7 +391,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
             ("c", ("arg1",), ("kwarg1", "kwarg1"))
         ]
         # Example 1: using map()
-        with sfp.threadPool(threads) as pool:
+        with sfp.threadPool(threads, saveResults=True) as pool:
             map_results = sorted(
                 list(pool.map(
                     callback,
@@ -404,7 +404,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertEqual(map_results, expectedOutput)
 
         # Example 2: using submit()
-        with sfp.threadPool(threads) as pool:
+        with sfp.threadPool(threads, saveResults=True) as pool:
             pool.start(callback, *args, **kwargs)
             for i in iterable:
                 pool.submit(i)

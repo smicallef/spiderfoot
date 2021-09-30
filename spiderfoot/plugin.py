@@ -571,16 +571,14 @@ class SpiderFootPlugin():
         @property
         def finished(self):
             if self.sfp.checkForStop():
-                finished = True
+                return True
             else:
                 finishedThreads = [not t.busy for t in self.pool if t is not None]
                 try:
                     inputThreadAlive = self.inputThread.is_alive()
                 except AttributeError:
                     inputThreadAlive = False
-                finished = not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
-            self.sfp.sf.debug(f'Finished: {finished}')
-            return finished
+                return not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
 
         def __enter__(self):
             return self
@@ -589,8 +587,8 @@ class SpiderFootPlugin():
             self.shutdown()
             # Make sure queues are empty before exiting
             for q in (self.outputQueue, self.inputQueue):
-                while 1:
-                    with suppress(Exception):
+                with suppress(Exception):
+                    while 1:
                         q.get_nowait()
 
     def threadPool(self, *args, **kwargs):
@@ -599,7 +597,7 @@ class SpiderFootPlugin():
 
 class ThreadPoolWorker(threading.Thread):
 
-    def __init__(self, sfp, inputQueue, outputQueue, group=None, target=None,
+    def __init__(self, sfp, inputQueue, outputQueue=None, group=None, target=None,
                  name=None, args=None, kwargs=None, verbose=None):
         if args is None:
             args = tuple()
@@ -626,7 +624,7 @@ class ThreadPoolWorker(threading.Thread):
                     import traceback
                     self.sfp.sf.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
                     break
-                if self.outputQueue:
+                if self.outputQueue is not None:
                     self.outputQueue.put(result)
             except queue.Empty:
                 self.busy = False
