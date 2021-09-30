@@ -152,8 +152,9 @@ def main():
             sfModules[modName]['object'] = getattr(mod, modName)()
             mod_dict = sfModules[modName]['object'].asdict()
             sfModules[modName].update(mod_dict)
-        except BaseException as e:
-            log.critical(f"Failed to load module {modName}: {e}")
+        except BaseException:
+            import traceback
+            log.critical(f"Failed to load module {modName}: {traceback.format_exc()}")
             sys.exit(-1)
 
     if not sfModules:

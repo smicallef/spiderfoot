@@ -55,6 +55,8 @@ class SpiderFootPlugin():
     incomingEventQueue = None
     # Queue for produced events
     outgoingEventQueue = None
+    # Whether to use ThreadPool
+    threaded = False
     # SpiderFoot object, set in each module's setup() function
     sf = None
     # Configuration, set in each module's setup() function
@@ -67,6 +69,10 @@ class SpiderFootPlugin():
         self._running = False
         # Holds the thread object when module threading is enabled
         self.thread = None
+        # logging overrides
+        self._log = None
+        # module threading
+        self.__threadPool = None
 
         self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
@@ -328,6 +334,8 @@ class SpiderFootPlugin():
         Returns:
             bool
         """
+        if self.threaded:
+            return not self._threadPool.finished
         return self._running
 
     def watchedEvents(self):
@@ -412,7 +420,10 @@ class SpiderFootPlugin():
                     self.finish()
                 else:
                     self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
-                    self.handleEvent(sfEvent)
+                    if self.threaded:
+                        self._threadPool.submit(sfEvent)
+                    else:
+                        self.handleEvent(sfEvent)
                 self._running = False
         except KeyboardInterrupt:
             self.sf.debug(f"Interrupted module {self.__name__}.")
@@ -583,6 +594,18 @@ class SpiderFootPlugin():
 
     def threadPool(self, *args, **kwargs):
         return self.ThreadPool(self, *args, **kwargs)
+
+    @property
+    def _threadPool(self):
+        if self.threaded and self.__threadPool is None:
+            threads = self.opts.get("maxthreads", self.opts.get("_maxthreads", 10))
+            self.__threadPool = self.threadPool(
+                threads=int(threads),
+                name=self.__name__,
+                saveResults=False
+            )
+            self.__threadPool.start(self.handleEvent)
+        return self.__threadPool
 
 
 class ThreadPoolWorker(threading.Thread):
