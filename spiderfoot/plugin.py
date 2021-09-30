@@ -665,15 +665,14 @@ class SpiderFootPlugin():
         @property
         def finished(self):
             if self.sfp.checkForStop():
-                finished = True
+                return True
             else:
                 finishedThreads = [not t.busy for t in self.pool if t is not None]
                 try:
                     inputThreadAlive = self.inputThread.is_alive()
                 except AttributeError:
                     inputThreadAlive = False
-                finished = not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
-            return finished
+                return not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
 
         def __enter__(self):
             return self
