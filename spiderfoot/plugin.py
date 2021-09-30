@@ -673,7 +673,6 @@ class SpiderFootPlugin():
                 except AttributeError:
                     inputThreadAlive = False
                 finished = not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
-            self.sfp.sf.debug(f'Finished: {finished}')
             return finished
 
         def __enter__(self):
