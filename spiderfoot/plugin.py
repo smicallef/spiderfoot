@@ -443,7 +443,7 @@ class SpiderFootPlugin():
         Each thread in the pool is spawned only once, and reused for best performance.
 
         Example 1: using map()
-            with self.threadPool(self.opts["_maxthreads"]) as pool:
+            with self.threadPool(self.opts["_maxthreads"], saveResults=True) as pool:
                 # callback("a", "arg1", kwarg1="kwarg1"), callback("b", "arg1" ...)
                 for result in pool.map(
                         callback,
@@ -454,7 +454,7 @@ class SpiderFootPlugin():
                     yield result
 
         Example 2: using submit()
-            with self.threadPool(self.opts["_maxthreads"]) as pool:
+            with self.threadPool(self.opts["_maxthreads"], saveResults=True) as pool:
                 pool.start(callback, "arg1", kwarg1="kwarg1")
                 # callback(a, "arg1", kwarg1="kwarg1"), callback(b, "arg1" ...)
                 pool.submit(a)
@@ -463,7 +463,16 @@ class SpiderFootPlugin():
                     yield result
         """
 
-        def __init__(self, sfp, threads=100, qsize=None, name=None):
+        def __init__(self, sfp, threads=100, qsize=None, name=None, saveResults=False):
+            """Initialize the ThreadPool class.
+
+            Args:
+                sfp: A SpiderFootPlugin object
+                threads: Max number of threads
+                qsize: Queue size
+                name: Name
+                saveResults: Whether to store the return value of each function call
+            """
             if name is None:
                 name = ""
 
@@ -477,7 +486,10 @@ class SpiderFootPlugin():
             self.name = str(name)
             self.inputThread = None
             self.inputQueue = queue.Queue(self.qsize)
-            self.outputQueue = queue.Queue(self.qsize)
+            if saveResults:
+                self.outputQueue = queue.Queue(self.qsize)
+            else:
+                self.outputQueue = None
             self.stop = False
 
         def start(self, callback, *args, **kwargs):
@@ -540,11 +552,9 @@ class SpiderFootPlugin():
 
         @property
         def results(self):
-            while 1:
-                try:
+            with suppress(Exception):
+                while 1:
                     yield self.outputQueue.get_nowait()
-                except Exception:
-                    break
 
         def feedQueue(self, iterable, q):
             for i in iterable:
@@ -578,13 +588,10 @@ class SpiderFootPlugin():
         def __exit__(self, exception_type, exception_value, traceback):
             self.shutdown()
             # Make sure queues are empty before exiting
-            with suppress(Exception):
-                for q in (self.outputQueue, self.inputQueue):
-                    while 1:
-                        try:
-                            q.get_nowait()
-                        except queue.Empty:
-                            break
+            for q in (self.outputQueue, self.inputQueue):
+                while 1:
+                    with suppress(Exception):
+                        q.get_nowait()
 
     def threadPool(self, *args, **kwargs):
         return self.ThreadPool(self, *args, **kwargs)
@@ -619,7 +626,8 @@ class ThreadPoolWorker(threading.Thread):
                     import traceback
                     self.sfp.sf.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
                     break
-                self.outputQueue.put(result)
+                if self.outputQueue:
+                    self.outputQueue.put(result)
             except queue.Empty:
                 self.busy = False
                 # sleep briefly to save CPU
