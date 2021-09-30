@@ -301,18 +301,11 @@ class SpiderFootScanner():
                 for opt in list(self.__config.keys()):
                     self.__modconfig[modName][opt] = deepcopy(self.__config[opt])
 
-                # for logging
-                mod.__scanId__ = self.__scanId
-                logging.setLoggerClass(SpiderFootPluginLogger)  # temporarily set logger class
-                mod.log = logging.getLogger(f"spiderfoot.{mod.__module__}")  # init SpiderFootPluginLogger
-                logging.setLoggerClass(logging.Logger)  # reset logger class to default
-                mod.log._srcfile = module.__file__
-
                 # clear any listener relationships from the past
                 mod.clearListeners()
+                mod.setScanId(self.__scanId)
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
-                mod.setScanId(self.__scanId)
             except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 mod.errorState = True
