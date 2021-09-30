@@ -9,7 +9,6 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 # -----------------------------------------------------------------
-import logging
 import socket
 import sys
 import time
@@ -23,7 +22,7 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootPluginLogger, SpiderFootTarget, SpiderFootHelpers, logger
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, logger
 
 
 def startSpiderFootScanner(loggingQueue, *args, **kwargs):
