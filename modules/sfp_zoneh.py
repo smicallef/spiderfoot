@@ -90,7 +90,7 @@ class sfp_zoneh(SpiderFootPlugin):
         grps = re.findall(r"<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
             if target in m[0]:
-                self.sf.info("Found zoneh site: " + m[0])
+                self.info("Found zoneh site: " + m[0])
                 return m[0] + "\n<SFURL>" + m[1] + "</SFURL>"
 
         return False
@@ -101,13 +101,13 @@ class sfp_zoneh(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -129,7 +129,7 @@ class sfp_zoneh(SpiderFootPlugin):
         elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'DEFACED_AFFILIATE_IPADDR'
         else:
-            self.sf.debug(f"Unexpected event type {eventName}, skipping")
+            self.debug(f"Unexpected event type {eventName}, skipping")
 
         if self.checkForStop():
             return
@@ -139,7 +139,7 @@ class sfp_zoneh(SpiderFootPlugin):
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.error("Unable to fetch " + url)
                 self.errorState = True
                 return
 

@@ -76,13 +76,13 @@ class sfp_trumail(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.info(f"No Trumail info found for {qry}")
+            self.info(f"No Trumail info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Trumail: {e}")
+            self.error(f"Error processing JSON response from Trumail: {e}")
 
         return None
 
@@ -95,7 +95,7 @@ class sfp_trumail(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         self.results[eventData] = True
 

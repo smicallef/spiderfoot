@@ -87,12 +87,12 @@ class sfp_greensnow(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -104,15 +104,15 @@ class sfp_greensnow(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in greensnow.co list.")
+                        self.debug(f"{ip} found within netblock/subnet {qry} in greensnow.co list.")
                         return url
                 except Exception as e:
-                    self.sf.debug(f"Error encountered parsing: {e}")
+                    self.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug(f"{qry} found in greensnow.co list.")
+                    self.debug(f"{qry} found in greensnow.co list.")
                     return url
 
         return None
@@ -123,10 +123,10 @@ class sfp_greensnow(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -155,7 +155,7 @@ class sfp_greensnow(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} with greensnow.co")
+        self.debug(f"Checking maliciousness of {eventData} with greensnow.co")
 
         url = self.query(eventData, targetType)
 

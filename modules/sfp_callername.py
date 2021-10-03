@@ -82,18 +82,18 @@ class sfp_callername(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Only US numbers are supported (+1)
         if not eventData.startswith('+1'):
-            self.sf.debug('Unsupported phone number: ' + eventData)
+            self.debug('Unsupported phone number: ' + eventData)
             return
 
         # Strip country code (+1) and formatting
         number = eventData.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
 
         if not number.isdigit():
-            self.sf.debug('Invalid phone number: ' + number)
+            self.debug('Invalid phone number: ' + number)
             return
 
         # Query CallerName.com for the specified phone number
@@ -103,11 +103,11 @@ class sfp_callername(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from CallerName.com')
+            self.debug('No response from CallerName.com')
             return
 
         if res['code'] != '200':
-            self.sf.debug('No phone information found for ' + eventData)
+            self.debug('No phone information found for ' + eventData)
             return
 
         location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', str(res['content']), re.MULTILINE | re.DOTALL)
@@ -116,7 +116,7 @@ class sfp_callername(SpiderFootPlugin):
             location = location_match[0]
 
             if len(location) < 5 or len(location) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.debug("Skipping likely invalid location.")
             else:
                 evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                 self.notifyListeners(evt)

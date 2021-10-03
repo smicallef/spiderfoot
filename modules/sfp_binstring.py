@@ -118,7 +118,7 @@ class sfp_binstring(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return
@@ -138,7 +138,7 @@ class sfp_binstring(SpiderFootPlugin):
                 if not res:
                     continue
 
-                self.sf.debug(f"Searching {eventData} for strings")
+                self.debug(f"Searching {eventData} for strings")
                 words = self.getStrings(res['content'])
 
                 if words:

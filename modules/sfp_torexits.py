@@ -82,13 +82,13 @@ class sfp_torexits(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in exit_addresses:
-                self.sf.debug(f"IP address {target} found in TOR exit node list.")
+                self.debug(f"IP address {target} found in TOR exit node list.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in exit_addresses:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in TOR exit node list.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in TOR exit node list.")
                     return True
 
         return False
@@ -106,12 +106,12 @@ class sfp_torexits(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
+            self.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from check.torproject.org.")
+            self.error("Received no content from check.torproject.org.")
             self.errorState = True
             return None
 
@@ -146,10 +146,10 @@ class sfp_torexits(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -178,7 +178,7 @@ class sfp_torexits(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
+        self.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
 
         if self.queryExitNodes(eventData, targetType):
             url = "https://check.torproject.org/exit-addresses"

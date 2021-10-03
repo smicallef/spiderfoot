@@ -109,12 +109,12 @@ class sfp_sorbs(SpiderFootPlugin):
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
-                self.sf.debug("Checking Blacklist: " + lookup)
+                self.debug("Checking Blacklist: " + lookup)
                 addrs = self.sf.resolveHost(lookup)
                 if not addrs:
                     continue
 
-                self.sf.debug("Addresses returned: " + str(addrs))
+                self.debug("Addresses returned: " + str(addrs))
 
                 text = None
                 for addr in addrs:
@@ -123,7 +123,7 @@ class sfp_sorbs(SpiderFootPlugin):
                         break
                     else:
                         if str(addr) not in list(self.checks[domain].keys()):
-                            self.sf.debug("Return code not found in list: " + str(addr))
+                            self.debug("Return code not found in list: " + str(addr))
                             continue
 
                         k = str(addr)
@@ -144,7 +144,7 @@ class sfp_sorbs(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             except Exception as e:
-                self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+                self.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
         return
 
@@ -155,7 +155,7 @@ class sfp_sorbs(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return
@@ -168,7 +168,7 @@ class sfp_sorbs(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -177,7 +177,7 @@ class sfp_sorbs(SpiderFootPlugin):
 
             max_subnet = self.opts['maxsubnet']
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         if eventName.startswith("NETBLOCK_"):

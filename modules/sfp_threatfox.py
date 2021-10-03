@@ -93,35 +93,35 @@ class sfp_threatfox(SpiderFootPlugin):
             return None
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by ThreatFox.")
+            self.error("You are being rate-limited by ThreatFox.")
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from ThreatFox: {res['code']}")
+            self.error(f"Unexpected reply from ThreatFox: {res['code']}")
             self.errorState = True
             return None
 
         try:
             json_result = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from ThreatFox: {e}")
+            self.debug(f"Error processing JSON response from ThreatFox: {e}")
             return None
 
         query_status = json_result.get('query_status')
 
         if query_status == 'no_result':
-            self.sf.debug(f"No results from ThreatFox for: {qry}")
+            self.debug(f"No results from ThreatFox for: {qry}")
             return None
 
         if query_status != 'ok':
-            self.sf.debug(f"ThreatFox query failed: {query_status}")
+            self.debug(f"ThreatFox query failed: {query_status}")
             return None
 
         data = json_result.get('data')
 
         if not data:
-            self.sf.debug(f"No results from ThreatFox for: {qry}")
+            self.debug(f"No results from ThreatFox for: {qry}")
             return None
 
         return data
@@ -134,10 +134,10 @@ class sfp_threatfox(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():

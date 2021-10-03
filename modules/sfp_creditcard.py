@@ -56,12 +56,12 @@ class sfp_creditcard(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         creditCards = self.sf.parseCreditCards(eventData)
 
         for creditCard in set(creditCards):
-            self.sf.info(f"Found credit card number: {creditCard}")
+            self.info(f"Found credit card number: {creditCard}")
             evt = SpiderFootEvent("CREDIT_CARD_NUMBER", creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource

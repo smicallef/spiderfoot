@@ -90,16 +90,16 @@ class sfp_ipapicom(SpiderFootPlugin):
         time.sleep(1.5)
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by IP-API.com.")
+            self.error("You are being rate-limited by IP-API.com.")
             self.errorState = True
             return None
         if res['content'] is None:
-            self.sf.info(f"No ipapi.com data found for {qry}")
+            self.info(f"No ipapi.com data found for {qry}")
             return None
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
     # Handle events sent to this module
@@ -108,18 +108,18 @@ class sfp_ipapicom(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipapicom but did not set an API key!")
+            self.error("You enabled sfp_ipapicom but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

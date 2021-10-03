@@ -101,13 +101,13 @@ class sfp_keybase(SpiderFootPlugin):
         # In this case, it will always be 200 if keybase is queried
         # The actual response codes are stored in status tag of the response
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from Keybase: {res['code']}")
+            self.error(f"Unexpected reply from Keybase: {res['code']}")
             return None
 
         try:
             content = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         status = content.get('status')
@@ -117,7 +117,7 @@ class sfp_keybase(SpiderFootPlugin):
         code = status.get('code')
 
         if code != 0:
-            self.sf.error(f"Unexpected JSON response code reply from Keybase: {code}")
+            self.error(f"Unexpected JSON response code reply from Keybase: {code}")
             return None
 
         them = content.get('them')
@@ -134,10 +134,10 @@ class sfp_keybase(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -148,7 +148,7 @@ class sfp_keybase(SpiderFootPlugin):
             links = re.findall(linkRegex, eventData)
 
             if len(links) == 0:
-                self.sf.debug(f"Skipping URL {eventData}, as not a keybase link")
+                self.debug(f"Skipping URL {eventData}, as not a keybase link")
                 return
 
             userName = links[0].split("/")[3]
@@ -162,7 +162,7 @@ class sfp_keybase(SpiderFootPlugin):
             return
 
         if not data:
-            self.sf.debug(f"No data found for {eventName}: {eventData}")
+            self.debug(f"No data found for {eventName}: {eventData}")
             return
 
         for user in data:
@@ -178,13 +178,13 @@ class sfp_keybase(SpiderFootPlugin):
             # Failsafe to prevent reporting any wrongly received data
             if eventName == "USERNAME":
                 if eventData.lower() != username.lower():
-                    self.sf.error("Username does not match received response, skipping")
+                    self.error("Username does not match received response, skipping")
                     continue
 
             # For newly discovereed usernames, create a username event to be used as a source event
             if eventName in ['LINKED_URL_EXTERNAL', 'DOMAIN_NAME']:
                 if username in self.results:
-                    self.sf.debug(f"Skipping {userName}, already checked.")
+                    self.debug(f"Skipping {userName}, already checked.")
                     continue
 
                 source_event = SpiderFootEvent("USERNAME", username, self.__name__, event)
@@ -251,7 +251,7 @@ class sfp_keybase(SpiderFootPlugin):
 
             for pgpKey in pgpKeys:
                 if len(pgpKey) < 300:
-                    self.sf.debug(f"PGP key size ({len(pgpKey)} bytes) is likely invalid (smaller than 300 bytes), skipping.")
+                    self.debug(f"PGP key size ({len(pgpKey)} bytes) is likely invalid (smaller than 300 bytes), skipping.")
                     continue
 
                 # Remove unescaped \n literals

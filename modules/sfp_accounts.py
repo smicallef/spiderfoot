@@ -78,7 +78,7 @@ class sfp_accounts(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if data['content'] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return
 
@@ -88,7 +88,7 @@ class sfp_accounts(SpiderFootPlugin):
         try:
             self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
         except Exception as e:
-            self.sf.error(f"Unable to parse social media accounts list: {e}")
+            self.error(f"Unable to parse social media accounts list: {e}")
             self.errorState = True
             return
 
@@ -130,7 +130,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         if self.opts['musthavename']:
             if name.lower() not in res['content'].lower():
-                self.sf.debug(f"Skipping {site['name']} as username not mentioned.")
+                self.debug(f"Skipping {site['name']} as username not mentioned.")
                 with self.lock:
                     self.siteResults[retname] = False
                 return
@@ -155,7 +155,7 @@ class sfp_accounts(SpiderFootPlugin):
                     try:
                         self.checkSite(username, site)
                     except Exception as e:
-                        self.sf.debug(f'Thread {threading.current_thread().name} exception: {e}')
+                        self.debug(f'Thread {threading.current_thread().name} exception: {e}')
             except QueueEmpty:
                 return
 
@@ -187,7 +187,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         duration = time.monotonic() - startTime
         scanRate = len(sites) / duration
-        self.sf.debug(f'Scan statistics: name={username}, count={len(self.siteResults)}, duration={duration:.2f}, rate={scanRate:.0f}')
+        self.debug(f'Scan statistics: name={username}, count={len(self.siteResults)}, duration={duration:.2f}, rate={scanRate:.0f}')
 
         return [site for site, found in self.siteResults.items() if found]
 
@@ -200,11 +200,11 @@ class sfp_accounts(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Skip events coming from me unless they are USERNAME events
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in list(self.results.keys()):
@@ -233,7 +233,7 @@ class sfp_accounts(SpiderFootPlugin):
                     delsites = list()
                     for site in res:
                         sitename = site.split(" (Category:")[0]
-                        self.sf.debug(f"Distrusting {sitename}")
+                        self.debug(f"Distrusting {sitename}")
                         delsites.append(sitename)
                     self.sites = [d for d in self.sites if d['name'] not in delsites]
                 else:
@@ -264,15 +264,15 @@ class sfp_accounts(SpiderFootPlugin):
 
         for user in set(users):
             if user in self.opts['_genericusers'].split(","):
-                self.sf.debug(f"{user} is a generic account name, skipping.")
+                self.debug(f"{user} is a generic account name, skipping.")
                 continue
 
             if self.opts['ignorenamedict'] and user in self.commonNames:
-                self.sf.debug(f"{user} is found in our name dictionary, skipping.")
+                self.debug(f"{user} is found in our name dictionary, skipping.")
                 continue
 
             if self.opts['ignoreworddict'] and user in self.words:
-                self.sf.debug(f"{user} is found in our word dictionary, skipping.")
+                self.debug(f"{user} is found in our word dictionary, skipping.")
                 continue
 
             if user not in self.reportedUsers and eventData != user:

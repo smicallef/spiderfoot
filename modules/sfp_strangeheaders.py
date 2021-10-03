@@ -117,7 +117,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
             return
 
@@ -125,13 +125,13 @@ class sfp_strangeheaders(SpiderFootPlugin):
 
         fqdn = self.sf.urlFQDN(eventSource)
         if not self.getTarget().matches(fqdn):
-            self.sf.debug(f"Not collecting header information for external sites. Ignoring HTTP headers from {fqdn}")
+            self.debug(f"Not collecting header information for external sites. Ignoring HTTP headers from {fqdn}")
             return
 
         try:
             data = json.loads(eventData)
         except Exception:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            self.error("Received HTTP headers from another module in an unexpected format.")
             return
 
         for key in data:

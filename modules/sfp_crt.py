@@ -84,7 +84,7 @@ class sfp_crt(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         params = {
             'q': '%.' + str(eventData),
@@ -96,13 +96,13 @@ class sfp_crt(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.info("No certificate transparency info found for " + eventData)
+            self.info("No certificate transparency info found for " + eventData)
             return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return
 
         if data is None or len(data) == 0:
@@ -136,7 +136,7 @@ class sfp_crt(SpiderFootPlugin):
                     domains.append(domain.replace("*.", ""))
 
         if self.opts['verify'] and len(domains) > 0:
-            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+            self.info("Resolving " + str(len(set(domains))) + " domains ...")
 
         for domain in set(domains):
             if domain in self.results:
@@ -151,7 +151,7 @@ class sfp_crt(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
@@ -178,13 +178,13 @@ class sfp_crt(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                self.sf.info("Error retrieving certificate with ID " + str(cert_id))
+                self.info("Error retrieving certificate with ID " + str(cert_id))
                 continue
 
             try:
                 cert = self.sf.parseCert(str(res['content']))
             except Exception as e:
-                self.sf.info('Error parsing certificate: ' + str(e))
+                self.info('Error parsing certificate: ' + str(e))
                 continue
 
             evt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)

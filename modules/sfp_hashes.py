@@ -57,7 +57,7 @@ class sfp_hashes(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         hashes = self.sf.parseHashes(eventData)
         for hashtup in hashes:

@@ -54,7 +54,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if res['content'] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return
 
@@ -64,7 +64,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
         try:
             self.fingerprints = json.loads(content)
         except Exception as e:
-            self.sf.error(f"Unable to parse subdomain takeover fingerprints list: {e}")
+            self.error(f"Unable to parse subdomain takeover fingerprints list: {e}")
             self.errorState = True
             return
 
@@ -90,7 +90,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "AFFILIATE_INTERNET_NAME":
             for data in self.fingerprints:
@@ -119,7 +119,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                             continue
                         for fingerprint in fingerprints:
                             if fingerprint in res['content']:
-                                self.sf.info(f"{eventData} appears to be vulnerable to takeover on {service}")
+                                self.info(f"{eventData} appears to be vulnerable to takeover on {service}")
                                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)
                                 self.notifyListeners(evt)
                                 break
@@ -136,7 +136,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                 for cname in cnames:
                     if cname.lower() not in eventData.lower():
                         continue
-                    self.sf.info(f"{eventData} appears to be vulnerable to takeover on {service}")
+                    self.info(f"{eventData} appears to be vulnerable to takeover on {service}")
                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)
                     self.notifyListeners(evt)
 

@@ -90,23 +90,23 @@ class sfp_twilio(SpiderFootPlugin):
         )
 
         if res['code'] == '400':
-            self.sf.error("Bad request.")
+            self.error("Bad request.")
             return None
 
         if res['code'] == '404':
-            self.sf.debug("Phone number not found.")
+            self.debug("Phone number not found.")
             return None
 
         if res['code'] == '429':
-            self.sf.error("API usage limit reached.")
+            self.error("API usage limit reached.")
             return None
 
         if res['code'] == '503':
-            self.sf.error("Service unavailable.")
+            self.error("Service unavailable.")
             return None
 
         if res['code'] != '200':
-            self.sf.error("Could not fetch data.")
+            self.error("Could not fetch data.")
             return None
 
         return res.get('content')
@@ -120,17 +120,17 @@ class sfp_twilio(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_account_sid'] == "" or self.opts['api_key_auth_token'] == "":
-            self.sf.error("You enabled sfp_twilio but did not set account sid/auth token")
+            self.error("You enabled sfp_twilio but did not set account sid/auth token")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

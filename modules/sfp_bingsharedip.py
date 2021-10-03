@@ -94,21 +94,21 @@ class sfp_bingsharedip(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "" and self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!")
+            self.error("You enabled sfp_bingsharedip but did not set a Bing API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         # Ignore IP addresses from myself as they are just for creating
         # a link from the netblock to the co-host.
         if eventName == "IP_ADDRESS" and srcModuleName == "sfp_bingsharedip":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
+            self.debug("Ignoring " + eventName + ", from self.")
             return
 
         if self.cohostcount > self.opts["maxcohost"]:
@@ -146,17 +146,17 @@ class sfp_bingsharedip(SpiderFootPlugin):
             urls = res["urls"]
 
             for url in urls:
-                self.sf.info("Found something on same IP: " + url)
+                self.info("Found something on same IP: " + url)
                 site = self.sf.urlFQDN(url.lower())
                 if site not in myres and site != ip:
                     if not self.opts["cohostsamedomain"]:
                         if self.getTarget().matches(site, includeParents=True):
-                            self.sf.debug(
+                            self.debug(
                                 f"Skipping {site} because it is on the same domain."
                             )
                             continue
                     if self.opts["verify"] and not self.sf.validateIP(site, ip):
-                        self.sf.debug(f"Host {site} no longer resolves to {ip}")
+                        self.debug(f"Host {site} no longer resolves to {ip}")
                         continue
                     # Create an IP Address event stemming from the netblock as the
                     # link to the co-host.

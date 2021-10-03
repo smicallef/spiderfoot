@@ -252,28 +252,28 @@ class sfp_spyse(SpiderFootPlugin):
         """
 
         if res['code'] == '400':
-            self.sf.error("Malformed request")
+            self.error("Malformed request")
             return None
 
         if res['code'] == '402':
-            self.sf.error("Request limit exceeded")
+            self.error("Request limit exceeded")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Authentication failed")
+            self.error("Authentication failed")
             self.errorState = True
             return None
 
         # Future proofing - Spyse does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Spyse")
+            self.error("You are being rate-limited by Spyse")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Spyse")
+            self.error("Failed to retrieve content from Spyse")
             self.errorState = True
             return None
 
@@ -283,11 +283,11 @@ class sfp_spyse(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('message'):
-            self.sf.debug("Received error from Spyse: " + data.get('message'))
+            self.debug("Received error from Spyse: " + data.get('message'))
 
         return data
 
@@ -316,7 +316,7 @@ class sfp_spyse(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == '':
-            self.sf.error("You enabled sfp_spyse but did not set an API key!")
+            self.error("You enabled sfp_spyse but did not set an API key!")
             self.errorState = True
             return
         eventName = event.eventType
@@ -328,7 +328,7 @@ class sfp_spyse(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Query open ports for source IP Address
         if eventName in ["IP_ADDRESS"]:
@@ -359,7 +359,7 @@ class sfp_spyse(SpiderFootPlugin):
 
             data = data.get("data")
             if data is None:
-                self.sf.debug("No domains found on IP address " + eventData)
+                self.debug("No domains found on IP address " + eventData)
                 nextPageHasData = False
                 break
             else:
@@ -385,7 +385,7 @@ class sfp_spyse(SpiderFootPlugin):
                 continue
 
             if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                self.debug("Host " + co + " no longer resolves to " + eventData)
                 continue
 
             if not self.opts['cohostsamedomain']:
@@ -409,7 +409,7 @@ class sfp_spyse(SpiderFootPlugin):
             data = data.get("data")
 
             if data is None:
-                self.sf.debug("No open ports found for IP " + eventData)
+                self.debug("No open ports found for IP " + eventData)
             else:
                 records = data.get('items')
                 if records:
@@ -602,7 +602,7 @@ class sfp_spyse(SpiderFootPlugin):
 
             data = data.get("data")
             if data is None:
-                self.sf.debug("No subdomains found for domain " + eventData)
+                self.debug("No subdomains found for domain " + eventData)
                 nextPageHasData = False
                 break
             else:
@@ -631,7 +631,7 @@ class sfp_spyse(SpiderFootPlugin):
                 continue
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)
             else:

@@ -108,7 +108,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.")
+            self.error("Wigle.net query limit reached for the day.")
             return None
 
         try:
@@ -117,7 +117,7 @@ class sfp_wigle(SpiderFootPlugin):
                 return None
             return info['results'][0]['boundingbox']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Wigle.net: {e}")
+            self.error(f"Error processing JSON response from Wigle.net: {e}")
             return None
 
     def getnetworks(self, coords):
@@ -153,7 +153,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.")
+            self.error("Wigle.net query limit reached for the day.")
             return None
 
         ret = list()
@@ -169,7 +169,7 @@ class sfp_wigle(SpiderFootPlugin):
 
             return ret
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from WiGLE: {e}")
+            self.error(f"Error processing JSON response from WiGLE: {e}")
             return None
 
     # Handle events sent to this module
@@ -182,26 +182,26 @@ class sfp_wigle(SpiderFootPlugin):
             return
 
         if self.opts['api_key_encoded'] == "":
-            self.sf.error("You enabled sfp_wigle but did not set an API key!")
+            self.error("You enabled sfp_wigle but did not set an API key!")
             self.errorState = True
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
         coords = self.getcoords(eventData)
         if not coords:
-            self.sf.error("Couldn't get coordinates for address from Wigle.net.")
+            self.error("Couldn't get coordinates for address from Wigle.net.")
             return
 
         nets = self.getnetworks(coords)
         if not nets:
-            self.sf.error("Couldn't get networks for coordinates from Wigle.net.")
+            self.error("Couldn't get networks for coordinates from Wigle.net.")
             return
 
         for n in nets:

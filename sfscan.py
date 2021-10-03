@@ -302,9 +302,9 @@ class SpiderFootScanner():
 
                 # clear any listener relationships from the past
                 mod.clearListeners()
+                mod.setScanId(self.__scanId)
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
-                mod.setScanId(self.__scanId)
             except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 mod.errorState = True

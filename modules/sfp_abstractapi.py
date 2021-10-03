@@ -78,30 +78,30 @@ class sfp_abstractapi(SpiderFootPlugin):
             return None
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbstractAPI.")
+            self.error("You are being rate-limited by AbstractAPI.")
             return None
 
         if res['code'] == '401':
-            self.sf.error("Unauthorized. Invalid AbstractAPI API key.")
+            self.error("Unauthorized. Invalid AbstractAPI API key.")
             self.errorState = True
             return None
 
         if res['code'] == '422':
-            self.sf.error("Usage quota reached. Insufficient API credit.")
+            self.error("Usage quota reached. Insufficient API credit.")
             self.errorState = True
             return None
 
         if res['code'] == '500' or res['code'] == '503':
-            self.sf.error("Abstract API service is unavailable")
+            self.error("Abstract API service is unavailable")
             self.errorState = True
             return None
 
         if res['code'] == '204':
-            self.sf.debug("No response data for target")
+            self.debug("No response data for target")
             return None
 
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from AbstractAPI: {res['code']}")
+            self.error(f"Unexpected reply from AbstractAPI: {res['code']}")
             return None
 
         if res['content'] is None:
@@ -110,7 +110,7 @@ class sfp_abstractapi(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -141,7 +141,7 @@ class sfp_abstractapi(SpiderFootPlugin):
         time.sleep(1)
 
         if not res:
-            self.sf.debug("No response from AbstractAPI Company Enrichment API endpoint")
+            self.debug("No response from AbstractAPI Company Enrichment API endpoint")
             return None
 
         return self.parseApiResponse(res)
@@ -173,7 +173,7 @@ class sfp_abstractapi(SpiderFootPlugin):
         time.sleep(1)
 
         if not res:
-            self.sf.debug("No response from AbstractAPI Phone Validation API endpoint")
+            self.debug("No response from AbstractAPI Phone Validation API endpoint")
             return None
 
         return self.parseApiResponse(res)
@@ -205,7 +205,7 @@ class sfp_abstractapi(SpiderFootPlugin):
         time.sleep(1)
 
         if not res:
-            self.sf.debug("No response from AbstractAPI Phone Validation API endpoint")
+            self.debug("No response from AbstractAPI Phone Validation API endpoint")
             return None
 
         return self.parseApiResponse(res)
@@ -215,16 +215,16 @@ class sfp_abstractapi(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
         if self.opts["companyenrichment_api_key"] == "" and self.opts["phonevalidation_api_key"] == "" and self.opts["ipgeolocation_api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set any API keys!"
             )
             self.errorState = True
@@ -235,7 +235,7 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         if eventName == "DOMAIN_NAME":
             if self.opts["companyenrichment_api_key"] == "":
-                self.sf.info(
+                self.info(
                     f"No API key set for Company Enrichment API endpoint. Ignoring {eventData}"
                 )
                 return
@@ -277,7 +277,7 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         elif eventName == "PHONE_NUMBER":
             if self.opts["phonevalidation_api_key"] == "":
-                self.sf.info(
+                self.info(
                     f"No API key set for Phone Validation API endpoint. Ignoring {eventData}"
                 )
                 return
@@ -315,7 +315,7 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         elif eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             if self.opts["ipgeolocation_api_key"] == "":
-                self.sf.info(
+                self.info(
                     f"No API key set for IP Geolocation API endpoint. Ignoring {eventData}"
                 )
                 return

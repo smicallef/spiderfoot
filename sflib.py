@@ -226,23 +226,7 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return
 
-        frm = inspect.stack()[1]
-        mod = inspect.getmodule(frm[0])
-
-        if mod is None:
-            modName = "Unknown"
-        else:
-            if mod.__name__ == "sflib":
-                frm = inspect.stack()[2]
-                mod = inspect.getmodule(frm[0])
-                if mod is None:
-                    modName = "Unknown"
-                else:
-                    modName = mod.__name__
-            else:
-                modName = mod.__name__
-
-        self.log.info(f"{modName} : {message}", extra={'scanId': self._scanId, 'component': modName})
+        self.log.info(f"{message}", extra={'scanId': self._scanId})
 
     def debug(self, message: str) -> None:
         """Log and print a debug message.
@@ -254,23 +238,8 @@ class SpiderFoot:
             return
         if not self.opts['__logging']:
             return
-        frm = inspect.stack()[1]
-        mod = inspect.getmodule(frm[0])
 
-        if mod is None:
-            modName = "Unknown"
-        else:
-            if mod.__name__ == "sflib":
-                frm = inspect.stack()[2]
-                mod = inspect.getmodule(frm[0])
-                if mod is None:
-                    modName = "Unknown"
-                else:
-                    modName = mod.__name__
-            else:
-                modName = mod.__name__
-
-        self.log.debug(f"{modName} : {message}", extra={'scanId': self._scanId})
+        self.log.debug(f"{message}", extra={'scanId': self._scanId})
 
     @staticmethod
     def myPath() -> str:

@@ -78,17 +78,17 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
             useragent="SpiderFoot",
         )
         if res["code"] != "200":
-            self.sf.info(f"Failed to get results for {address}, code {res['code']}")
+            self.info(f"Failed to get results for {address}, code {res['code']}")
             return None
 
         if res["content"] is None:
-            self.sf.info(f"Failed to get results for {address}, empty content")
+            self.info(f"Failed to get results for {address}, empty content")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}")
+            self.error(f"Error processing JSON response from BitcoinAbuse: {e}")
 
         return None
 
@@ -100,15 +100,15 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!")
+            self.error("You enabled sfp_bitcoinabuse but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

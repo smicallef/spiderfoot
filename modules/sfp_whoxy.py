@@ -91,18 +91,18 @@ class sfp_whoxy(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Whoxy API key seems to have been rejected or you have exceeded usage limits.")
+            self.error("Whoxy API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No Whoxy info found for " + qry)
+            self.info("No Whoxy info found for " + qry)
             return None
 
         try:
             info = json.loads(res['content'])
             if info.get("status", 0) == 0:
-                self.sf.error("Error querying Whoxy: " + info.get("status_reason", "Unknown"))
+                self.error("Error querying Whoxy: " + info.get("status_reason", "Unknown"))
                 self.errorState = True
                 return None
             if info.get("total_pages", 1) > 1:
@@ -119,7 +119,7 @@ class sfp_whoxy(SpiderFootPlugin):
             else:
                 return info.get('search_result', [])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Whoxy: " + str(e))
+            self.error("Error processing JSON response from Whoxy: " + str(e))
             return None
 
     # Handle events sent to this module
@@ -131,15 +131,15 @@ class sfp_whoxy(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_whoxy but did not set an API key!")
+            self.error("You enabled sfp_whoxy but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
