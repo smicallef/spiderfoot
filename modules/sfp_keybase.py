@@ -166,6 +166,9 @@ class sfp_keybase(SpiderFootPlugin):
             return
 
         for user in data:
+            if not user:
+                continue
+
             # Basic information about the username
             basics = user.get('basics')
             if not basics:
