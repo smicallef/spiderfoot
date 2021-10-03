@@ -138,12 +138,12 @@ class sfp_honeypot(SpiderFootPlugin):
         try:
             lookup = f"{self.opts['api_key']}.{self.reverseAddr(qaddr)}.dnsbl.httpbl.org"
 
-            self.sf.debug(f"Checking Honeypot: {lookup}")
+            self.debug(f"Checking Honeypot: {lookup}")
             addrs = self.sf.resolveHost(lookup)
             if not addrs:
                 return
 
-            self.sf.debug(f"Addresses returned: {addrs}")
+            self.debug(f"Addresses returned: {addrs}")
 
             text = None
             for addr in addrs:
@@ -164,7 +164,7 @@ class sfp_honeypot(SpiderFootPlugin):
                 evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, parentEvent)
                 self.notifyListeners(evt)
         except Exception as e:
-            self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+            self.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -176,10 +176,10 @@ class sfp_honeypot(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_honeypot but did not set an API key!")
+            self.error("You enabled sfp_honeypot but did not set an API key!")
             self.errorState = True
             return
 
@@ -192,9 +192,9 @@ class sfp_honeypot(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
+                    self.debug("Network size bigger than permitted: "
+                               + str(IPNetwork(eventData).prefixlen) + " > "
+                               + str(self.opts['maxnetblock']))
                     return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -202,9 +202,9 @@ class sfp_honeypot(SpiderFootPlugin):
                 return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxsubnet']))
+                    self.debug("Network size bigger than permitted: "
+                               + str(IPNetwork(eventData).prefixlen) + " > "
+                               + str(self.opts['maxsubnet']))
                     return
 
         if eventName.startswith("NETBLOCK_"):

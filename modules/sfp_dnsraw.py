@@ -72,15 +72,15 @@ class sfp_dnsraw(SpiderFootPlugin):
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
-            self.sf.debug("Skipping duplicate event for " + eventData)
+            self.debug("Skipping duplicate event for " + eventData)
             return
 
         self.events[eventDataHash] = True
 
-        self.sf.debug("Gathering DNS records for " + eventData)
+        self.debug("Gathering DNS records for " + eventData)
 
         domains = list()
 
@@ -110,7 +110,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                 if not len(res.answer):
                     continue
             except Exception as e:
-                self.sf.error(f"Failed to obtain DNS response for {eventData} ({e})")
+                self.error(f"Failed to obtain DNS response for {eventData} ({e})")
                 continue
 
             # Iterate through DNS answers
@@ -124,7 +124,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
                 for rx in list(recs.keys()):
-                    self.sf.debug("Checking " + str(x) + " + against " + recs[rx])
+                    self.debug("Checking " + str(x) + " + against " + recs[rx])
                     pat = re.compile(recs[rx], re.IGNORECASE | re.DOTALL)
                     grps = re.findall(pat, str(x))
 
@@ -132,7 +132,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                         continue
 
                     for m in grps:
-                        self.sf.debug("Matched: " + m)
+                        self.debug("Matched: " + m)
                         strdata = str(m)
 
                         if rx == "CNAME":
@@ -170,7 +170,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)

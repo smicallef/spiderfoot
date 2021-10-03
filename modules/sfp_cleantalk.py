@@ -95,12 +95,12 @@ class sfp_cleantalk(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -115,15 +115,15 @@ class sfp_cleantalk(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in CleanTalk Spam List.")
+                        self.debug(f"{ip} found within netblock/subnet {qry} in CleanTalk Spam List.")
                         return url
                 except Exception as e:
-                    self.sf.debug(f"Error encountered parsing: {e}")
+                    self.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug(f"{qry} found in CleanTalk Spam List.")
+                    self.debug(f"{qry} found in CleanTalk Spam List.")
                     return url
 
         return None
@@ -134,10 +134,10 @@ class sfp_cleantalk(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -166,7 +166,7 @@ class sfp_cleantalk(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} with CleanTalk Spam List")
+        self.debug(f"Checking maliciousness of {eventData} with CleanTalk Spam List")
 
         url = self.query(eventData, targetType)
 

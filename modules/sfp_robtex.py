@@ -102,17 +102,17 @@ class sfp_robtex(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.cohostcount > self.opts['maxcohost']:
             return
 
         if srcModuleName == "sfp_robtex":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
@@ -126,7 +126,7 @@ class sfp_robtex(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
@@ -139,7 +139,7 @@ class sfp_robtex(SpiderFootPlugin):
                 max_subnet = self.opts['maxsubnet']
 
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         qrylist = list()
@@ -173,13 +173,13 @@ class sfp_robtex(SpiderFootPlugin):
                 retry += 1
 
             if res['content'] is None:
-                self.sf.error("No reply from robtex API.")
+                self.error("No reply from robtex API.")
                 continue
 
             try:
                 data = json.loads(res['content'])
             except Exception as e:
-                self.sf.error(f"Error parsing JSON from Robtex API: {e}")
+                self.error(f"Error parsing JSON from Robtex API: {e}")
                 return
 
             if not data:
@@ -188,7 +188,7 @@ class sfp_robtex(SpiderFootPlugin):
             status = data.get("status")
 
             if status and status == "ratelimited":
-                self.sf.error("You are being rate-limited by robtex API.")
+                self.error("You are being rate-limited by robtex API.")
                 self.errorState = True
                 continue
 
@@ -198,7 +198,7 @@ class sfp_robtex(SpiderFootPlugin):
             pas = data.get('pas')
 
             if not pas:
-                self.sf.info(f"No results from robtex API for {ip}")
+                self.info(f"No results from robtex API for {ip}")
                 continue
 
             if not len(pas):
@@ -212,11 +212,11 @@ class sfp_robtex(SpiderFootPlugin):
 
                 if not self.opts['cohostsamedomain']:
                     if self.getTarget().matches(host, includeParents=True):
-                        self.sf.debug(f"Skipping {host} because it is on the same domain.")
+                        self.debug(f"Skipping {host} because it is on the same domain.")
                         continue
 
                 if self.opts['verify'] and not self.sf.validateIP(host, ip):
-                    self.sf.debug(f"Host {host} no longer resolves to {ip}")
+                    self.debug(f"Host {host} no longer resolves to {ip}")
                     continue
 
                 if eventName == "NETBLOCK_OWNER":

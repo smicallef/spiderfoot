@@ -137,12 +137,12 @@ class sfp_alienvault(SpiderFootPlugin):
     def parseAPIResponse(self, res):
         # Future proofing - AlienVault OTX does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AienVault OTX")
+            self.error("You are being rate-limited by AienVault OTX")
             self.errorState = True
             return None
 
         if res['code'] == "403":
-            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
+            self.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -152,7 +152,7 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}")
+            self.error(f"Error processing JSON response from AlienVault OTX: {e}")
 
         return None
 
@@ -162,7 +162,7 @@ class sfp_alienvault(SpiderFootPlugin):
         elif self.sf.validIP(qry):
             target_type = "IPv4"
         else:
-            self.sf.info(f"Could not determine target type for {qry}")
+            self.info(f"Could not determine target type for {qry}")
             return None
 
         headers = {
@@ -184,7 +184,7 @@ class sfp_alienvault(SpiderFootPlugin):
         elif self.sf.validIP(qry):
             target_type = "IPv4"
         else:
-            self.sf.info(f"Could not determine target type for {qry}")
+            self.info(f"Could not determine target type for {qry}")
             return None
 
         headers = {
@@ -245,15 +245,15 @@ class sfp_alienvault(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -304,7 +304,7 @@ class sfp_alienvault(SpiderFootPlugin):
             max_netblock = self.opts['maxnetblock']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
                 return
 
         if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates', False):
@@ -317,7 +317,7 @@ class sfp_alienvault(SpiderFootPlugin):
             max_subnet = self.opts['maxsubnet']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_subnet:
-                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_subnet}")
+                self.debug(f"Network size {net_size} bigger than permitted: {max_subnet}")
                 return
 
         qrylist = list()
@@ -333,11 +333,11 @@ class sfp_alienvault(SpiderFootPlugin):
             ret = self.queryPassiveDns(eventData)
 
             if ret is None:
-                self.sf.info(f"No Passive DNS info for {eventData}")
+                self.info(f"No Passive DNS info for {eventData}")
             else:
                 passive_dns = ret.get('passive_dns')
                 if passive_dns:
-                    self.sf.debug(f"Found passive DNS results for {eventData} in AlienVault OTX")
+                    self.debug(f"Found passive DNS results for {eventData} in AlienVault OTX")
                     for rec in passive_dns:
                         host = rec.get('hostname')
 
@@ -359,13 +359,13 @@ class sfp_alienvault(SpiderFootPlugin):
                                 last_ts = int(time.mktime(last_dt.timetuple()))
                                 age_limit_ts = int(time.time()) - (86400 * self.opts['cohost_age_limit_days'])
                                 if last_ts < age_limit_ts:
-                                    self.sf.debug(f"Passive DNS record {host} found for {eventData} is too old, skipping.")
+                                    self.debug(f"Passive DNS record {host} found for {eventData} is too old, skipping.")
                                     continue
                             except Exception:
-                                self.sf.info("Could not parse date from AlienVault data, so ignoring cohost_age_limit_days")
+                                self.info("Could not parse date from AlienVault data, so ignoring cohost_age_limit_days")
 
                         if self.opts["verify"] and not self.sf.validateIP(host, eventData):
-                            self.sf.debug(f"Co-host {host} no longer resolves to {eventData}, skipping")
+                            self.debug(f"Co-host {host} no longer resolves to {eventData}, skipping")
                             continue
 
                         if self.cohostcount < self.opts['maxcohost']:
@@ -373,14 +373,14 @@ class sfp_alienvault(SpiderFootPlugin):
                             self.notifyListeners(e)
                             self.cohostcount += 1
                         else:
-                            self.sf.info(f"Maximum co-host threshold exceeded ({self.opts['maxcohost']}), ignoring co-host {host}")
+                            self.info(f"Maximum co-host threshold exceeded ({self.opts['maxcohost']}), ignoring co-host {host}")
 
         if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS'] or eventName.startswith('NETBLOCK_'):
             evtType = 'MALICIOUS_IPADDR'
         elif eventName == "AFFILIATE_IPADDR":
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         else:
-            self.sf.debug(f"Unexpected event type {eventName}, skipping")
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         for addr in qrylist:
@@ -395,13 +395,13 @@ class sfp_alienvault(SpiderFootPlugin):
                 continue
 
             if rec.get("reputation", None):
-                self.sf.debug(f"Found reputation info for {addr} in AlienVault OTX")
+                self.debug(f"Found reputation info for {addr} in AlienVault OTX")
                 rec_history = rec['reputation'].get("activities", list())
                 threat_score = rec['reputation']['threat_score']
                 threat_score_min = self.opts['threat_score_min']
 
                 if threat_score < threat_score_min:
-                    self.sf.debug(f"Threat score {threat_score} smaller than {threat_score_min}, skipping.")
+                    self.debug(f"Threat score {threat_score} smaller than {threat_score_min}, skipping.")
                     continue
 
                 descr = f"AlienVault Threat Score: {threat_score}"
@@ -421,10 +421,10 @@ class sfp_alienvault(SpiderFootPlugin):
                             created_ts = int(time.mktime(created_dt.timetuple()))
                             age_limit_ts = int(time.time()) - (86400 * self.opts['reputation_age_limit_days'])
                             if created_ts < age_limit_ts:
-                                self.sf.debug(f"Reputation record found for {addr} is too old, skipping.")
+                                self.debug(f"Reputation record found for {addr} is too old, skipping.")
                                 continue
                         except Exception:
-                            self.sf.info("Could not parse date from AlienVault data, so ignoring reputation_age_limit_days")
+                            self.info("Could not parse date from AlienVault data, so ignoring reputation_age_limit_days")
 
                 # For netblocks, we need to create the IP address event so that
                 # the threat intel event is more meaningful.

@@ -108,27 +108,27 @@ class sfp_emailcrawlr(SpiderFootPlugin):
     # Parse API response
     def parseAPIResponse(self, res):
         if res['code'] == '404':
-            self.sf.debug("No results for query")
+            self.debug("No results for query")
             return None
 
         if res['code'] == "401":
-            self.sf.error("Invalid EmailCrawlr API key.")
+            self.error("Invalid EmailCrawlr API key.")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by EmailCrawlr")
+            self.error("You are being rate-limited by EmailCrawlr")
             self.errorState = True
             return None
 
         if res['code'] == '503':
-            self.sf.error("EmailCrawlr service unavailable")
+            self.error("EmailCrawlr service unavailable")
             self.errorState = True
             return None
 
         # Catch all other non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from EmailCrawlr")
+            self.error("Failed to retrieve content from EmailCrawlr")
             self.errorState = True
             return None
 
@@ -138,7 +138,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -155,19 +155,19 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_emailcrawlr but did not set an API key!")
+            self.error("You enabled sfp_emailcrawlr but did not set an API key!")
             self.errorState = True
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["DOMAIN_NAME"]:
             data = self.queryDomain(eventData)
 
             if data is None:
-                self.sf.debug(f"No information found for domain {eventData}")
+                self.debug(f"No information found for domain {eventData}")
                 return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
@@ -176,7 +176,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             emails = data.get("emails")
 
             if not emails:
-                self.sf.info(f"No emails found for domain {eventData}")
+                self.info(f"No emails found for domain {eventData}")
                 return
 
             for res in emails:

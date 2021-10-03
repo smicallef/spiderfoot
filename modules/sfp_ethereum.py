@@ -61,12 +61,12 @@ class sfp_ethereum(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-ethereum-addresses
         matches = re.findall(r"[\s:=\>](0x[a-fA-F0-9]{40})", eventData)
         for m in matches:
-            self.sf.debug("Ethereum address match: " + m)
+            self.debug("Ethereum address match: " + m)
             evt = SpiderFootEvent("ETHEREUM_ADDRESS", m, self.__name__, event)
             self.notifyListeners(evt)
 

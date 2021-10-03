@@ -67,7 +67,7 @@ class sfp_instagram(SpiderFootPlugin):
         try:
             return json.loads(json_data[0])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -81,18 +81,18 @@ class sfp_instagram(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Parse profile URL
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            self.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
         if network != 'Instagram':
-            self.sf.debug(f"Skipping social network profile, {url}, as not an Instagram profile")
+            self.debug(f"Skipping social network profile, {url}, as not an Instagram profile")
             return
 
         # Retrieve profile
@@ -103,14 +103,14 @@ class sfp_instagram(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.debug('No response from Instagram.com')
+            self.debug('No response from Instagram.com')
             return
 
         # Check if the profile is valid and extract profile data as JSON
         json_data = self.extractJson(res['content'])
 
         if not json_data:
-            self.sf.debug(f"{url} is not a valid Instagram profile")
+            self.debug(f"{url} is not a valid Instagram profile")
             return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(json_data), self.__name__, event)

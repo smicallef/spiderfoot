@@ -94,18 +94,18 @@ class sfp_scylla(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Syclla.sh is having problems.")
+            self.error("Syclla.sh is having problems.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Scylla.so')
+            self.debug('No response from Scylla.so')
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -123,7 +123,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])
@@ -163,7 +163,7 @@ class sfp_scylla(SpiderFootPlugin):
                     continue
 
                 if not self.sf.validEmail(email):
-                    self.sf.debug("Skipping invalid email address: " + email)
+                    self.debug("Skipping invalid email address: " + email)
                     continue
 
                 mailDom = email.lower().split('@')[1]
@@ -171,7 +171,7 @@ class sfp_scylla(SpiderFootPlugin):
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
                 if not self.getTarget().matches(mailDom):
-                    self.sf.debug("Skipped address: " + email)
+                    self.debug("Skipped address: " + email)
                     continue
 
                 breach = result.get('domain', 'Unknown')

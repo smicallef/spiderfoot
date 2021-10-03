@@ -91,13 +91,13 @@ class sfp_voipbl(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in VoIP Blacklist (VoIPBL).")
+                self.debug(f"IP address {target} found in VoIP Blacklist (VoIPBL).")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in VoIP Blacklist (VoIPBL).")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in VoIP Blacklist (VoIPBL).")
                     return True
 
         return False
@@ -115,12 +115,12 @@ class sfp_voipbl(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from VoIP Blacklist (VoIPBL).")
+            self.error(f"Unexpected HTTP response code {res['code']} from VoIP Blacklist (VoIPBL).")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from VoIP Blacklist (VoIPBL)")
+            self.error("Received no content from VoIP Blacklist (VoIPBL)")
             self.errorState = True
             return None
 
@@ -163,10 +163,10 @@ class sfp_voipbl(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -195,7 +195,7 @@ class sfp_voipbl(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with VoIP Blacklist (VoIPBL)")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with VoIP Blacklist (VoIPBL)")
 
         if self.queryBlacklist(eventData, targetType):
             url = "https://voipbl.org/update"

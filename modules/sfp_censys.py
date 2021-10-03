@@ -146,42 +146,42 @@ class sfp_censys(SpiderFootPlugin):
             return None
 
         if res['code'] == "400":
-            self.sf.error("Invalid request.")
+            self.error("Invalid request.")
             return None
 
         if res['code'] == "404":
-            self.sf.info('Censys.io returned no results')
+            self.info('Censys.io returned no results')
             return None
 
         if res['code'] == "403":
-            self.sf.error("Invalid API key.")
+            self.error("Invalid API key.")
             self.errorState = True
             return None
 
         if res['code'] == "429":
-            self.sf.error("Request rate limit exceeded.")
+            self.error("Request rate limit exceeded.")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from Censys API.")
+            self.error(f"Unexpected HTTP response code {res['code']} from Censys API.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info('Censys.io returned no results')
+            self.info('Censys.io returned no results')
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Censys.io: {e}")
+            self.error(f"Error processing JSON response from Censys.io: {e}")
             return None
 
         error_type = data.get('error_type')
         if error_type:
-            self.sf.error(f"Censys returned an unexpected error: {error_type}")
+            self.error(f"Censys returned an unexpected error: {error_type}")
             return None
 
         return data
@@ -194,15 +194,15 @@ class sfp_censys(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['censys_api_key_uid'] == "" or self.opts['censys_api_key_secret'] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API uid/secret!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API uid/secret!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -213,7 +213,7 @@ class sfp_censys(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         qrylist = list()
@@ -236,10 +236,10 @@ class sfp_censys(SpiderFootPlugin):
             rec = data.get("result")
 
             if not rec:
-                self.sf.info(f"Censys.io returned no results for {addr}")
+                self.info(f"Censys.io returned no results for {addr}")
                 continue
 
-            self.sf.debug(f"Found results for {addr} in Censys.io")
+            self.debug(f"Found results for {addr} in Censys.io")
 
             # For netblocks, we need to create the IP address event so that
             # the threat intel event is more meaningful.
@@ -259,10 +259,10 @@ class sfp_censys(SpiderFootPlugin):
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
 
                 if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                    self.sf.debug(f"Record found but too old ({created_dt}), skipping.")
+                    self.debug(f"Record found but too old ({created_dt}), skipping.")
                     continue
             except Exception as e:
-                self.sf.error(f"Error encountered processing last_updated_at record for {eventData} ({e})")
+                self.error(f"Error encountered processing last_updated_at record for {eventData} ({e})")
 
             try:
                 location = rec.get('location')
@@ -281,7 +281,7 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, pevent)
                         self.notifyListeners(e)
             except Exception as e:
-                self.sf.error(f"Error encountered processing location record for {eventData} ({e})")
+                self.error(f"Error encountered processing location record for {eventData} ({e})")
 
             try:
                 services = rec.get('services')
@@ -304,7 +304,7 @@ class sfp_censys(SpiderFootPlugin):
                             e.actualSource = addr
                             self.notifyListeners(e)
             except Exception as e:
-                self.sf.error(f"Error encountered processing services record for {eventData} ({e})")
+                self.error(f"Error encountered processing services record for {eventData} ({e})")
 
             try:
                 autonomous_system = rec.get('autonomous_system')
@@ -319,7 +319,7 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("NETBLOCK_MEMBER", str(bgp_prefix), self.__name__, pevent)
                         self.notifyListeners(e)
             except Exception as e:
-                self.sf.error(f"Error encountered processing autonomous_system record for {eventData} ({e})")
+                self.error(f"Error encountered processing autonomous_system record for {eventData} ({e})")
 
             try:
                 operating_system = rec.get('operating_system')
@@ -332,6 +332,6 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("OPERATING_SYSTEM", os, self.__name__, pevent)
                         self.notifyListeners(e)
             except Exception as e:
-                self.sf.error(f"Error encountered processing operating_system record for {eventData} ({e})")
+                self.error(f"Error encountered processing operating_system record for {eventData} ({e})")
 
 # End of sfp_censys class

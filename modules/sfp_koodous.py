@@ -86,14 +86,14 @@ class sfp_koodous(SpiderFootPlugin):
             return None
 
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from Koodous: {res['code']}")
+            self.error(f"Unexpected reply from Koodous: {res['code']}")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from Koodous: {e}")
+            self.debug(f"Error processing JSON response from Koodous: {e}")
             return None
 
         return None
@@ -106,10 +106,10 @@ class sfp_koodous(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():
@@ -161,7 +161,7 @@ class sfp_koodous(SpiderFootPlugin):
                     and not package_name.lower().endswith(f".{domain_reversed}")
                     and f".{domain_reversed}." not in package_name.lower()
                 ):
-                    self.sf.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
+                    self.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
                     continue
 
                 sha256 = result.get('sha256')

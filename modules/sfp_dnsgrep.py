@@ -92,17 +92,17 @@ class sfp_dnsgrep(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.info("No results found for " + qry)
+            self.info("No results found for " + qry)
             return None
 
         if res['code'] != '200':
-            self.sf.debug("Error retrieving search results for " + qry)
+            self.debug("Error retrieving search results for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
+            self.error(f"Error processing JSON response from DNSGrep: {e}")
 
         return None
 
@@ -116,12 +116,12 @@ class sfp_dnsgrep(SpiderFootPlugin):
             return
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 
         if data is None:
-            self.sf.info("No DNS records found for " + eventData)
+            self.info("No DNS records found for " + eventData)
             return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
@@ -161,7 +161,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             evt_type = "INTERNET_NAME"
 
             if self.opts["dns_resolve"] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += "_UNRESOLVED"
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

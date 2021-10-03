@@ -90,7 +90,7 @@ class sfp_grep_app(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -104,10 +104,10 @@ class sfp_grep_app(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_grep_app':
-            self.sf.debug("Ignoring " + eventData + ", from self.")
+            self.debug("Ignoring " + eventData + ", from self.")
             return
 
         hosts = list()
@@ -144,7 +144,7 @@ class sfp_grep_app(SpiderFootPlugin):
             if last_page < pages:
                 pages = last_page
 
-            self.sf.info("Parsing page " + str(page) + " of " + str(pages))
+            self.info("Parsing page " + str(page) + " of " + str(pages))
             page += 1
 
             hits = res.get('hits')
@@ -188,10 +188,10 @@ class sfp_grep_app(SpiderFootPlugin):
                         hosts.append(host)
 
                         if not self.getTarget().matches(self.sf.urlFQDN(link), includeChildren=True, includeParents=True):
-                            self.sf.debug("Skipped unrelated link: " + link)
+                            self.debug("Skipped unrelated link: " + link)
                             continue
 
-                        self.sf.debug('Found a link: ' + link)
+                        self.debug('Found a link: ' + link)
                         evt = SpiderFootEvent('LINKED_URL_INTERNAL', link, self.__name__, event)
                         self.notifyListeners(evt)
                         self.results[link] = True
@@ -204,10 +204,10 @@ class sfp_grep_app(SpiderFootPlugin):
 
                         mail_domain = email.lower().split('@')[1]
                         if not self.getTarget().matches(mail_domain, includeChildren=True, includeParents=True):
-                            self.sf.debug("Skipped unrelated email address: " + email)
+                            self.debug("Skipped unrelated email address: " + email)
                             continue
 
-                        self.sf.info("Found e-mail address: " + email)
+                        self.info("Found e-mail address: " + email)
                         if email.split("@")[0] in self.opts['_genericusers'].split(","):
                             evttype = "EMAILADDR_GENERIC"
                         else:
@@ -225,7 +225,7 @@ class sfp_grep_app(SpiderFootPlugin):
                 return
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
-                self.sf.debug(f"Host {host} could not be resolved")
+                self.debug(f"Host {host} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 self.notifyListeners(evt)
                 continue

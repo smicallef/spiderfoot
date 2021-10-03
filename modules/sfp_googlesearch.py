@@ -87,15 +87,15 @@ class sfp_googlesearch(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!")
+            self.error("You enabled sfp_googlesearch but did not set a Google API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
+            self.debug("Already did a search for " + eventData + ", skipping.")
             return
 
         self.results[eventData] = True
@@ -125,7 +125,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
         ]
         for link in internal_links:
-            self.sf.debug("Found a link: " + link)
+            self.debug("Found a link: " + link)
 
             evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__, event)
             self.notifyListeners(evt)

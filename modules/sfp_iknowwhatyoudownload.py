@@ -91,19 +91,19 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['code'] in ["403", "500"]:
-            self.sf.info("Unable to fetch data from iknowwhatyoudownload.com right now.")
+            self.info("Unable to fetch data from iknowwhatyoudownload.com right now.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}")
+            self.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}")
             return None
 
         if 'error' in ret:
             if ret['error'] == "INVALID_DAYS":
                 self.errorState = True
-                self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.")
+                self.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.")
                 return None
 
         if 'contents' not in ret:
@@ -124,19 +124,19 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
+            self.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
