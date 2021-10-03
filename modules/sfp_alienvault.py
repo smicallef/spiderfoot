@@ -353,7 +353,7 @@ class sfp_alienvault(SpiderFootPlugin):
         if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
             if not self.opts['subnetlookup']:
                 return
-              
+
             if eventName == 'NETBLOCKV6_MEMBER':
                 max_subnet = self.opts['maxv6subnet']
             else:
