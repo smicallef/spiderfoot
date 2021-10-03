@@ -54,12 +54,12 @@ class sfp_webanalytics(SpiderFootPlugin):
         sourceData = self.sf.hashstring(eventData)
 
         if sourceData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if event.moduleDataSource:
             datasource = event.moduleDataSource
@@ -77,7 +77,7 @@ class sfp_webanalytics(SpiderFootPlugin):
                 if m.lower().startswith('ua-12345678'):
                     continue
 
-                self.sf.debug("Google Analytics match: " + m)
+                self.debug("Google Analytics match: " + m)
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Google Analytics: " + m,
                                       self.__name__, event)
@@ -90,7 +90,7 @@ class sfp_webanalytics(SpiderFootPlugin):
                 if m.lower().startswith('pub-12345678'):
                     continue
 
-                self.sf.debug("Google AdSense match: " + m)
+                self.debug("Google AdSense match: " + m)
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Google AdSense: " + m,
                                       self.__name__, event)
@@ -101,7 +101,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             # https://developers.google.com/site-verification/v1/getting_started
             matches = re.findall(r'<meta name="google-site-verification" content="([a-z0-9\-\+_=]{43,44})"', eventData, re.IGNORECASE)
             for m in matches:
-                self.sf.debug("Google Site Verification match: " + m)
+                self.debug("Google Site Verification match: " + m)
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Google Site Verification: " + m,
                                       self.__name__, event)
@@ -110,7 +110,7 @@ class sfp_webanalytics(SpiderFootPlugin):
 
             matches = re.findall(r'<meta name="verify-v1" content="([a-z0-9\-\+_=]{43,44})"', eventData, re.IGNORECASE)
             for m in matches:
-                self.sf.debug("Google Site Verification match: " + m)
+                self.debug("Google Site Verification match: " + m)
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Google Site Verification: " + m,
                                       self.__name__, event)
@@ -121,7 +121,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             if '_qevents.push' in eventData:
                 matches = re.findall(r"\bqacct:\"(p-[a-z0-9]+)\"", eventData, re.IGNORECASE)
                 for m in matches:
-                    self.sf.debug("Quantcast match: " + m)
+                    self.debug("Quantcast match: " + m)
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                           "Quantcast: " + m,
                                           self.__name__, event)
@@ -131,7 +131,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             # Ahrefs Site Verification
             matches = re.findall(r'<meta name="ahrefs-site-verification" content="([a-f0-9]{64})"', eventData, re.IGNORECASE)
             for m in matches:
-                self.sf.debug("Ahrefs Site Verification match: " + m)
+                self.debug("Ahrefs Site Verification match: " + m)
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Ahrefs Site Verification: " + m,
                                       self.__name__, event)

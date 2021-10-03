@@ -103,24 +103,24 @@ class sfp_c99(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on C99 API")
+            self.error("Reaching rate limit on C99 API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on C99 API")
+            self.error("Invalid request or API key on C99 API")
             self.errorState = True
             return None
 
         if res["content"] is None:
-            self.sf.info(f"No C99 info found for {queryData}")
+            self.info(f"No C99 info found for {queryData}")
             return None
 
         try:
             info = json.loads(res["content"])
         except Exception as e:
             self.errorState = True
-            self.sf.error(f"Error processing response from C99: {e}")
+            self.error(f"Error processing response from C99: {e}")
             return None
 
         if not info.get('success', False):
@@ -355,7 +355,7 @@ class sfp_c99(SpiderFootPlugin):
             return
 
         if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
-            self.sf.debug(f"Host {data} could not be resolved.")
+            self.debug(f"Host {data} could not be resolved.")
             if self.getTarget().matches(data):
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 self.notifyListeners(evt)
@@ -371,12 +371,12 @@ class sfp_c99(SpiderFootPlugin):
 
         if self.cohostcount < self.opts['maxcohost']:
             if self.opts["verify"] and not self.sf.validateIP(data, event.data):
-                self.sf.debug("Host no longer resolves to our IP.")
+                self.debug("Host no longer resolves to our IP.")
                 return
 
             if not self.opts["cohostsamedomain"]:
                 if self.getTarget().matches(data, includeParents=True):
-                    self.sf.debug(
+                    self.debug(
                         f"Skipping {data} because it is on the same domain."
                     )
                     return
@@ -395,16 +395,16 @@ class sfp_c99(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_c99, but did not set an API key!")
+            self.error("You enabled sfp_c99, but did not set an API key!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

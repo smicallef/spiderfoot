@@ -74,7 +74,7 @@ class sfp_skymem(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -89,10 +89,10 @@ class sfp_skymem(SpiderFootPlugin):
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
             if not self.getTarget().matches(mailDom):
-                self.sf.debug("Skipped address: " + email)
+                self.debug("Skipped address: " + email)
                 continue
 
-            self.sf.info("Found e-mail address: " + email)
+            self.info("Found e-mail address: " + email)
             if email not in self.results:
                 if email.split("@")[0] in self.opts['_genericusers'].split(","):
                     evttype = "EMAILADDR_GENERIC"
@@ -121,10 +121,10 @@ class sfp_skymem(SpiderFootPlugin):
                 # Skip unrelated emails
                 mailDom = email.lower().split('@')[1]
                 if not self.getTarget().matches(mailDom):
-                    self.sf.debug("Skipped address: " + email)
+                    self.debug("Skipped address: " + email)
                     continue
 
-                self.sf.info("Found e-mail address: " + email)
+                self.info("Found e-mail address: " + email)
                 if email not in self.results:
                     if email.split("@")[0] in self.opts['_genericusers'].split(","):
                         evttype = "EMAILADDR_GENERIC"

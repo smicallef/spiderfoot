@@ -96,13 +96,13 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in AlienVault IP Reputation Database blacklist.")
+                self.debug(f"IP address {target} found in AlienVault IP Reputation Database blacklist.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in AlienVault IP Reputation Database blacklist.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in AlienVault IP Reputation Database blacklist.")
                     return True
 
         return False
@@ -120,12 +120,12 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from AlienVault IP Reputation Database.")
+            self.error(f"Unexpected HTTP response code {res['code']} from AlienVault IP Reputation Database.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AlienVault IP Reputation Database")
+            self.error("Received no content from AlienVault IP Reputation Database")
             self.errorState = True
             return None
 
@@ -163,10 +163,10 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -195,7 +195,7 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with AlienVault IP Reputation Database")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with AlienVault IP Reputation Database")
 
         if self.queryBlacklist(eventData, targetType):
             url = "https://reputation.alienvault.com/reputation.generic"

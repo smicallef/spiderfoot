@@ -80,14 +80,14 @@ class sfp_webframework(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventSource not in self.results:
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web content information for external sites.")
+            self.debug("Not collecting web content information for external sites.")
             return
 
         for regexpGrp in list(regexps.keys()):
@@ -98,7 +98,7 @@ class sfp_webframework(SpiderFootPlugin):
                 pat = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource] = self.results[eventSource] + [regexpGrp]
                     evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp,
                                           self.__name__, event)

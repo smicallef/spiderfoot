@@ -91,7 +91,7 @@ class sfp_pastebin(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set a Google API key!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set a Google API key!")
             self.errorState = True
             return
 
@@ -128,7 +128,7 @@ class sfp_pastebin(SpiderFootPlugin):
             ]
 
             for link in relevant_links:
-                self.sf.debug("Found a link: " + link)
+                self.debug("Found a link: " + link)
 
                 if self.checkForStop():
                     return
@@ -137,7 +137,7 @@ class sfp_pastebin(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.debug(f"Ignoring {link} as no data returned")
+                    self.debug(f"Ignoring {link} as no data returned")
                     continue
 
                 if re.search(

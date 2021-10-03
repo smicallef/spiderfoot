@@ -75,7 +75,7 @@ class sfp_zetalytics(SpiderFootPlugin):
             return False
 
         if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
-            self.sf.debug(f"Host {hostname} could not be resolved")
+            self.debug(f"Host {hostname} could not be resolved")
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
             return True
 
@@ -95,13 +95,13 @@ class sfp_zetalytics(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info(f"No Zetalytics info found for {path}?{qs}")
+            self.info(f"No Zetalytics info found for {path}?{qs}")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Zetalytics: {e}")
+            self.error(f"Error processing JSON response from Zetalytics: {e}")
         return None
 
     def query_subdomains(self, domain):
@@ -184,17 +184,17 @@ class sfp_zetalytics(SpiderFootPlugin):
         if self.checkForStop():
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if f"{eventName}:{eventData}" in self.results:
-            self.sf.debug(f"Skipping {eventName}:{eventData}, already checked.")
+            self.debug(f"Skipping {eventName}:{eventData}, already checked.")
             return
         self.results[f"{eventName}:{eventData}"] = True
 

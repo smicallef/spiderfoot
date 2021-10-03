@@ -67,19 +67,19 @@ class sfp_venmo(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from api.venmo.com')
+            self.debug('No response from api.venmo.com')
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         json_data = data.get('data')
 
         if not json_data:
-            self.sf.debug(qry + " is not a valid Venmo username")
+            self.debug(qry + " is not a valid Venmo username")
             return None
 
         return json_data
@@ -95,7 +95,7 @@ class sfp_venmo(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

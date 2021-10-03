@@ -56,14 +56,14 @@ class sfp_webserver(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
             return
 
         self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web server information for external sites.")
+            self.debug("Not collecting web server information for external sites.")
             return
 
         try:
@@ -71,7 +71,7 @@ class sfp_webserver(SpiderFootPlugin):
             if jdata is None:
                 return
         except Exception:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            self.error("Received HTTP headers from another module in an unexpected format.")
             return
 
         # Check location header for linked URLs
@@ -102,7 +102,7 @@ class sfp_webserver(SpiderFootPlugin):
         # and other errors to see what the header looks like.
         server = jdata.get('server')
         if server:
-            self.sf.info(f"Found web server: {server} ({eventSource})")
+            self.info(f"Found web server: {server} ({eventSource})")
             evt = SpiderFootEvent("WEBSERVER_BANNER", server, self.__name__, event)
             self.notifyListeners(evt)
 

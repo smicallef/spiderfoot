@@ -88,27 +88,27 @@ class sfp_whoisology(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.")
+            self.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info(f"No Whoisology info found for {qry}")
+            self.info(f"No Whoisology info found for {qry}")
             return None
 
         try:
             info = json.loads(res['content'])
             if info.get("domains") is None:
-                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"))
+                self.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"))
                 return None
 
             if len(info.get("domains", [])) == 0:
-                self.sf.debug(f"No data found in Whoisology for {qry}")
+                self.debug(f"No data found in Whoisology for {qry}")
                 return None
 
             return info.get('domains')
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Whoisology: {e}")
+            self.error(f"Error processing JSON response from Whoisology: {e}")
             return None
 
     # Handle events sent to this module
@@ -120,15 +120,15 @@ class sfp_whoisology(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_whoisology but did not set an API key!")
+            self.error("You enabled sfp_whoisology but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

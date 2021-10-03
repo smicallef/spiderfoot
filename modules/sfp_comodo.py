@@ -76,9 +76,9 @@ class sfp_comodo(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.sf.debug("Addresses returned: " + str(addrs))
+            self.debug("Addresses returned: " + str(addrs))
         except Exception:
-            self.sf.debug(f"Unable to resolve {qaddr}")
+            self.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -93,7 +93,7 @@ class sfp_comodo(SpiderFootPlugin):
         parentEvent = event
         resolved = False
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

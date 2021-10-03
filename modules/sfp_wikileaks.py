@@ -76,10 +76,10 @@ class sfp_wikileaks(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -102,7 +102,7 @@ class sfp_wikileaks(SpiderFootPlugin):
             "https://search.wikileaks.org/?" + wlurl
         )
         if res['content'] is None:
-            self.sf.error("Unable to fetch Wikileaks content.")
+            self.error("Unable to fetch Wikileaks content.")
             return
 
         # Fetch the paste site content
@@ -133,7 +133,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                 if "wikileaks.org/" not in link and "cryptome.org/" not in link:
                     continue
                 else:
-                    self.sf.debug("Found a link: " + link)
+                    self.debug("Found a link: " + link)
                     if self.checkForStop():
                         return
 

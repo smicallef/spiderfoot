@@ -116,15 +116,15 @@ class sfp_seon(SpiderFootPlugin):
         )
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by seon.io")
+            self.error("You are being rate-limited by seon.io")
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from seon.io")
+            self.error("Error retrieving search results from seon.io")
             return None
 
         if res['code'] == '404':
-            self.sf.error("API Endpoint not found")
+            self.error("API Endpoint not found")
             return None
 
         return json.loads(res['content'])
@@ -135,18 +135,18 @@ class sfp_seon(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_seon but did not set an API key!")
+            self.error("You enabled sfp_seon but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

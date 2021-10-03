@@ -76,7 +76,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             return
 
         if "NoSuchBucket" in res['content']:
-            self.sf.debug(f"Not a valid bucket: {url}")
+            self.debug(f"Not a valid bucket: {url}")
             return
 
         # Bucket found
@@ -100,7 +100,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            self.sf.info("Spawning thread to check bucket: " + site)
+            self.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name='thread_sfp_digitaloceanspaces_' + tname,
                                       target=self.checkSite, args=(site,)))
@@ -156,7 +156,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".digitaloceanspaces.com" in eventData:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_coinblocker
+# Name:         sfp_bambenek
 # Purpose:      Checks if an IP, hostname or domain is malicious.
 #
 # Author:       steve@binarypool.com
@@ -17,50 +17,52 @@ from netaddr import IPAddress, IPNetwork
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
-    'CoinBlocker IP List': {
-        'id': 'coinip',
+    'Bambenek C&C IP List': {
+        'id': 'bambip',
         'checks': ['ip', 'netblock'],
-        'url': 'https://zerodot1.gitlab.io/CoinBlockerLists/MiningServerIPList.txt',
-        'regex': '^{0}$'
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt',
+        'regex': '^{0},.*'
     },
-    'CoinBlocker Domain List': {
-        'id': 'coindom',
+    'Bambenek C&C Domain List': {
+        'id': 'bambdom',
         'checks': ['domain'],
-        'url': 'https://zerodot1.gitlab.io/CoinBlockerLists/list.txt',
-        'regex': '^{0}$'
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt',
+        'regex': '^{0},.*'
     }
 }
 
 
-class sfp_coinblocker(SpiderFootPlugin):
+class sfp_bambenek(SpiderFootPlugin):
 
     meta = {
-        'name': "CoinBlocker Lists",
-        'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
+        'name': "Bambenek C&C List",
+        'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/",
+            'website': "http://www.bambenekconsulting.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/downloads.html",
-                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/references.html",
-                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/aboutthisproject.html"
+                "http://www.bambenekconsulting.com/free-osint-tools/",
+                "https://osint.bambenekconsulting.com/feeds/",
+                "https://osint.bambenekconsulting.com/feeds/license.txt"
             ],
-            'favIcon': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
-            'logo': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
-            'description': "The CoinBlockerLists are a project to prevent illegal mining in "
-            "browsers or other applications using IPlists and URLLists.\n"
-            "It's not just to block everything without any reason, but to protect "
-            "internet users from illegal mining.",
+            'favIcon': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/mini-logo1.ico",
+            'logo': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/logo_transparent21-300x84.png",
+            'description': "Bambenek Consulting is an cybersecurity investigations and intelligence consulting firm "
+            "focusing on tackling major criminal threats. "
+            "Every day, there is another story about another company having their banking accounts drained, "
+            "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
+            "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
+            "you can be sure your organization and your customers’ data is safe.",
         }
     }
 
     # Default options
     opts = {
-        'coinip': True,
-        'coindom': True,
+        'bambip': True,
+        'bambdom': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18,
@@ -70,8 +72,8 @@ class sfp_coinblocker(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'coinip': "Enable CoinBlocker IP check?",
-        'coindom': "Enable CoinBlocker Domains check?",
+        'bambip': "Enable Bambenek IP check?",
+        'bambdom': "Enable Bambenek Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -129,7 +131,8 @@ class sfp_coinblocker(SpiderFootPlugin):
                     if data['content'] is None:
                         self.error("Unable to fetch " + url)
                         return None
-                    self.sf.cachePut("sfmal_" + cid, data['content'])
+                    else:
+                        self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -257,4 +260,4 @@ class sfp_coinblocker(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-# End of sfp_coinblocker class
+# End of sfp_bambenek class

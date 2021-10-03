@@ -71,7 +71,7 @@ class sfp_names(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # If the source event is web content, check if the source URL was javascript
         # or CSS, in which case optionally ignore it.
@@ -79,7 +79,7 @@ class sfp_names(SpiderFootPlugin):
             url = event.actualSource
             if url is not None:
                 if self.opts['filterjscss'] and (".js" in url or ".css" in url):
-                    self.sf.debug("Ignoring web content from CSS/JS.")
+                    self.debug("Ignoring web content from CSS/JS.")
                     return
 
         # Find names in email addresses in "<firstname>.<lastname>@<domain>" format
@@ -110,7 +110,7 @@ class sfp_names(SpiderFootPlugin):
                                      "sfp_fullcontact", "sfp_github", "sfp_hunter",
                                      "sfp_opencorporates", "sfp_slideshare",
                                      "sfp_twitter", "sfp_venmo", "sfp_instagram"]:
-                self.sf.debug("Ignoring RAW_RIR_DATA from untrusted module.")
+                self.debug("Ignoring RAW_RIR_DATA from untrusted module.")
                 return
 
         # Stage 1: Find things that look (very vaguely) like names
@@ -134,11 +134,11 @@ class sfp_names(SpiderFootPlugin):
 
             # If both words are not in the dictionary, add 75 points.
             if first not in self.d and second not in self.d:
-                self.sf.debug(f"Both first and second names are not in the dictionary, so high chance of name: ({first}:{second}).")
+                self.debug(f"Both first and second names are not in the dictionary, so high chance of name: ({first}:{second}).")
                 p += 75
                 notindict = True
             else:
-                self.sf.debug(first + " was found or " + second + " was found in dictionary.")
+                self.debug(first + " was found or " + second + " was found in dictionary.")
 
             # If the first word is a known popular first name, award 50 points.
             if first in self.n:
@@ -161,7 +161,7 @@ class sfp_names(SpiderFootPlugin):
 
             name = r[0] + " " + secondOrig
 
-            self.sf.debug("Name of " + name + " has score: " + str(p))
+            self.debug("Name of " + name + " has score: " + str(p))
             if p > self.opts['algolimit']:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)

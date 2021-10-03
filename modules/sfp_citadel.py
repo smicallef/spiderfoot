@@ -110,13 +110,13 @@ class sfp_citadel(SpiderFootPlugin):
             return self.queryEmail(email)
 
         if res['content'] is None:
-            self.sf.debug('No response from Leak-Lookup.com')
+            self.debug('No response from Leak-Lookup.com')
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -126,14 +126,14 @@ class sfp_citadel(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -147,7 +147,7 @@ class sfp_citadel(SpiderFootPlugin):
         message = data.get('message')
 
         if error == 'true':
-            self.sf.error(f"Error encountered processing {eventData}: {message}")
+            self.error(f"Error encountered processing {eventData}: {message}")
             if "MISSING API" in message:
                 self.errorState = True
                 return
@@ -157,7 +157,7 @@ class sfp_citadel(SpiderFootPlugin):
             return
 
         for site in message:
-            self.sf.info(f"Found Leak-Lookup entry for {eventData}: {site}")
+            self.info(f"Found Leak-Lookup entry for {eventData}: {site}")
             evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{site}]", self.__name__, event)
             self.notifyListeners(evt)
 

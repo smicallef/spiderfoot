@@ -82,13 +82,13 @@ class sfp_nameapi(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.info(f"No NameAPI info found for {qry}")
+            self.info(f"No NameAPI info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from NameAPI: {e}")
+            self.error(f"Error processing JSON response from NameAPI: {e}")
 
         return None
 
@@ -101,10 +101,10 @@ class sfp_nameapi(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True

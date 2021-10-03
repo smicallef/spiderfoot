@@ -76,7 +76,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
             return False
 
         if target.lower() in blocklist:
-            self.sf.debug(f"Host name {target} found in Steven Black Hosts block list.")
+            self.debug(f"Host name {target} found in Steven Black Hosts block list.")
             return True
 
         return False
@@ -95,12 +95,12 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from {url}")
+            self.error(f"Unexpected HTTP response code {res['code']} from {url}")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error(f"Received no content from {url}")
+            self.error(f"Received no content from {url}")
             self.errorState = True
             return None
 
@@ -143,10 +143,10 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -167,7 +167,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Steven Black Hosts blocklist")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with Steven Black Hosts blocklist")
 
         if self.queryBlocklist(eventData):
             url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"

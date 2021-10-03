@@ -80,7 +80,7 @@ class sfp_botvrij(SpiderFootPlugin):
             return False
 
         if target.lower() in blacklist:
-            self.sf.debug(f"Host name {target} found in botvrij.eu blacklist.")
+            self.debug(f"Host name {target} found in botvrij.eu blacklist.")
             return True
 
         return False
@@ -98,12 +98,12 @@ class sfp_botvrij(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from botvrij.eu.")
+            self.error(f"Unexpected HTTP response code {res['code']} from botvrij.eu.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from botvrij.eu")
+            self.error("Received no content from botvrij.eu")
             self.errorState = True
             return None
 
@@ -144,10 +144,10 @@ class sfp_botvrij(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -168,7 +168,7 @@ class sfp_botvrij(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with botvrij.eu")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with botvrij.eu")
 
         if self.queryBlacklist(eventData):
             url = "https://www.botvrij.eu/data/blocklist/blocklist_full.csv"

@@ -102,13 +102,13 @@ class sfp_blocklistde(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in blocklist.de blacklist.")
+                self.debug(f"IP address {target} found in blocklist.de blacklist.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in blocklist.de blacklist.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in blocklist.de blacklist.")
                     return True
 
         return False
@@ -126,12 +126,12 @@ class sfp_blocklistde(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from blocklist.de.")
+            self.error(f"Unexpected HTTP response code {res['code']} from blocklist.de.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from blocklist.de")
+            self.error("Received no content from blocklist.de")
             self.errorState = True
             return None
 
@@ -169,10 +169,10 @@ class sfp_blocklistde(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -201,7 +201,7 @@ class sfp_blocklistde(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with blocklist.de")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with blocklist.de")
 
         if self.queryBlacklist(eventData, targetType):
             url = "https://lists.blocklist.de/lists/all.txt"

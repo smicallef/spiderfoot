@@ -87,13 +87,13 @@ class sfp_apple_itunes(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from Apple iTunes: {e}")
+            self.debug(f"Error processing JSON response from Apple iTunes: {e}")
             return None
 
         results = data.get('results')
 
         if not results:
-            self.sf.debug(f"No results found for {qry}")
+            self.debug(f"No results found for {qry}")
             return None
 
         return results
@@ -103,10 +103,10 @@ class sfp_apple_itunes(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():
@@ -118,7 +118,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
         data = self.query(domain_reversed)
 
         if not data:
-            self.sf.info(f"No results found for {eventData}")
+            self.info(f"No results found for {eventData}")
             return
 
         urls = list()
@@ -149,7 +149,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
                 and not bundleId.lower().endswith(f".{domain_reversed}")
                 and f".{domain_reversed}." not in bundleId.lower()
             ):
-                self.sf.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
+                self.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
                 continue
 
             trackViewUrl = result.get('trackViewUrl')

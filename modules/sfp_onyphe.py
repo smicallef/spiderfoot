@@ -112,29 +112,29 @@ class sfp_onyphe(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Onyphe API")
+            self.error("Reaching rate limit on Onyphe API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on Onyphe")
+            self.error("Invalid request or API key on Onyphe")
             self.errorState = True
             return None
 
         try:
             info = json.loads(res["content"])
             if "status" in info and info["status"] == "nok":
-                self.sf.error(
+                self.error(
                     f"Unexpected error happened while requesting data from Onyphe. Error message: {info.get('text', '')}"
                 )
                 self.errorState = True
                 return None
             elif "results" not in info or info["results"] == []:
-                self.sf.info(f"No Onyphe {endpoint} data found for {ip}")
+                self.info(f"No Onyphe {endpoint} data found for {ip}")
                 return None
         except Exception as e:
-            self.sf.debug(f"{e.__class__} {res['code']} {res['content']}")
-            self.sf.error("Error processing JSON response from Onyphe.")
+            self.debug(f"{e.__class__} {res['code']} {res['content']}")
+            self.error("Error processing JSON response from Onyphe.")
             return None
 
         # Go through other pages if user has paid plan
@@ -148,7 +148,7 @@ class sfp_onyphe(SpiderFootPlugin):
                 page = current_page + 1
 
                 if page > self.opts["max_page"]:
-                    self.sf.error(
+                    self.error(
                         "Maximum number of pages from options for Onyphe reached."
                     )
                     return [info]
@@ -160,7 +160,7 @@ class sfp_onyphe(SpiderFootPlugin):
                 retarr.append(info)
 
         except ValueError:
-            self.sf.error(
+            self.error(
                 f"Unexpected value for page in response from Onyphe, url: https://www.onyphe.io/api/v2/simple/{endpoint}/{ip}?page={page}"
             )
             self.errorState = True
@@ -171,7 +171,7 @@ class sfp_onyphe(SpiderFootPlugin):
     def emitLocationEvent(self, location, eventData, event):
         if location is None:
             return
-        self.sf.info(f"Found location for {eventData}: {location}")
+        self.info(f"Found location for {eventData}: {location}")
 
         evt = SpiderFootEvent("PHYSICAL_COORDINATES", location, self.__name__, event)
         self.notifyListeners(evt)
@@ -206,12 +206,12 @@ class sfp_onyphe(SpiderFootPlugin):
 
             if self.cohostcount < self.opts['maxcohost']:
                 if self.opts["verify"] and not self.sf.validateIP(domain, eventData):
-                    self.sf.debug("Host no longer resolves to our IP.")
+                    self.debug("Host no longer resolves to our IP.")
                     continue
 
                 if not self.opts["cohostsamedomain"]:
                     if self.getTarget().matches(domain, includeParents=True):
-                        self.sf.debug(
+                        self.debug(
                             "Skipping " + domain + " because it is on the same domain."
                         )
                         continue
@@ -227,7 +227,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         timestamp = result.get("@timestamp")
         if timestamp is None:
-            self.sf.debug("Record doesn't have timestamp defined")
+            self.debug("Record doesn't have timestamp defined")
             return False
 
         last_dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -235,7 +235,7 @@ class sfp_onyphe(SpiderFootPlugin):
         age_limit_ts = int(time.time()) - (86400 * limit)
 
         if last_ts < age_limit_ts:
-            self.sf.debug(f"Record found but too old ({last_dt}), skipping.")
+            self.debug("Record found but too old, skipping.")
             return False
 
         return True
@@ -250,15 +250,15 @@ class sfp_onyphe(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_onyphe, but did not set an API key!")
+            self.error("You enabled sfp_onyphe, but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.debug("Skipping " + eventData + " as already mapped.")
             return
 
         self.results[eventData] = True
@@ -289,10 +289,10 @@ class sfp_onyphe(SpiderFootPlugin):
                             if _f
                         ]
                     )
-                    self.sf.info("Found GeoIP for " + eventData + ": " + location)
+                    self.info("Found GeoIP for " + eventData + ": " + location)
 
                     if location in sentData:
-                        self.sf.debug(f"Skipping {location}, already sent")
+                        self.debug(f"Skipping {location}, already sent")
                         continue
 
                     sentData.add(location)
@@ -305,7 +305,7 @@ class sfp_onyphe(SpiderFootPlugin):
                         continue
 
                     if coordinates in sentData:
-                        self.sf.debug(f"Skipping {coordinates}, already sent")
+                        self.debug(f"Skipping {coordinates}, already sent")
                         continue
                     sentData.add(coordinates)
 
@@ -331,7 +331,7 @@ class sfp_onyphe(SpiderFootPlugin):
                         continue
 
                     if pastry in sentData:
-                        self.sf.debug(f"Skipping {pastry}, already sent")
+                        self.debug(f"Skipping {pastry}, already sent")
                         continue
                     sentData.add(pastry)
 
@@ -362,7 +362,7 @@ class sfp_onyphe(SpiderFootPlugin):
                         continue
 
                     if threatList in sentData:
-                        self.sf.debug(f"Skipping {threatList}, already sent")
+                        self.debug(f"Skipping {threatList}, already sent")
                         continue
                     sentData.add(threatList)
 
@@ -398,7 +398,7 @@ class sfp_onyphe(SpiderFootPlugin):
                     cveData = ", ".join([cve for cve in cves if cve])
 
                     if cveData in sentData:
-                        self.sf.debug(f"Skipping {cveData}, already sent")
+                        self.debug(f"Skipping {cveData}, already sent")
                         continue
                     sentData.add(cveData)
 

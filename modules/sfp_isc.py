@@ -88,12 +88,12 @@ class sfp_isc(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from ISC.")
+            self.error(f"Unexpected HTTP response code {res['code']} from ISC.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from ISC")
+            self.error("Received no content from ISC")
             self.errorState = True
             return None
 
@@ -105,10 +105,10 @@ class sfp_isc(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:

@@ -83,7 +83,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            self.sf.info("Spawning thread to check bucket: " + site)
+            self.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + tname,
                                       target=self.checkSite, args=(site,)))
@@ -138,7 +138,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".blob.core.windows.net" in eventData:

@@ -76,13 +76,13 @@ class sfp_ipregistry(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info(f"No {self.meta['name']} info found for {qry}")
+            self.info(f"No {self.meta['name']} info found for {qry}")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(
+            self.error(
                 f"Error processing JSON response from {self.meta['name']}: {e}"
             )
 
@@ -147,15 +147,15 @@ class sfp_ipregistry(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
+        self.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return
 
         if event.data in self.results:
-            self.sf.debug(f"Skipping {event.data}, already checked.")
+            self.debug(f"Skipping {event.data}, already checked.")
             return
         self.results[event.data] = True
 

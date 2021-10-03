@@ -94,13 +94,13 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in proxy_list:
-                self.sf.debug(f"IP address {target} found in multiproxy.org open proxy list.")
+                self.debug(f"IP address {target} found in multiproxy.org open proxy list.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in proxy_list:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in multiproxy.org open proxy list.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in multiproxy.org open proxy list.")
                     return True
 
         return False
@@ -118,12 +118,12 @@ class sfp_multiproxy(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from multiproxy.org.")
+            self.error(f"Unexpected HTTP response code {res['code']} from multiproxy.org.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from multiproxy.org")
+            self.error("Received no content from multiproxy.org")
             self.errorState = True
             return None
 
@@ -161,10 +161,10 @@ class sfp_multiproxy(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -193,7 +193,7 @@ class sfp_multiproxy(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with multiproxy.org open proxy list")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with multiproxy.org open proxy list")
 
         if self.queryProxyList(eventData, targetType):
             url = "http://multiproxy.org/txt_all/proxy.txt"

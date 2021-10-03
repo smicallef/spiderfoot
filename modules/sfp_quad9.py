@@ -72,9 +72,9 @@ class sfp_quad9(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qry)
-            self.sf.debug(f"Addresses returned: {addrs}")
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
-            self.sf.debug(f"Unable to resolve {qry}")
+            self.debug(f"Unable to resolve {qry}")
             return False
 
         if addrs:
@@ -87,7 +87,7 @@ class sfp_quad9(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

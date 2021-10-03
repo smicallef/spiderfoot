@@ -119,22 +119,22 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error(f"Error retrieving search results, code {res['code']}")
+            self.error(f"Error retrieving search results, code {res['code']}")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
@@ -198,24 +198,24 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         return None
@@ -252,24 +252,24 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -278,17 +278,17 @@ class sfp_abuseipdb(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -303,7 +303,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
+        self.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
 
         blacklist = self.queryBlacklist()
 
@@ -313,7 +313,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
         if eventData not in blacklist:
             return
 
-        self.sf.info(f"Malicious IP address {eventData} found in AbuseIPDB blacklist")
+        self.info(f"Malicious IP address {eventData} found in AbuseIPDB blacklist")
 
         url = f"https://www.abuseipdb.com/check/{eventData}"
 

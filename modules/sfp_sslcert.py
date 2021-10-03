@@ -78,7 +78,7 @@ class sfp_sslcert(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
@@ -92,7 +92,7 @@ class sfp_sslcert(SpiderFootPlugin):
                     port = u.port
                 fqdn = self.sf.urlFQDN(eventData.lower())
             except Exception:
-                self.sf.debug("Couldn't parse URL: " + eventData)
+                self.debug("Couldn't parse URL: " + eventData)
                 return
         else:
             fqdn = eventData
@@ -103,7 +103,7 @@ class sfp_sslcert(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
+        self.debug("Testing SSL for: " + fqdn + ':' + str(port))
         # Re-fetch the certificate from the site and process
         try:
             sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
@@ -112,7 +112,7 @@ class sfp_sslcert(SpiderFootPlugin):
             pemcert = self.sf.sslDerToPem(dercert)
             cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
         except Exception as x:
-            self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
+            self.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
             return
 
         if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
@@ -120,7 +120,7 @@ class sfp_sslcert(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if not cert.get('text'):
-            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            self.info("Failed to parse the SSL cert for " + fqdn)
             return
 
         # Generate the event for the raw cert (in text form)
@@ -149,7 +149,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

@@ -91,7 +91,7 @@ class sfp_hostio(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.info(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.info(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def query(self, qry):
         res = self.sf.fetchUrl(
@@ -105,13 +105,13 @@ class sfp_hostio(SpiderFootPlugin):
             return None
 
         if res["content"] is None:
-            self.sf.info(f"No Host.io info found for {qry}")
+            self.info(f"No Host.io info found for {qry}")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Host.io: {e}")
+            self.error(f"Error processing JSON response from Host.io: {e}")
 
         return None
 
@@ -123,24 +123,24 @@ class sfp_hostio(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
+            self.debug(f"Skipping {eventData} as already mapped.")
             return
 
         self.results[eventData] = True
 
         data = self.query(event.data)
         if not data:
-            self.sf.error(f"No data received for {event.data}")
+            self.error(f"No data received for {event.data}")
             return
 
         found = False

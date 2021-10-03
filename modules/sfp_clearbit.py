@@ -99,13 +99,13 @@ class sfp_clearbit(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
         if res['code'] != "200":
-            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.")
+            self.error("Return code indicates no results or potential API key failure or exceeded limits.")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from clearbit.io: {e}")
+            self.error(f"Error processing JSON response from clearbit.io: {e}")
 
         return None
 
@@ -119,14 +119,14 @@ class sfp_clearbit(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_clearbit but did not set an API key!")
+            self.error("You enabled sfp_clearbit but did not set an API key!")
             self.errorState = True
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -143,7 +143,7 @@ class sfp_clearbit(SpiderFootPlugin):
                                       self.__name__, event)
                 self.notifyListeners(evt)
         except Exception:
-            self.sf.debug("Unable to extract name from JSON.")
+            self.debug("Unable to extract name from JSON.")
             pass
 
         # Get the location of the person, also indicating
@@ -167,7 +167,7 @@ class sfp_clearbit(SpiderFootPlugin):
                 evt = SpiderFootEvent("PHYSICAL_ADDRESS", loc, self.__name__, event)
                 self.notifyListeners(evt)
         except Exception:
-            self.sf.debug("Unable to extract location from JSON.")
+            self.debug("Unable to extract location from JSON.")
             pass
 
         try:
@@ -212,7 +212,7 @@ class sfp_clearbit(SpiderFootPlugin):
                     evt = SpiderFootEvent("PHYSICAL_ADDRESS", loc, self.__name__, event)
                     self.notifyListeners(evt)
         except Exception:
-            self.sf.debug("Unable to company info from JSON.")
+            self.debug("Unable to company info from JSON.")
             pass
 
 # End of sfp_clearbit class

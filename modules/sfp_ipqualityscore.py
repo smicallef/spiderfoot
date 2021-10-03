@@ -99,7 +99,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def query(self, qry, eventName):
         queryString = ""
@@ -117,7 +117,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         )
 
         if not res['content']:
-            self.sf.info(f"No IPQualityScore info found for {qry}")
+            self.info(f"No IPQualityScore info found for {qry}")
             return None
 
         try:
@@ -127,7 +127,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from IPQualityScore: {e}")
+            self.error(f"Error processing JSON response from IPQualityScore: {e}")
 
         return None
 
@@ -160,17 +160,17 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
+            self.debug(f"Skipping {eventData} as already mapped.")
             return
         self.results[eventData] = True
 
