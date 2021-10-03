@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_torexits
-# Purpose:      Checks if an IP address or netblock appears on the TOR exit node list.
+# Name:        sfp_torexits
+# Purpose:     Checks if an IP address or netblock appears on the TOR Metrics
+#              exit node list.
 #
 # Author:       steve@binarypool.com
 #
@@ -10,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+import json
 
 from netaddr import IPAddress, IPNetwork
 
@@ -21,21 +22,29 @@ class sfp_torexits(SpiderFootPlugin):
 
     meta = {
         'name': "TOR Exit Nodes",
-        'summary': "Check if an IP adddress or netblock appears on the torproject.org exit node list.",
+        'summary': "Check if an IP adddress or netblock appears on the Tor Metrics exit node list.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Secondary Networks"]
+        'categories': ["Secondary Networks"],
+        'dataSource': {
+            'website': "https://metrics.torproject.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://metrics.torproject.org/rs.html#search/flag:exit",
+            ],
+            'favIcon': "https://metrics.torproject.org/images/favicon.ico",
+            'logo': "https://metrics.torproject.org/images/tor-metrics-white@2x.png",
+            'description': "The relay search tool displays data about single relays and bridges in the Tor network."
+        },
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
-        'cacheperiod': 18,
+        'cacheperiod': 1,
         'checknetblocks': True,
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -55,16 +64,18 @@ class sfp_torexits(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return [
             "IP_ADDRESS",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
             "NETBLOCK_MEMBER",
-            "NETBLOCK_OWNER"
+            "NETBLOCKV6_MEMBER",
+            "NETBLOCK_OWNER",
+            "NETBLOCKV6_OWNER",
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
             "MALICIOUS_IPADDR",
@@ -94,24 +105,24 @@ class sfp_torexits(SpiderFootPlugin):
         return False
 
     def retrieveExitNodes(self):
-        exit_addresses = self.sf.cacheGet('torexitnodes', 24)
+        exit_addresses = self.sf.cacheGet('torexitnodes', self.opts.get('cacheperiod', 1))
 
         if exit_addresses is not None:
             return self.parseExitNodes(exit_addresses)
 
         res = self.sf.fetchUrl(
-            "https://check.torproject.org/exit-addresses",
+            "https://onionoo.torproject.org/details?search=flag:exit",
             timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'],
         )
 
         if res['code'] != "200":
-            self.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
+            self.error(f"Unexpected HTTP response code {res['code']} from onionoo.torproject.org.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.error("Received no content from check.torproject.org.")
+            self.error("Received no content from onionoo.torproject.org.")
             self.errorState = True
             return None
 
@@ -119,28 +130,57 @@ class sfp_torexits(SpiderFootPlugin):
 
         return self.parseExitNodes(res['content'])
 
-    def parseExitNodes(self, exit_addresses):
-        """Parse TOR exit node list data
+    def parseExitNodes(self, data):
+        """Extract exit node IP addresses from TOR relay search results
 
         Args:
-            exit_addresses (str): TOR exit node list data
+            data (str): TOR relay search results
 
         Returns:
             list: list of TOR exit IP addresses
         """
         ips = list()
 
-        if not exit_addresses:
+        if not data:
             return ips
 
-        matches = re.findall(r"ExitAddress\s+([\d\.]+)\s+", exit_addresses)
-        for ip in matches:
-            if self.sf.validIP(ip):
-                ips.append(ip)
+        try:
+            results = json.loads(data)
+        except Exception as e:
+            self.sf.error(f"Error processing JSON response: {e}")
+            return None
 
-        return ips
+        relays = results.get('relays')
 
-    # Handle events sent to this module
+        if not relays:
+            return ips
+
+        for relay in relays:
+            or_addresses = relay.get('or_addresses')
+
+            if or_addresses:
+                for ip in or_addresses:
+                    # IPv6 addresses are wrapped in [] (For example: "[127.0.0.1]:443")
+                    if ip.startswith("["):
+                        ip = ip.split('[')[1].split(']')[0]
+                        if self.sf.validIP6(ip):
+                            ips.append(ip)
+                    else:
+                        ip = ip.split(':')[0]
+                        if self.sf.validIP(ip):
+                            ips.append(ip)
+
+            # Exit addresses are only listed in the exit addreses array
+            # if the address differs from the OR address.
+            exit_addresses = relay.get('exit_addresses')
+
+            if exit_addresses:
+                for ip in exit_addresses:
+                    if self.sf.validIP(ip) or self.sf.validIP6(ip):
+                        ips.append(ip)
+
+        return list(set(ips))
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -157,32 +197,36 @@ class sfp_torexits(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'IP_ADDRESS':
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             targetType = 'ip'
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-        elif eventName == 'NETBLOCK_OWNER':
+        elif eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
             evtType = 'MALICIOUS_NETBLOCK'
-        elif eventName == 'NETBLOCK_MEMBER':
+        elif eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
             evtType = 'MALICIOUS_SUBNET'
         else:
+            self.sf.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
 
         if self.queryExitNodes(eventData, targetType):
-            url = "https://check.torproject.org/exit-addresses"
-            text = f"TOR Exits List [{eventData}]\n<SFURL>{url}</SFURL>"
+            if targetType == 'ip':
+                url = f"https://metrics.torproject.org/rs.html#search/{eventData}"
+            else:
+                url = "https://metrics.torproject.org/rs.html"
+            text = f"TOR Exit Node [{eventData}]\n<SFURL>{url}</SFURL>"
             evt = SpiderFootEvent(evtType, text, self.__name__, event)
             self.notifyListeners(evt)
 
