@@ -29,9 +29,11 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     }
 
     opts = {
+        "timeout": 30
     }
 
     optdescs = {
+        "timeout": "Timeout in seconds"
     }
 
     events = None
@@ -96,7 +98,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
             self.debug("Trying for name: " + name)
             try:
                 ret = list()
-                z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
+                z = dns.zone.from_xfr(dns.query.xfr(nsip, name, timeout=int(self.opts["timeout"])))
                 names = list(z.nodes.keys())
                 for n in names:
                     ret.append(z[n].to_text(n))
