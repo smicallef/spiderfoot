@@ -147,7 +147,7 @@ class sfp_torexits(SpiderFootPlugin):
         try:
             results = json.loads(data)
         except Exception as e:
-            self.sf.error(f"Error processing JSON response: {e}")
+            self.error(f"Error processing JSON response: {e}")
             return None
 
         relays = results.get('relays')
@@ -216,7 +216,7 @@ class sfp_torexits(SpiderFootPlugin):
             targetType = 'netblock'
             evtType = 'MALICIOUS_SUBNET'
         else:
-            self.sf.debug(f"Unexpected event type {eventName}, skipping")
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
