@@ -57,7 +57,12 @@ class sfp_fraudguard(SpiderFootPlugin):
         "fraudguard_api_key_password": "",
         "age_limit_days": 90,
         'netblocklookup': True,
-        'maxnetblock': 24
+        'maxnetblock': 24,
+        'maxv6netblock': 120,
+        'subnetlookup': True,
+        'maxsubnet': 24,
+        'maxv6subnet': 120,
+        'checkaffiliates': True
     }
 
     # Option descriptions
@@ -66,34 +71,56 @@ class sfp_fraudguard(SpiderFootPlugin):
         "fraudguard_api_key_password": "Fraudguard.io API password.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
-        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxnetblock': "If looking up owned netblocks, the maximum IPv4 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxv6netblock': "If looking up owned netblocks, the maximum IPv6 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
+        'maxsubnet': "If looking up subnets, the maximum IPv4 subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxv6subnet': "If looking up subnets, the maximum IPv6 subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'checkaffiliates': "Apply checks to affiliates?"
     }
-
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
 
     results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.errorState = False
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER"]
+        return [
+            "IP_ADDRESS",
+            "IPV6_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+            "NETBLOCK_MEMBER",
+            "NETBLOCKV6_MEMBER",
+            "NETBLOCK_OWNER",
+            "NETBLOCKV6_OWNER",
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["GEOINFO", "MALICIOUS_IPADDR", "MALICIOUS_NETBLOCK"]
+        return [
+            "GEOINFO",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_SUBNET",
+            "MALICIOUS_NETBLOCK"
+        ]
 
     def query(self, qry):
+        """Query IP address
+
+        Args:
+            qry (str): IPv4/IPv6 address
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         fraudguard_url = "https://api.fraudguard.io/ip/" + qry
         api_key_account = self.opts['fraudguard_api_key_account']
         if type(api_key_account) == str:
@@ -106,8 +133,12 @@ class sfp_fraudguard(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(fraudguard_url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot", headers=headers)
+        res = self.sf.fetchUrl(
+            fraudguard_url,
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot",
+            headers=headers
+        )
 
         if res['code'] in ["400", "429", "500", "403"]:
             self.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.")
@@ -115,7 +146,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.info("No Fraudguard.io info found for " + qry)
+            self.info(f"No Fraudguard.io info found for {qry}")
             return None
 
         try:
@@ -125,7 +156,6 @@ class sfp_fraudguard(SpiderFootPlugin):
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -141,64 +171,110 @@ class sfp_fraudguard(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
             return
 
-        self.results[eventData] = True
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
+            return
 
-        if eventName == 'NETBLOCK_OWNER':
+        if eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts['netblocklookup']:
                 return
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.debug("Network size bigger than permitted: "
-                           + str(IPNetwork(eventData).prefixlen) + " > "
-                           + str(self.opts['maxnetblock']))
+
+            if eventName == 'NETBLOCKV6_OWNER':
+                max_netblock = self.opts['maxv6netblock']
+            else:
+                max_netblock = self.opts['maxnetblock']
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
+        if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
+            if not self.opts['subnetlookup']:
+                return
+
+            if eventName == 'NETBLOCKV6_MEMBER':
+                max_subnet = self.opts['maxv6subnet']
+            else:
+                max_subnet = self.opts['maxsubnet']
+
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
+
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS', 'NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
+            evtType = 'MALICIOUS_IPADDR'
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
         qrylist = list()
-        rtype = ""
-        if eventName.startswith("NETBLOCK_"):
-            rtype = "NETBLOCK"
+        if eventName.startswith("NETBLOCK"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
                 self.results[str(ipaddr)] = True
         else:
-            rtype = "IPADDR"
             qrylist.append(eventData)
+            self.results[eventData] = True
 
         for addr in qrylist:
             if self.checkForStop():
                 return
 
-            rec = self.query(addr)
-            if rec is not None:
-                self.debug("Found results in Fraudguard.io")
-                # 2016-12-24T07:25:35+00:00'
-                created_dt = datetime.strptime(rec.get('discover_date'), '%Y-%m-%d %H:%M:%S')
-                created_ts = int(time.mktime(created_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                    self.debug("Record found but too old, skipping.")
-                    continue
+            data = self.query(addr)
 
-                # For netblocks, we need to create the IP address event so that
-                # the threat intel event is more meaningful.
-                if eventName == 'NETBLOCK_OWNER':
-                    pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
-                    self.notifyListeners(pevent)
-                else:
-                    pevent = event
+            if not data:
+                continue
 
-                if "unknown" not in [rec['country'], rec['state'], rec['city']]:
-                    dat = rec['country'] + ", " + rec['state'] + ", " + rec['city']
-                    e = SpiderFootEvent("GEOINFO", dat, self.__name__, pevent)
-                    self.notifyListeners(e)
+            self.debug(f"Found results for {addr} in Fraudguard.io")
 
-                if rec.get('threat') != "unknown":
-                    dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
-                    e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, pevent)
-                    self.notifyListeners(e)
+            # Format: 2016-12-24T07:25:35+00:00'
+            created_dt = datetime.strptime(data.get('discover_date'), '%Y-%m-%d %H:%M:%S')
+            created_ts = int(time.mktime(created_dt.timetuple()))
+            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+            if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                self.debug(f"Record found but too old ({created_dt}), skipping.")
+                continue
+
+            # For netblocks, we need to create the IP address event so that
+            # the threat intel event is more meaningful.
+            if eventName == 'NETBLOCK_OWNER':
+                pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            if eventName == 'NETBLOCKV6_OWNER':
+                pevent = SpiderFootEvent("IPV6_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            elif eventName == 'NETBLOCK_MEMBER':
+                pevent = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            elif eventName == 'NETBLOCKV6_MEMBER':
+                pevent = SpiderFootEvent("AFFILIATE_IPV6_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            else:
+                pevent = event
+
+            geoinfo = [
+                _f for _f in [
+                    data.get('state'),
+                    data.get('city'),
+                    data.get('postal_code'),
+                    data.get('country')
+                ] if _f and _f != "unknown"
+            ]
+            if geoinfo:
+                location = ', '.join(filter(None, geoinfo))
+                e = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
+                self.notifyListeners(e)
+
+            threat = data.get('threat')
+            if threat and threat != "unknown":
+                risk_level = data.get('risk_level')
+                e = SpiderFootEvent(evtType, f"{threat} (risk level: {risk_level}) [{addr}]", self.__name__, pevent)
+                self.notifyListeners(e)
 
 # End of sfp_fraudguard class
