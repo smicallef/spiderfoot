@@ -634,7 +634,6 @@ class SpiderFootPlugin():
                 callback: the function to thread
                 args: additional arguments to pass to callback function
                 kwargs: keyword arguments to pass to callback function
-                name: base name to use for all the threads
 
             Yields:
                 return values from completed callback function
@@ -710,7 +709,7 @@ class ThreadPoolWorker(threading.Thread):
                     result = callback(*args, **kwargs)
                 except Exception:
                     import traceback
-                    self.sfp.log.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
+                    self.sfp.sf.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
                     break
                 if self.outputQueue is not None:
                     self.outputQueue.put(result)
