@@ -66,19 +66,19 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already scanned.")
+            self.debug(f"Skipping {eventData} as already scanned.")
             return
 
         self.results[eventData] = True
 
         if not self.opts['wafw00f_path']:
-            self.sf.error("You enabled sfp_tool_wafw00f but did not set a path to the tool!")
+            self.error("You enabled sfp_tool_wafw00f but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -87,14 +87,14 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
             exe = exe + 'wafw00f'
 
         if not os.path.isfile(exe):
-            self.sf.error(f"File does not exist: {exe}")
+            self.error(f"File does not exist: {exe}")
             self.errorState = True
             return
 
         url = eventData
 
         if not SpiderFootHelpers.sanitiseInput(url):
-            self.sf.error("Invalid input, refusing to run.")
+            self.error("Invalid input, refusing to run.")
             return
 
         args = [
@@ -110,25 +110,25 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
-            self.sf.error(f"Unable to run wafw00f: {e}")
+            self.error(f"Unable to run wafw00f: {e}")
             return
 
         if p.returncode != 0:
-            self.sf.error(f"Unable to read wafw00f output\nstderr: {stderr}\nstdout: {stdout}")
+            self.error(f"Unable to read wafw00f output\nstderr: {stderr}\nstdout: {stdout}")
             return
 
         if not stdout:
-            self.sf.debug(f"wafw00f returned no output for {eventData}")
+            self.debug(f"wafw00f returned no output for {eventData}")
             return
 
         try:
             result_json = json.loads(stdout)
         except Exception as e:
-            self.sf.error(f"Could not parse wafw00f output as JSON: {e}\nstdout: {stdout}")
+            self.error(f"Could not parse wafw00f output as JSON: {e}\nstdout: {stdout}")
             return
 
         if not result_json:
-            self.sf.debug(f"wafw00f returned no output for {eventData}")
+            self.debug(f"wafw00f returned no output for {eventData}")
             return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(result_json), self.__name__, event)

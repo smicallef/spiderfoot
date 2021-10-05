@@ -99,7 +99,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         t = []
 
         # Spawn threads for scanning
-        self.sf.info("Spawning threads to check TLDs: " + str(tldList))
+        self.info("Spawning threads to check TLDs: " + str(tldList))
         for pair in tldList:
             (domain, tld) = pair
             tn = 'thread_sfp_tldsearch_' + str(random.SystemRandom().randint(0, 999999999))
@@ -125,7 +125,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def sendEvent(self, source, result):
-        self.sf.info("Found a TLD with the target's name: " + result)
+        self.info("Found a TLD with the target's name: " + result)
         self.results[result] = True
 
         # Inform listening modules
@@ -157,10 +157,10 @@ class sfp_tldsearch(SpiderFootPlugin):
         keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
 
         if not keyword:
-            self.sf.error(f"Failed to extract keyword from {eventData}")
+            self.error(f"Failed to extract keyword from {eventData}")
             return
 
-        self.sf.debug(f"Keyword extracted from {eventData}: {keyword}")
+        self.debug(f"Keyword extracted from {eventData}: {keyword}")
 
         if keyword in self.results:
             return

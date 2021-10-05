@@ -129,7 +129,7 @@ class sfp_flickr(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -140,25 +140,25 @@ class sfp_flickr(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked")
+            self.debug(f"Skipping {eventData}, already checked")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_flickr':
-            self.sf.debug(f"Ignoring {eventData}, from self.")
+            self.debug(f"Ignoring {eventData}, from self.")
             return
 
         # Retrieve API key
         api_key = self.retrieveApiKey()
 
         if not api_key:
-            self.sf.error("Failed to obtain API key")
+            self.error("Failed to obtain API key")
             return
 
-        self.sf.debug(f"Retrieved API key: {api_key}")
+        self.debug(f"Retrieved API key: {api_key}")
 
         # Query API for event data
         hosts = list()
@@ -179,13 +179,13 @@ class sfp_flickr(SpiderFootPlugin):
 
             # Check the response is ok
             if data.get('stat') != "ok":
-                self.sf.debug("Error retrieving search results.")
+                self.debug("Error retrieving search results.")
                 return
 
             photos = data.get('photos')
 
             if not photos:
-                self.sf.debug("No search results.")
+                self.debug("No search results.")
                 return
 
             # Calculate number of pages to retrieve
@@ -199,7 +199,7 @@ class sfp_flickr(SpiderFootPlugin):
                 if pages > allowed_pages:
                     pages = allowed_pages
 
-            self.sf.info(f"Parsing page {page} of {pages}")
+            self.info(f"Parsing page {page} of {pages}")
 
             # Extract data
             for photo in photos.get('photo', list()):
@@ -211,10 +211,10 @@ class sfp_flickr(SpiderFootPlugin):
                     mail_domain = email.lower().split('@')[1]
 
                     if not self.getTarget().matches(mail_domain, includeChildren=True, includeParents=True):
-                        self.sf.debug(f"Skipped unrelated address: {email}")
+                        self.debug(f"Skipped unrelated address: {email}")
                         continue
 
-                    self.sf.info("Found e-mail address: " + email)
+                    self.info("Found e-mail address: " + email)
                     if email.split("@")[0] in self.opts['_genericusers'].split(","):
                         evttype = "EMAILADDR_GENERIC"
                     else:
@@ -232,12 +232,12 @@ class sfp_flickr(SpiderFootPlugin):
                     host = self.sf.urlFQDN(link)
 
                     if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
-                        self.sf.debug(f"Skipped unrelated URL: {link}")
+                        self.debug(f"Skipped unrelated URL: {link}")
                         continue
 
                     hosts.append(host)
 
-                    self.sf.debug(f"Found a URL: {link}")
+                    self.debug(f"Found a URL: {link}")
                     evt = SpiderFootEvent('LINKED_URL_INTERNAL', link, self.__name__, event)
                     self.notifyListeners(evt)
                     self.results[link] = True
@@ -252,7 +252,7 @@ class sfp_flickr(SpiderFootPlugin):
                 return
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
-                self.sf.debug(f"Host {host} could not be resolved")
+                self.debug(f"Host {host} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 self.notifyListeners(evt)
                 continue

@@ -79,19 +79,19 @@ class sfp_ipstack(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipstack but did not set an API key!")
+            self.error("You enabled sfp_ipstack but did not set an API key!")
             self.errorState = True
             return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -99,21 +99,21 @@ class sfp_ipstack(SpiderFootPlugin):
         res = self.sf.fetchUrl("http://api.ipstack.com/" + eventData + "?access_key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
-            self.sf.info("No GeoIP info found for " + eventData)
+            self.info("No GeoIP info found for " + eventData)
 
         try:
             hostip = json.loads(res['content'])
             if 'success' in hostip and hostip['success'] is False:
-                self.sf.error("Invalid ipstack.com API key or usage limits exceeded.")
+                self.error("Invalid ipstack.com API key or usage limits exceeded.")
                 self.errorState = True
                 return
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return
 
         geoinfo = hostip.get('country_name')
         if geoinfo:
-            self.sf.info(f"Found GeoIP for {eventData}: {geoinfo}")
+            self.info(f"Found GeoIP for {eventData}: {geoinfo}")
             evt = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
             self.notifyListeners(evt)
 

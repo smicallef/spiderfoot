@@ -104,13 +104,13 @@ class sfp_threatcrowd(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.info(f"No ThreatCrowd info found for {qry}")
+            self.info(f"No ThreatCrowd info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}")
+            self.error(f"Error processing JSON response from ThreatCrowd: {e}")
             self.errorState = True
 
         return None
@@ -124,10 +124,10 @@ class sfp_threatcrowd(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -143,7 +143,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -151,7 +151,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return
             max_subnet = self.opts['maxsubnet']
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         qrylist = list()
@@ -170,7 +170,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
             if info is None:
                 continue
             if info.get('votes', 0) < 0:
-                self.sf.info("Found ThreatCrowd URL data for " + addr)
+                self.info("Found ThreatCrowd URL data for " + addr)
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
 

@@ -71,7 +71,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             return
@@ -83,14 +83,14 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             netmask = address.max_prefixlen - min(address.max_prefixlen, max(1, int(self.opts.get("lookasidebits"))))
             network = ipaddress.ip_network(f"{eventData}/{netmask}", strict=False)
         except ValueError:
-            self.sf.error(f"Invalid IP address received: {eventData}")
+            self.error(f"Invalid IP address received: {eventData}")
             return
 
-        self.sf.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
+        self.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
 
         for ip in network:
             sip = str(ip)
-            self.sf.debug("Attempting look-aside lookup of: " + sip)
+            self.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
                 return
 
@@ -99,7 +99,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
             addrs = self.sf.resolveIP(sip)
             if not addrs:
-                self.sf.debug("Look-aside resolve for " + sip + " failed.")
+                self.debug("Look-aside resolve for " + sip + " failed.")
                 continue
 
             # Report addresses that resolve to hostnames on the same
@@ -147,11 +147,11 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.hostresults[host] = [parentHash]
         else:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
-                self.sf.debug("Skipping host, " + host + ", already processed.")
+                self.debug("Skipping host, " + host + ", already processed.")
                 return None
             self.hostresults[host] = self.hostresults[host] + [parentHash]
 
-        self.sf.debug("Found host: " + host)
+        self.debug("Found host: " + host)
         # If the returned hostname is aliased to our
         # target in some way, flag it as an affiliate
         if affiliate is None:

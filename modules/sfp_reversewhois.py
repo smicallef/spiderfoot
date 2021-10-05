@@ -72,7 +72,7 @@ class sfp_reversewhois(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts.get("_fetchtimeout", 30))
 
         if res["code"] not in ["200"]:
-            self.sf.error("You may have exceeded ReverseWhois usage limits.")
+            self.error("You may have exceeded ReverseWhois usage limits.")
             self.errorState = True
             return ret
 
@@ -92,13 +92,13 @@ class sfp_reversewhois(SpiderFootPlugin):
                     if registrar:
                         registrars.add(registrar)
             except IndexError:
-                self.sf.debug(f"Invalid row {table_row}")
+                self.debug(f"Invalid row {table_row}")
                 continue
 
         ret = (list(domains), list(registrars))
 
         if not registrars and not domains:
-            self.sf.info(f"No ReverseWhois info found for {qry}")
+            self.info(f"No ReverseWhois info found for {qry}")
 
         return ret
 
@@ -111,10 +111,10 @@ class sfp_reversewhois(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

@@ -110,7 +110,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         t = []
 
         # Spawn threads for scanning
-        self.sf.info("Spawning threads to check hosts: " + str(hostList))
+        self.info("Spawning threads to check hosts: " + str(hostList))
         for name in hostList:
             tn = 'thread_sfp_dnsbrute_' + str(random.SystemRandom().randint(1, 999999999))
             t.append(threading.Thread(name=tn, target=self.tryHost, args=(name,)))
@@ -135,7 +135,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def sendEvent(self, source, result):
-        self.sf.info("Found a brute-forced host: " + result)
+        self.info("Found a brute-forced host: " + result)
         # Report the host
         evt = SpiderFootEvent("INTERNET_NAME", result, self.__name__, source)
         self.notifyListeners(evt)
@@ -147,7 +147,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         eventData = event.data
         eventDataHash = self.sf.hashstring(eventData)
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnsbrute":
             return
@@ -168,7 +168,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             # Try resolving common names
             wildcard = self.sf.checkDnsWildcard(dom)
             if self.opts['skipcommonwildcard'] and wildcard:
-                self.sf.debug("Wildcard DNS detected on " + dom + " so skipping host iteration.")
+                self.debug("Wildcard DNS detected on " + dom + " so skipping host iteration.")
                 return
 
             dom = "." + dom
@@ -191,10 +191,10 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return
 
         # Try resolving common names
-        self.sf.debug("Iterating through possible sub-domains.")
+        self.debug("Iterating through possible sub-domains.")
         wildcard = self.sf.checkDnsWildcard(eventData)
         if self.opts['skipcommonwildcard'] and wildcard:
-            self.sf.debug("Wildcard DNS detected.")
+            self.debug("Wildcard DNS detected.")
             return
 
         targetList = list()

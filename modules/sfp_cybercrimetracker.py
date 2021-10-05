@@ -87,7 +87,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             return False
 
         if target.lower() in blacklist:
-            self.sf.debug(f"Host name {target} found in cybercrime-tracker.net blacklist.")
+            self.debug(f"Host name {target} found in cybercrime-tracker.net blacklist.")
             return True
 
         return False
@@ -105,12 +105,12 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from cybercrime-tracker.net.")
+            self.error(f"Unexpected HTTP response code {res['code']} from cybercrime-tracker.net.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from cybercrime-tracker.net")
+            self.error("Received no content from cybercrime-tracker.net")
             self.errorState = True
             return None
 
@@ -154,10 +154,10 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -184,7 +184,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with cybercrime-tracker.net")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with cybercrime-tracker.net")
 
         if self.queryBlacklist(eventData):
             url = "http://cybercrime-tracker.net/all.php"

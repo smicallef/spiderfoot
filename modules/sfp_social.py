@@ -67,7 +67,7 @@ class sfp_social(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in list(self.results.keys()):
             return
@@ -81,7 +81,7 @@ class sfp_social(SpiderFootPlugin):
                 if not bits:
                     continue
 
-                self.sf.info(f"Matched {regexpGrp} in {eventData}")
+                self.info(f"Matched {regexpGrp} in {eventData}")
                 evt = SpiderFootEvent(
                     "SOCIAL_MEDIA", f"{regexpGrp}: <SFURL>{eventData}</SFURL>",
                     self.__name__,

@@ -71,7 +71,7 @@ class sfp_emailformat(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl(f"https://www.email-format.com/d/{eventData}/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -95,15 +95,15 @@ class sfp_emailformat(SpiderFootPlugin):
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
             if not self.getTarget().matches(mailDom):
-                self.sf.debug(f"Skipped address: {email}")
+                self.debug(f"Skipped address: {email}")
                 continue
 
             # Skip masked emails
             if re.match(r"^[0-9a-f]{8}\.[0-9]{7}@", email):
-                self.sf.debug(f"Skipped address: {email}")
+                self.debug(f"Skipped address: {email}")
                 continue
 
-            self.sf.info(f"Found e-mail address: {email}")
+            self.info(f"Found e-mail address: {email}")
             if email.split("@")[0] in self.opts['_genericusers'].split(","):
                 evttype = "EMAILADDR_GENERIC"
             else:

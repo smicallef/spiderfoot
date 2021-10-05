@@ -108,9 +108,9 @@ class sfp_spamhaus(SpiderFootPlugin):
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
-                self.sf.debug("Checking Blacklist: " + lookup)
+                self.debug("Checking Blacklist: " + lookup)
                 addrs = self.sf.resolveHost(lookup)
-                self.sf.debug("Addresses returned: " + str(addrs))
+                self.debug("Addresses returned: " + str(addrs))
 
                 if not addrs:
                     continue
@@ -126,7 +126,7 @@ class sfp_spamhaus(SpiderFootPlugin):
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
 
-                    self.sf.debug(f"Return code not found in list: {addr}")
+                    self.debug(f"Return code not found in list: {addr}")
 
                 if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
@@ -142,7 +142,7 @@ class sfp_spamhaus(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             except Exception as e:
-                self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+                self.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -150,7 +150,7 @@ class sfp_spamhaus(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return
@@ -163,7 +163,7 @@ class sfp_spamhaus(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -172,7 +172,7 @@ class sfp_spamhaus(SpiderFootPlugin):
 
             max_subnet = self.opts['maxsubnet']
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         if eventName.startswith("NETBLOCK_"):

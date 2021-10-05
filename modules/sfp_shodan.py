@@ -94,17 +94,17 @@ class sfp_shodan(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.info(f"No SHODAN info found for {qry}")
+            self.info(f"No SHODAN info found for {qry}")
             return None
 
         try:
             r = json.loads(res['content'])
             if "error" in r:
-                self.sf.error(f"Error returned from SHODAN: {r['error']}")
+                self.error(f"Error returned from SHODAN: {r['error']}")
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return None
@@ -122,17 +122,17 @@ class sfp_shodan(SpiderFootPlugin):
         )
         time.sleep(1)
         if res['content'] is None:
-            self.sf.info(f"No SHODAN info found for {qry}")
+            self.info(f"No SHODAN info found for {qry}")
             return None
 
         try:
             r = json.loads(res['content'])
             if "error" in r:
-                self.sf.error(f"Error returned from SHODAN: {r['error']}")
+                self.error(f"Error returned from SHODAN: {r['error']}")
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return None
@@ -150,20 +150,20 @@ class sfp_shodan(SpiderFootPlugin):
         )
         time.sleep(1)
         if res['content'] is None:
-            self.sf.info(f"No SHODAN info found for {qry}")
+            self.info(f"No SHODAN info found for {qry}")
             return None
 
         try:
             r = json.loads(res['content'])
             if "error" in r:
-                self.sf.error(f"Error returned from SHODAN: {r['error']}")
+                self.error(f"Error returned from SHODAN: {r['error']}")
                 return None
             if r.get('total', 0) == 0:
-                self.sf.info(f"No SHODAN info found for {qry}")
+                self.info(f"No SHODAN info found for {qry}")
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return None
@@ -177,15 +177,15 @@ class sfp_shodan(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_shodan but did not set an API key!")
+            self.error("You enabled sfp_shodan but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -203,11 +203,11 @@ class sfp_shodan(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
             except Exception as e:
-                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
+                self.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
                 return
 
             if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:
-                self.sf.debug(f"Skipping {eventData}, as not supported.")
+                self.debug(f"Skipping {eventData}, as not supported.")
                 return
 
             rec = self.searchHtml(analytics_id)
@@ -224,7 +224,7 @@ class sfp_shodan(SpiderFootPlugin):
                 return
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
         qrylist = list()
@@ -270,7 +270,7 @@ class sfp_shodan(SpiderFootPlugin):
             if 'data' not in rec:
                 continue
 
-            self.sf.info(f"Found SHODAN data for {eventData}")
+            self.info(f"Found SHODAN data for {eventData}")
             ports = list()
             banners = list()
             asns = list()

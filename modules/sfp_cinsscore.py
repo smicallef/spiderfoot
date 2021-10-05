@@ -81,12 +81,12 @@ class sfp_cinsscore(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -98,15 +98,15 @@ class sfp_cinsscore(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in cinsscore.com list.")
+                        self.debug(f"{ip} found within netblock/subnet {qry} in cinsscore.com list.")
                         return url
                 except Exception as e:
-                    self.sf.debug(f"Error encountered parsing: {e}")
+                    self.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug(f"{qry} found in cinsscore.com list.")
+                    self.debug(f"{qry} found in cinsscore.com list.")
                     return url
 
         return None
@@ -117,10 +117,10 @@ class sfp_cinsscore(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -149,7 +149,7 @@ class sfp_cinsscore(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
+        self.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
 
         url = self.query(eventData, targetType)
 

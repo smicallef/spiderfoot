@@ -119,13 +119,13 @@ class sfp_abusech(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in Abuse.ch Feodo Tracker.")
+                self.debug(f"IP address {target} found in Abuse.ch Feodo Tracker.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch Feodo Tracker.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch Feodo Tracker.")
                     return True
 
         return False
@@ -143,12 +143,12 @@ class sfp_abusech(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch Abuse.ch Feodo Tracker.")
+            self.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch Abuse.ch Feodo Tracker.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from Abuse.ch Feodo Tracker")
+            self.error("Received no content from Abuse.ch Feodo Tracker")
             self.errorState = True
             return None
 
@@ -190,13 +190,13 @@ class sfp_abusech(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in Abuse.ch SSL Blacklist.")
+                self.debug(f"IP address {target} found in Abuse.ch SSL Blacklist.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch SSL Blacklist.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch SSL Blacklist.")
                     return True
 
         return False
@@ -214,12 +214,12 @@ class sfp_abusech(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch Abuse.ch Feodo Tracker.")
+            self.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch Abuse.ch Feodo Tracker.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from Abuse.ch Feodo Tracker")
+            self.error("Received no content from Abuse.ch Feodo Tracker")
             self.errorState = True
             return None
 
@@ -265,17 +265,17 @@ class sfp_abusech(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in Abuse.ch URL Haus Blacklist.")
+                self.debug(f"IP address {target} found in Abuse.ch URL Haus Blacklist.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch URL Haus Blacklist.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in Abuse.ch URL Haus Blacklist.")
                     return True
         elif targetType == "domain":
             if target.lower() in blacklist:
-                self.sf.debug(f"Host name {target} found in Abuse.ch URL Haus Blacklist.")
+                self.debug(f"Host name {target} found in Abuse.ch URL Haus Blacklist.")
                 return True
 
         return False
@@ -293,12 +293,12 @@ class sfp_abusech(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch URL Haus.")
+            self.error(f"Unexpected HTTP response code {res['code']} from Abuse.ch URL Haus.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from Abuse.ch URL Haus")
+            self.error("Received no content from Abuse.ch URL Haus")
             self.errorState = True
             return None
 
@@ -344,10 +344,10 @@ class sfp_abusech(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -390,14 +390,14 @@ class sfp_abusech(SpiderFootPlugin):
             return
 
         if targetType in ['ip', 'netblock']:
-            self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch Feodo Tracker")
+            self.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch Feodo Tracker")
             if self.queryFeodoTrackerBlacklist(eventData, targetType):
                 url = "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"
                 text = f"Abuse.ch Feodo Tracker [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-            self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch SSL Blacklist")
+            self.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch SSL Blacklist")
             if self.querySslBlacklist(eventData, targetType):
                 url = "https://sslbl.abuse.ch/blacklist/sslipblacklist.csv"
                 text = f"Abuse.ch SSL Blacklist [{eventData}]\n<SFURL>{url}</SFURL>"
@@ -405,7 +405,7 @@ class sfp_abusech(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
         if targetType in ['ip', 'domain']:
-            self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch URL Haus")
+            self.debug(f"Checking maliciousness of {eventData} ({eventName}) with Abuse.ch URL Haus")
             if self.queryUrlHausBlacklist(eventData, targetType):
                 url = "https://urlhaus.abuse.ch/downloads/csv_recent/"
                 text = f"Abuse.ch URL Haus Blacklist [{eventData}]\n<SFURL>{url}</SFURL>"

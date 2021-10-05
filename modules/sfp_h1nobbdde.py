@@ -72,7 +72,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.debug("No content returned from h1.nobbd.de")
+            self.debug("No content returned from h1.nobbd.de")
             return None
 
         try:
@@ -82,7 +82,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error(f"Error processing response from h1.nobbd.de: {e}")
+            self.error(f"Error processing response from h1.nobbd.de: {e}")
             return None
 
         return ret
@@ -93,10 +93,10 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

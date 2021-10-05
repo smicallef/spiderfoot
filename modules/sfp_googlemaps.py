@@ -86,7 +86,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.info(f"No location info found for {address}")
+            self.info(f"No location info found for {address}")
             return None
 
         return res
@@ -100,15 +100,15 @@ class sfp_googlemaps(SpiderFootPlugin):
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
@@ -117,7 +117,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         res = self.query(eventData)
 
         if not res:
-            self.sf.debug(f"No information found for {eventData}")
+            self.debug(f"No information found for {eventData}")
             return
 
         evt = SpiderFootEvent(
@@ -131,7 +131,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])['results'][0]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return
 
         if srcModuleName == "sfp_googlemaps":

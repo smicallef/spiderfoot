@@ -83,18 +83,18 @@ class sfp_urlscan(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by URLScan.io.")
+            self.error("You are being rate-limited by URLScan.io.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No results info found for " + qry)
+            self.info("No results info found for " + qry)
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -107,10 +107,10 @@ class sfp_urlscan(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -185,7 +185,7 @@ class sfp_urlscan(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if self.opts['verify'] and len(domains) > 0:
-            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+            self.info("Resolving " + str(len(set(domains))) + " domains ...")
 
         for domain in set(domains):
             if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):

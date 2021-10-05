@@ -40,7 +40,7 @@ class sfp_dnsdumpster(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.sf.debug("Setting up sfp_dnsdumpster")
+        self.debug("Setting up sfp_dnsdumpster")
         self.results = self.tempStorage()
         self.opts.update(userOpts)
 
@@ -59,9 +59,9 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             useragent=self.opts.get("_useragent", "Spiderfoot")
         )
         if res1["code"] not in ["200"]:
-            self.sf.error(f"Bad response code \"{res1['code']}\" from DNSDumpster")
+            self.error(f"Bad response code \"{res1['code']}\" from DNSDumpster")
         else:
-            self.sf.debug(f"Valid response code \"{res1['code']}\" from DNSDumpster")
+            self.debug(f"Valid response code \"{res1['code']}\" from DNSDumpster")
         html = BeautifulSoup(str(res1["content"]), features="lxml")
         csrftoken = None
         csrfmiddlewaretoken = None
@@ -76,11 +76,11 @@ class sfp_dnsdumpster(SpiderFootPlugin):
 
         # Abort if we didn't get the tokens
         if not csrftoken or not csrfmiddlewaretoken:
-            self.sf.error("Error obtaining CSRF tokens")
+            self.error("Error obtaining CSRF tokens")
             self.errorState = True
             return ret
         else:
-            self.sf.debug("Successfully obtained CSRF tokens")
+            self.debug("Successfully obtained CSRF tokens")
 
         # Otherwise, do the needful
         url = "https://dnsdumpster.com/"
@@ -102,7 +102,7 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             useragent=self.opts.get("_useragent", "Spiderfoot")
         )
         if res2["code"] not in ["200"]:
-            self.sf.error(f"Bad response code \"{res2['code']}\" from DNSDumpster")
+            self.error(f"Bad response code \"{res2['code']}\" from DNSDumpster")
             return ret
 
         html = BeautifulSoup(str(res2["content"]), features="lxml")
@@ -123,7 +123,7 @@ class sfp_dnsdumpster(SpiderFootPlugin):
     def handleEvent(self, event):
         query = str(event.data).lower()
 
-        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
+        self.debug(f"Received event, {event.eventType}, from {event.module}")
 
         # skip if we've already processed this event (or its parent domain/subdomain)
         target = self.getTarget()
@@ -131,7 +131,7 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         if eventDataHash in self.results or \
                 (target.matches(query, includeParents=True) and not
                  target.matches(query, includeChildren=False)):
-            self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
+            self.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
         self.results[eventDataHash] = True
 
@@ -140,4 +140,4 @@ class sfp_dnsdumpster(SpiderFootPlugin):
                     target.matches(hostname, includeChildren=False):
                 self.sendEvent(event, hostname)
             else:
-                self.sf.debug(f"Invalid subdomain: {hostname}")
+                self.debug(f"Invalid subdomain: {hostname}")

@@ -98,7 +98,7 @@ class sfp_arin(SpiderFootPlugin):
                     lname = t
                 url += "pocs;first=" + fname + ";last=" + lname
         except Exception as e:
-            self.sf.debug("Couldn't process name: " + value + " (" + str(e) + ")")
+            self.debug("Couldn't process name: " + value + " (" + str(e) + ")")
             return None
 
         if qtype == "contact":
@@ -106,13 +106,13 @@ class sfp_arin(SpiderFootPlugin):
 
         res = self.fetchRir(url)
         if not res:
-            self.sf.debug("No info found/available for " + value + " at ARIN.")
+            self.debug("No info found/available for " + value + " at ARIN.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, self.currentEventSrc)
@@ -126,11 +126,11 @@ class sfp_arin(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

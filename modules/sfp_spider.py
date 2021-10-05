@@ -90,11 +90,11 @@ class sfp_spider(SpiderFootPlugin):
 
         # Filter out certain file types (if user chooses to)
         if list(filter(lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower()), self.opts['filterfiles'])):
-            # self.sf.debug('Ignoring filtered extension: ' + link)
+            # self.debug('Ignoring filtered extension: ' + link)
             return None
 
         if site in self.siteCookies:
-            self.sf.debug(f"Restoring cookies for {site}: {self.siteCookies[site]}")
+            self.debug(f"Restoring cookies for {site}: {self.siteCookies[site]}")
             cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
         fetched = self.sf.fetchUrl(
@@ -112,18 +112,18 @@ class sfp_spider(SpiderFootPlugin):
         if self.opts['usecookies'] and fetched['headers'] is not None:
             if fetched['headers'].get('Set-Cookie'):
                 self.siteCookies[site] = fetched['headers'].get('Set-Cookie')
-                self.sf.debug(f"Saving cookies for {site}: {self.siteCookies[site]}")
+                self.debug(f"Saving cookies for {site}: {self.siteCookies[site]}")
 
         if url not in self.urlEvents:
             # TODO: be more descriptive
-            self.sf.error("Something strange happened - shouldn't get here: url not in self.urlEvents")
+            self.error("Something strange happened - shouldn't get here: url not in self.urlEvents")
             self.urlEvents[url] = None
 
         # Notify modules about the content obtained
         self.contentNotify(url, fetched, self.urlEvents[url])
 
         if fetched['realurl'] is not None and fetched['realurl'] != url:
-            # self.sf.debug("Redirect of " + url + " to " + fetched['realurl'])
+            # self.debug("Redirect of " + url + " to " + fetched['realurl'])
             # Store the content for the redirect so that it isn't fetched again
             self.fetchedPages[fetched['realurl']] = True
             # Notify modules about the new link
@@ -136,7 +136,7 @@ class sfp_spider(SpiderFootPlugin):
                                    self.getTarget().getNames())
 
         if not links:
-            self.sf.debug(f"No links found at {url}")
+            self.debug(f"No links found at {url}")
             return None
 
         # Notify modules about the links found
@@ -149,7 +149,7 @@ class sfp_spider(SpiderFootPlugin):
             # Supply the SpiderFootEvent of the parent URL as the parent
             self.urlEvents[link] = self.linkNotify(link, self.urlEvents[url])
 
-        self.sf.debug('Links found from parsing: ' + str(links))
+        self.debug('Links found from parsing: ' + str(links))
         return links
 
     # Clear out links that we don't want to follow
@@ -162,33 +162,33 @@ class sfp_spider(SpiderFootPlugin):
 
             # Skip external sites (typical behaviour..)
             if not self.getTarget().matches(linkFQDN):
-                # self.sf.debug('Ignoring external site: ' + link)
+                # self.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
             if self.opts['nosubs'] and not \
                     self.getTarget().matches(linkFQDN, includeChildren=False):
-                # self.sf.debug("Ignoring subdomain: " + link)
+                # self.debug("Ignoring subdomain: " + link)
                 continue
 
             # Skip parent domain sites
             if not self.getTarget().matches(linkFQDN, includeParents=False):
-                # self.sf.debug("Ignoring parent domain: " + link)
+                # self.debug("Ignoring parent domain: " + link)
                 continue
 
             # Optionally skip user directories
             if self.opts['filterusers'] and '/~' in link:
-                # self.sf.debug("Ignoring user folder: " + link)
+                # self.debug("Ignoring user folder: " + link)
                 continue
 
             # If we are respecting robots.txt, filter those out too
             if linkBase in self.robotsRules and self.opts['robotsonly']:
                 if list(filter(lambda blocked: type(blocked).lower(blocked) in link.lower() or blocked == '*', self.robotsRules[linkBase])):
-                    # self.sf.debug("Ignoring page found in robots.txt: " + link)
+                    # self.debug("Ignoring page found in robots.txt: " + link)
                     continue
 
             # All tests passed, add link to be spidered
-            self.sf.debug("Adding URL for spidering: " + link)
+            self.debug("Adding URL for spidering: " + link)
             returnLinks[link] = links[link]
 
         return returnLinks
@@ -275,15 +275,15 @@ class sfp_spider(SpiderFootPlugin):
         eventData = event.data
         spiderTarget = None
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't spider links we find ourselves
         if srcModuleName == "sfp_spider":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return None
 
         if eventData in self.urlEvents:
-            self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
+            self.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
             return None
 
         self.urlEvents[eventData] = event
@@ -306,7 +306,7 @@ class sfp_spider(SpiderFootPlugin):
         if spiderTarget is None:
             return None
 
-        self.sf.debug("Initiating spider of " + spiderTarget + " from " + srcModuleName)
+        self.debug("Initiating spider of " + spiderTarget + " from " + srcModuleName)
 
         # Link the spidered URL to the event that triggered it
         self.urlEvents[spiderTarget] = event
@@ -327,7 +327,7 @@ class sfp_spider(SpiderFootPlugin):
                                          useragent=self.opts['_useragent'],
                                          verify=False)
             if robotsTxt['content'] is not None:
-                self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
+                self.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = SpiderFootHelpers.parseRobotsTxt(robotsTxt['content'])
 
         if self.checkForStop():
@@ -339,7 +339,7 @@ class sfp_spider(SpiderFootPlugin):
         links = self.processUrl(startingPoint)  # fetch first page
 
         if links is None:
-            self.sf.debug("No links found on the first fetch!")
+            self.debug("No links found on the first fetch!")
             return
 
         while keepSpidering:
@@ -352,14 +352,14 @@ class sfp_spider(SpiderFootPlugin):
                 for link in nextLinks:
                     # Always skip links we've already fetched
                     if (link in self.fetchedPages):
-                        self.sf.debug("Already fetched " + link + ", skipping.")
+                        self.debug("Already fetched " + link + ", skipping.")
                         continue
 
                     # Check if we've been asked to stop
                     if self.checkForStop():
                         return
 
-                    self.sf.debug("Fetching fresh content from: " + link)
+                    self.debug("Fetching fresh content from: " + link)
                     time.sleep(self.opts['pausesec'])
                     freshLinks = self.processUrl(link)
                     if freshLinks is not None:
@@ -367,24 +367,24 @@ class sfp_spider(SpiderFootPlugin):
 
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
-                        self.sf.info("Maximum number of pages (" + str(self.opts['maxpages'])
-                                     + ") reached.")
+                        self.info("Maximum number of pages (" + str(self.opts['maxpages'])
+                                  + ") reached.")
                         keepSpidering = False
                         break
 
             nextLinks = self.cleanLinks(links)
-            self.sf.debug(f"Found links: {nextLinks}")
+            self.debug(f"Found links: {nextLinks}")
 
             # We've scanned through another layer of the site
             levelsTraversed += 1
-            self.sf.debug(f"At level: {levelsTraversed}, Pages: {totalFetched}")
+            self.debug(f"At level: {levelsTraversed}, Pages: {totalFetched}")
             if levelsTraversed >= self.opts['maxlevels']:
-                self.sf.info(f"Maximum number of levels ({self.opts['maxlevels']}) reached.")
+                self.info(f"Maximum number of levels ({self.opts['maxlevels']}) reached.")
                 keepSpidering = False
 
             # We've reached the end of our journey..
             if len(nextLinks) == 0:
-                self.sf.debug("No more links found to spider, finishing..")
+                self.debug("No more links found to spider, finishing..")
                 keepSpidering = False
 
             # We've been asked to stop scanning

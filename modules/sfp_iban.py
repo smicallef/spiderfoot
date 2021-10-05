@@ -57,11 +57,11 @@ class sfp_iban(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         ibanNumbers = self.sf.parseIBANNumbers(eventData)
         for ibanNumber in set(ibanNumbers):
-            self.sf.info(f"Found IBAN number: {ibanNumber}")
+            self.info(f"Found IBAN number: {ibanNumber}")
             evt = SpiderFootEvent("IBAN_NUMBER", ibanNumber, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
