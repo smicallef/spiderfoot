@@ -396,8 +396,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
                 list(pool.map(
                     callback,
                     iterable,
-                    args=args,
-                    kwargs=kwargs
+                    *args,
+                    **kwargs
                 )),
                 key=lambda x: x[0]
             )
@@ -405,9 +405,9 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         # Example 2: using submit()
         with sfp.threadPool(threads, saveResults=True) as pool:
-            pool.start(callback, *args, **kwargs)
+            pool.start()
             for i in iterable:
-                pool.submit(i)
+                pool.submit(callback, *((i,) + args), **kwargs)
             submit_results = sorted(
                 list(pool.shutdown()),
                 key=lambda x: x[0]

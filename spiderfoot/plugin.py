@@ -552,17 +552,17 @@ class SpiderFootPlugin():
                 for result in pool.map(
                         callback,
                         ["a", "b", "c", "d"],
-                        args=("arg1",)
-                        kwargs={kwarg1: "kwarg1"}
+                        "arg1",
+                        kwarg1="kwarg1"
                     ):
                     yield result
 
         Example 2: using submit()
             with self.threadPool(self.opts["_maxthreads"], saveResults=True) as pool:
-                pool.start(callback, "arg1", kwarg1="kwarg1")
-                # callback(a, "arg1", kwarg1="kwarg1"), callback(b, "arg1" ...)
-                pool.submit(a)
-                pool.submit(b)
+                pool.start()
+                # callback("arg1", kwarg1="kwarg1"), callback("arg1" ...)
+                pool.submit(callback, "arg1", kwarg1="kwarg1")
+                pool.submit(callback, "arg1", kwarg1="kwarg1")
                 for result in pool.shutdown():
                     yield result
         """
@@ -596,18 +596,16 @@ class SpiderFootPlugin():
                 self.outputQueue = None
             self.stop = False
 
-        def start(self, callback, *args, **kwargs):
-            self.sfp.sf.debug(f'Starting thread pool "{self.name}" with {self.threads:,} threads')
+        def start(self):
+            self.sfp.log.debug(f'Starting thread pool "{self.name}" with {self.threads:,} threads')
             for i in range(self.threads):
-                name = kwargs.get('name', 'worker')
-                t = ThreadPoolWorker(self.sfp, target=callback, args=args, kwargs=kwargs,
-                                     inputQueue=self.inputQueue, outputQueue=self.outputQueue,
-                                     name=f"{self.name}_{name}_{i + 1}")
+                t = ThreadPoolWorker(self.sfp, inputQueue=self.inputQueue, outputQueue=self.outputQueue,
+                                     name=f"{self.name}_worker_{i + 1}")
                 t.start()
                 self.pool[i] = t
 
         def shutdown(self, wait=True):
-            self.sfp.sf.debug(f'Shutting down thread pool "{self.name}" with wait={wait}')
+            self.sfp.log.debug(f'Shutting down thread pool "{self.name}" with wait={wait}')
             if wait:
                 while not self.finished and not self.sfp.checkForStop():
                     yield from self.results
@@ -626,10 +624,10 @@ class SpiderFootPlugin():
             with suppress(Exception):
                 self.outputQueue.close()
 
-        def submit(self, arg, wait=True):
-            self.inputQueue.put(arg)
+        def submit(self, callback, *args, **kwargs):
+            self.inputQueue.put((callback, args, kwargs))
 
-        def map(self, callback, iterable, args=None, kwargs=None, name=""):  # noqa: A003
+        def map(self, callback, iterable, *args, **kwargs):  # noqa: A003
             """
             Args:
                 iterable: each entry will be passed as the first argument to the function
@@ -642,16 +640,10 @@ class SpiderFootPlugin():
                 return values from completed callback function
             """
 
-            if args is None:
-                args = tuple()
-
-            if kwargs is None:
-                kwargs = dict()
-
-            self.inputThread = threading.Thread(target=self.feedQueue, args=(iterable, self.inputQueue))
+            self.inputThread = threading.Thread(target=self.feedQueue, args=(callback, iterable, self.inputQueue, args, kwargs))
             self.inputThread.start()
 
-            self.start(callback, *args, **kwargs)
+            self.start()
             yield from self.shutdown()
 
         @property
@@ -660,13 +652,11 @@ class SpiderFootPlugin():
                 while 1:
                     yield self.outputQueue.get_nowait()
 
-        def feedQueue(self, iterable, q):
+        def feedQueue(self, callback, iterable, q, args, kwargs):
             for i in iterable:
-                if self.stop:
-                    break
                 while not self.stop:
                     try:
-                        q.put_nowait(i)
+                        q.put_nowait((callback, (i,) + args, kwargs))
                         break
                     except queue.Full:
                         sleep(.1)
@@ -701,13 +691,7 @@ class SpiderFootPlugin():
 
 class ThreadPoolWorker(threading.Thread):
 
-    def __init__(self, sfp, inputQueue, outputQueue=None, group=None, target=None,
-                 name=None, args=None, kwargs=None, verbose=None):
-        if args is None:
-            args = tuple()
-
-        if kwargs is None:
-            kwargs = dict()
+    def __init__(self, sfp, inputQueue, outputQueue=None, name=None):
 
         self.sfp = sfp
         self.inputQueue = inputQueue
@@ -715,18 +699,18 @@ class ThreadPoolWorker(threading.Thread):
         self.busy = False
         self.stop = False
 
-        super().__init__(group, target, name, args, kwargs)
+        super().__init__(name=name)
 
     def run(self):
         while not self.stop:
             try:
-                entry = self.inputQueue.get_nowait()
+                callback, args, kwargs = self.inputQueue.get_nowait()
                 self.busy = True
                 try:
-                    result = self._target(entry, *self._args, **self._kwargs)
+                    result = callback(*args, **kwargs)
                 except Exception:
                     import traceback
-                    self.sfp.sf.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
+                    self.sfp.log.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
                     break
                 if self.outputQueue is not None:
                     self.outputQueue.put(result)
