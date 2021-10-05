@@ -418,10 +418,13 @@ class SpiderFootPlugin():
                 if sfEvent == 'FINISHED':
                     self.sf.debug(f"{self.__name__}.threadWorker() got \"FINISHED\" from incomingEventQueue.")
                     self.finish()
+                    if self.threaded:
+                        self._threadPool.shutdown()
+
                 else:
                     self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
                     if self.threaded:
-                        self._threadPool.submit(sfEvent)
+                        self._threadPool.submit(self.handleEvent, sfEvent)
                     else:
                         self.handleEvent(sfEvent)
                 self._running = False
@@ -512,10 +515,11 @@ class SpiderFootPlugin():
                 self.pool[i] = t
 
         def shutdown(self, wait=True):
+            results = []
             self.sfp.log.debug(f'Shutting down thread pool "{self.name}" with wait={wait}')
             if wait:
                 while not self.finished and not self.sfp.checkForStop():
-                    yield from self.results
+                    results += list(self.results)
                     sleep(.1)
             self.stop = True
             for t in self.pool:
@@ -527,9 +531,10 @@ class SpiderFootPlugin():
                     self.inputQueue.get_nowait()
             with suppress(Exception):
                 self.inputQueue.close()
-            yield from self.results
+            results += list(self.results)
             with suppress(Exception):
                 self.outputQueue.close()
+            return results
 
         def submit(self, callback, *args, **kwargs):
             self.inputQueue.put((callback, args, kwargs))
@@ -603,7 +608,7 @@ class SpiderFootPlugin():
                 name=self.__name__,
                 saveResults=False
             )
-            self.__threadPool.start(self.handleEvent)
+            self.__threadPool.start()
         return self.__threadPool
 
 
