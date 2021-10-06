@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_opendns
 # Purpose:      SpiderFoot plug-in for looking up whether hosts are blocked by
-#               OpenDNS DNS (208.67.222.222 and 208.67.220.220)
+#               OpenDNS.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,7 +20,7 @@ class sfp_opendns(SpiderFootPlugin):
 
     meta = {
         'name': "OpenDNS",
-        'summary': "Check if a host would be blocked by OpenDNS DNS",
+        'summary': "Check if a host would be blocked by OpenDNS.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -28,7 +28,6 @@ class sfp_opendns(SpiderFootPlugin):
             'website': "https://www.opendns.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://support.opendns.com/hc/en-us",
                 "https://support.opendns.com/hc/en-us/categories/204012807-OpenDNS-Knowledge-Base",
                 "https://support.opendns.com/hc/en-us/categories/204012907-OpenDNS-Device-Configuration"
             ],
@@ -41,11 +40,9 @@ class sfp_opendns(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
 
@@ -58,24 +55,28 @@ class sfp_opendns(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "CO_HOSTED_SITE"
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return [
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_COHOST"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
         res.nameservers = ["208.67.222.222", "208.67.220.220"]
+        # FamilyShield
+        # res.nameservers = ["208.67.222.123", "208.67.220.123"]
 
         try:
             addrs = res.resolve(qaddr)
-            self.debug("Addresses returned: " + str(addrs))
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.debug(f"Unable to resolve {qaddr}")
             return False
@@ -84,36 +85,41 @@ class sfp_opendns(SpiderFootPlugin):
             return True
         return False
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
-        resolved = False
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
+
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by OpenDNS.
-        try:
-            if self.sf.resolveHost(eventData) or self.sf.resolveHost6(eventData):
-                resolved = True
-        except Exception:
+        if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
             return
 
-        if resolved:
-            found = self.queryAddr(eventData)
-            typ = "MALICIOUS_" + eventName
-            if eventName == "CO_HOSTED_SITE":
-                typ = "MALICIOUS_COHOST"
-            if not found:
-                evt = SpiderFootEvent(typ, "Blocked by OpenDNS [" + eventData + "]",
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+        found = self.queryAddr(eventData)
+
+        # Host was found, not blocked
+        if found:
+            return
+
+        self.debug(f"{eventData} was blocked by OpenDNS")
+
+        typ = "MALICIOUS_" + eventName
+
+        if eventName == "CO_HOSTED_SITE":
+            typ = "MALICIOUS_COHOST"
+
+        evt = SpiderFootEvent(
+            typ,
+            f"Blocked by OpenDNS [{eventData}]",
+            self.__name__,
+            event
+        )
+        self.notifyListeners(evt)
 
 # End of sfp_opendns class
