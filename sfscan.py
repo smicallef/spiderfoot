@@ -505,7 +505,7 @@ class SpiderFootScanner():
                     if not mod.errorState and mod.incomingEventQueue is not None:
                         watchedEvents = mod.watchedEvents()
                         if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
-                            mod.incomingEventQueue.put(sfEvent)
+                            mod.incomingEventQueue.put(deepcopy(sfEvent))
 
         except (KeyboardInterrupt, AssertionError) as e:
             self.__sf.status(f"Scan [{self.__scanId}] aborted, {e}.")
