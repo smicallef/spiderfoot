@@ -24,7 +24,10 @@ class SpiderFootSqliteLogHandler(logging.Handler):
         self.opts = opts
         self.dbh = None
         self.batch = []
-        self.batch_size = 100
+        if self.opts.get('_debug', False):
+            self.batch_size = 100
+        else:
+            self.batch_size = 5
         self.shutdown_hook = False
         super().__init__()
 
