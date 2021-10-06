@@ -2,7 +2,8 @@
 # -------------------------------------------------------------------------------
 # Name:        sfp_cleanbrowsing
 # Purpose:     SpiderFoot plug-in for looking up whether hosts are blocked by
-#              CleanBrowsing.org DNS (185.228.168.168 and 185.228.168.169)
+#              CleanBrowsing.org DNS content family filters
+#              (185.228.168.168 and 185.228.168.169).
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,7 +21,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
     meta = {
         'name': "CleanBrowsing.org",
-        'summary': "Check if a host would be blocked by CleanBrowsing.org DNS",
+        'summary': "Check if a host would be blocked by CleanBrowsing.org DNS content filters.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -29,6 +30,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://cleanbrowsing.org/guides/",
+                "https://cleanbrowsing.org/filters/",
                 "https://cleanbrowsing.org/how-it-works",
                 "https://cleanbrowsing.org/web-filtering-for-shools-and-cipa-compliance",
                 "https://cleanbrowsing.org/getting-started"
@@ -77,7 +79,12 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
+        # Family Filter
         res.nameservers = ["185.228.168.168", "185.228.168.169"]
+        # Adult Filter
+        # res.nameservers = ["185.228.168.10", "185.228.169.11"]
+        # Security Filter
+        # res.nameservers = ["185.228.168.9", "185.228.169.9"]
 
         try:
             addrs = res.resolve(qaddr)
@@ -92,11 +99,9 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
@@ -104,7 +109,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
-        # malicious host only if NOT resolved by CleanBrowsing.org.
+        # malicious host only if NOT resolved by CleanBrowsing DNS.
         if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
             return
 
@@ -114,6 +119,8 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         if found:
             return
 
+        self.debug(f"{eventData} was blocked by CleanBrowsing DNS")
+
         typ = "MALICIOUS_" + eventName
 
         if eventName == "CO_HOSTED_SITE":
@@ -121,9 +128,9 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
         evt = SpiderFootEvent(
             typ,
-            f"Blocked by CleanBrowsing.org [{eventData}]",
+            f"Blocked by CleanBrowsing DNS [{eventData}]",
             self.__name__,
-            parentEvent
+            event
         )
         self.notifyListeners(evt)
 
