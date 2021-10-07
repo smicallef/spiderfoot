@@ -525,7 +525,7 @@ class SpiderFootPlugin():
                     if self.__name__.startswith('sfp__stor_'):
                         self.handleEvent(sfEvent)
                     else:
-                        self.sharedThreadPool.submit(self.handleEvent, sfEvent, taskName=self.__name__, maxThreads=self.maxThreads)
+                        self.sharedThreadPool.submit(self.handleEvent, sfEvent, taskName=f"{self.__name__}_threadWorker", maxThreads=self.maxThreads)
                 self._running = False
         except KeyboardInterrupt:
             self.sf.debug(f"Interrupted module {self.__name__}.")
