@@ -72,6 +72,8 @@ class SpiderFootPluginLogger(logging.Logger):
 
 # end of logging overrides
 
+from spiderfoot import SpiderFootThreadPool
+
 
 class SpiderFootPlugin():
     """SpiderFootPlugin module object
@@ -127,6 +129,8 @@ class SpiderFootPlugin():
     sf = None
     # Configuration, set in each module's setup() function
     opts = dict()
+    # Maximum threads
+    maxThreads = 1
 
     def __init__(self):
         # Whether the module is currently processing data
@@ -135,6 +139,8 @@ class SpiderFootPlugin():
         self.thread = None
         # logging overrides
         self._log = None
+        # Shared thread pool for all modules
+        self.sharedThreadPool = None
 
     @property
     def log(self):
@@ -516,7 +522,10 @@ class SpiderFootPlugin():
                     self.finish()
                 else:
                     self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
-                    self.handleEvent(sfEvent)
+                    if self.__name__.startswith('sfp__stor_'):
+                        self.handleEvent(sfEvent)
+                    else:
+                        self.sharedThreadPool.submit(self.handleEvent, sfEvent, taskName=self.__name__, maxThreads=self.maxThreads)
                 self._running = False
         except KeyboardInterrupt:
             self.sf.debug(f"Interrupted module {self.__name__}.")
@@ -541,183 +550,10 @@ class SpiderFootPlugin():
         finally:
             self._running = False
 
-    class ThreadPool:
-        """
-        A spiderfoot-integrated threading pool
-        Each thread in the pool is spawned only once, and reused for best performance.
-
-        Example 1: using map()
-            with self.threadPool(self.opts["_maxthreads"], saveResults=True) as pool:
-                # callback("a", "arg1", kwarg1="kwarg1"), callback("b", "arg1" ...)
-                for result in pool.map(
-                        callback,
-                        ["a", "b", "c", "d"],
-                        "arg1",
-                        kwarg1="kwarg1"
-                    ):
-                    yield result
-
-        Example 2: using submit()
-            with self.threadPool(self.opts["_maxthreads"], saveResults=True) as pool:
-                pool.start()
-                # callback("arg1", kwarg1="kwarg1"), callback("arg1" ...)
-                pool.submit(callback, "arg1", kwarg1="kwarg1")
-                pool.submit(callback, "arg1", kwarg1="kwarg1")
-                for result in pool.shutdown():
-                    yield result
-        """
-
-        def __init__(self, sfp, threads=100, qsize=None, name=None, saveResults=False):
-            """Initialize the ThreadPool class.
-
-            Args:
-                sfp: A SpiderFootPlugin object
-                threads: Max number of threads
-                qsize: Queue size
-                name: Name
-                saveResults: Whether to store the return value of each function call
-            """
-            if name is None:
-                name = ""
-
-            self.sfp = sfp
-            self.threads = int(threads)
-            try:
-                self.qsize = int(qsize)
-            except (TypeError, ValueError):
-                self.qsize = self.threads * 5
-            self.pool = [None] * self.threads
-            self.name = str(name)
-            self.inputThread = None
-            self.inputQueue = queue.Queue(self.qsize)
-            if saveResults:
-                self.outputQueue = queue.Queue(self.qsize)
-            else:
-                self.outputQueue = None
-            self.stop = False
-
-        def start(self):
-            self.sfp.log.debug(f'Starting thread pool "{self.name}" with {self.threads:,} threads')
-            for i in range(self.threads):
-                t = ThreadPoolWorker(self.sfp, inputQueue=self.inputQueue, outputQueue=self.outputQueue,
-                                     name=f"{self.name}_worker_{i + 1}")
-                t.start()
-                self.pool[i] = t
-
-        def shutdown(self, wait=True):
-            self.sfp.log.debug(f'Shutting down thread pool "{self.name}" with wait={wait}')
-            if wait:
-                while not self.finished and not self.sfp.checkForStop():
-                    yield from self.results
-                    sleep(.1)
-            self.stop = True
-            for t in self.pool:
-                with suppress(Exception):
-                    t.stop = True
-            # make sure input queue is empty
-            with suppress(Exception):
-                while 1:
-                    self.inputQueue.get_nowait()
-            with suppress(Exception):
-                self.inputQueue.close()
-            yield from self.results
-            with suppress(Exception):
-                self.outputQueue.close()
-
-        def submit(self, callback, *args, **kwargs):
-            self.inputQueue.put((callback, args, kwargs))
-
-        def map(self, callback, iterable, *args, **kwargs):  # noqa: A003
-            """
-            Args:
-                iterable: each entry will be passed as the first argument to the function
-                callback: the function to thread
-                args: additional arguments to pass to callback function
-                kwargs: keyword arguments to pass to callback function
-
-            Yields:
-                return values from completed callback function
-            """
-
-            self.inputThread = threading.Thread(target=self.feedQueue, args=(callback, iterable, self.inputQueue, args, kwargs))
-            self.inputThread.start()
-
-            self.start()
-            yield from self.shutdown()
-
-        @property
-        def results(self):
-            with suppress(Exception):
-                while 1:
-                    yield self.outputQueue.get_nowait()
-
-        def feedQueue(self, callback, iterable, q, args, kwargs):
-            for i in iterable:
-                while not self.stop:
-                    try:
-                        q.put_nowait((callback, (i,) + args, kwargs))
-                        break
-                    except queue.Full:
-                        sleep(.1)
-                        continue
-
-        @property
-        def finished(self):
-            if self.sfp.checkForStop():
-                return True
-            else:
-                finishedThreads = [not t.busy for t in self.pool if t is not None]
-                try:
-                    inputThreadAlive = self.inputThread.is_alive()
-                except AttributeError:
-                    inputThreadAlive = False
-                return not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exception_type, exception_value, traceback):
-            self.shutdown()
-            # Make sure queues are empty before exiting
-            for q in (self.outputQueue, self.inputQueue):
-                with suppress(Exception):
-                    while 1:
-                        q.get_nowait()
-
     def threadPool(self, *args, **kwargs):
-        return self.ThreadPool(self, *args, **kwargs)
+        return SpiderFootThreadPool(*args, **kwargs)
 
-
-class ThreadPoolWorker(threading.Thread):
-
-    def __init__(self, sfp, inputQueue, outputQueue=None, name=None):
-
-        self.sfp = sfp
-        self.inputQueue = inputQueue
-        self.outputQueue = outputQueue
-        self.busy = False
-        self.stop = False
-
-        super().__init__(name=name)
-
-    def run(self):
-        while not self.stop:
-            try:
-                callback, args, kwargs = self.inputQueue.get_nowait()
-                self.busy = True
-                try:
-                    result = callback(*args, **kwargs)
-                except Exception:
-                    import traceback
-                    self.sfp.sf.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
-                    break
-                if self.outputQueue is not None:
-                    self.outputQueue.put(result)
-            except queue.Empty:
-                self.busy = False
-                # sleep briefly to save CPU
-                sleep(.1)
-            finally:
-                self.busy = False
+    def setSharedThreadPool(self, sharedThreadPool):
+        self.sharedThreadPool = sharedThreadPool
 
 # end of SpiderFootPlugin class

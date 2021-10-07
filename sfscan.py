@@ -22,7 +22,7 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, logger
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, SpiderFootThreadPool, logger
 
 
 def startSpiderFootScanner(loggingQueue, *args, **kwargs):
@@ -255,19 +255,15 @@ class SpiderFootScanner():
         self.__status = status
         self.__dbh.scanInstanceSet(self.__scanId, started, ended, status)
 
-    def __startScan(self, threaded=True):
+    def __startScan(self):
         """Start running a scan.
-
-        Args:
-            threaded (bool): whether to thread modules
         """
         aborted = False
 
         self.__setStatus("STARTING", time.time() * 1000, None)
         self.__sf.status(f"Scan [{self.__scanId}] for '{self.__target.targetValue}' initiated.")
 
-        if threaded:
-            self.eventQueue = queue.Queue()
+        self.eventQueue = queue.Queue()
 
         # moduleList = list of modules the user wants to run
         self.__sf.debug(f"Loading {len(self.__moduleList)} modules ...")
@@ -293,6 +289,9 @@ class SpiderFootScanner():
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 continue
 
+            sharedThreadPool = SpiderFootThreadPool(threads=self.__config.get("_maxthreads", 3), name='sharedThreadPool')
+            sharedThreadPool.start()
+
             # Set up the module options, scan ID, database handle and listeners
             try:
                 # Configuration is a combined global config with module-specific options
@@ -305,6 +304,7 @@ class SpiderFootScanner():
                 mod.setScanId(self.__scanId)
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
+                mod.setSharedThreadPool(sharedThreadPool)
             except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 mod.errorState = True
@@ -343,13 +343,12 @@ class SpiderFootScanner():
                 continue
 
             # Set up the outgoing event queue
-            if threaded:
-                try:
-                    mod.outgoingEventQueue = self.eventQueue
-                    mod.incomingEventQueue = queue.Queue()
-                except Exception as e:
-                    self.__sf.error(f"Module {modName} event queue setup failed: {e}")
-                    continue
+            try:
+                mod.outgoingEventQueue = self.eventQueue
+                mod.incomingEventQueue = queue.Queue()
+            except Exception as e:
+                self.__sf.error(f"Module {modName} event queue setup failed: {e}")
+                continue
 
             self.__moduleInstances[modName] = mod
             self.__sf.status(f"{modName} module loaded.")
@@ -365,19 +364,6 @@ class SpiderFootScanner():
             # sort modules by priority
             self.__moduleInstances = OrderedDict(sorted(self.__moduleInstances.items(), key=lambda m: m[-1]._priority))
 
-            if not threaded:
-                # Register listener modules and then start all modules sequentially
-                for module in list(self.__moduleInstances.values()):
-                    for listenerModule in list(self.__moduleInstances.values()):
-                        # Careful not to register twice or you will get duplicate events
-                        if listenerModule in module._listenerModules:
-                            continue
-                        # Note the absence of a check for whether a module can register
-                        # to itself. That is intentional because some modules will
-                        # act on their own notifications (e.g. sfp_dns)!
-                        if listenerModule.watchedEvents() is not None:
-                            module.registerListener(listenerModule)
-
             # Now we are ready to roll..
             self.__setStatus("RUNNING")
 
@@ -387,13 +373,8 @@ class SpiderFootScanner():
             psMod.setTarget(self.__target)
             psMod.setDbh(self.__dbh)
             psMod.clearListeners()
-            if threaded:
-                psMod.outgoingEventQueue = self.eventQueue
-                psMod.incomingEventQueue = queue.Queue()
-            else:
-                for mod in list(self.__moduleInstances.values()):
-                    if mod.watchedEvents() is not None:
-                        psMod.registerListener(mod)
+            psMod.outgoingEventQueue = self.eventQueue
+            psMod.incomingEventQueue = queue.Queue()
 
             # Create the "ROOT" event which un-triggered modules will link events to
             rootEvent = SpiderFootEvent("ROOT", self.__targetValue, "", None)
@@ -422,12 +403,8 @@ class SpiderFootScanner():
                     break
 
             # start threads
-            if threaded and not aborted:
+            if not aborted:
                 self.waitForThreads()
-
-            if not threaded:
-                for mod in list(self.__moduleInstances.values()):
-                    mod.finish()
 
             if aborted:
                 self.__sf.status(f"Scan [{self.__scanId}] aborted.")

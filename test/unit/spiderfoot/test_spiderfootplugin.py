@@ -391,12 +391,13 @@ class TestSpiderFootPlugin(unittest.TestCase):
             ("c", ("arg1",), ("kwarg1", "kwarg1"))
         ]
         # Example 1: using map()
-        with sfp.threadPool(threads, saveResults=True) as pool:
+        with sfp.threadPool(threads) as pool:
             map_results = sorted(
                 list(pool.map(
                     callback,
                     iterable,
                     *args,
+                    saveResult=True,
                     **kwargs
                 )),
                 key=lambda x: x[0]
@@ -404,12 +405,12 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertEqual(map_results, expectedOutput)
 
         # Example 2: using submit()
-        with sfp.threadPool(threads, saveResults=True) as pool:
+        with sfp.threadPool(threads) as pool:
             pool.start()
             for i in iterable:
-                pool.submit(callback, *((i,) + args), **kwargs)
+                pool.submit(callback, *((i,) + args), saveResult=True, **kwargs)
             submit_results = sorted(
-                list(pool.shutdown()),
+                list(pool.shutdown()["default"]),
                 key=lambda x: x[0]
             )
         self.assertEqual(submit_results, expectedOutput)
