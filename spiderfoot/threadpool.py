@@ -75,19 +75,19 @@ class SpiderFootThreadPool:
         self._stop = val
 
     def shutdown(self, wait=True):
-        """Shut down the pool. Return (unordered) results in the format:
-        {
-            "taskName": [returnvalue1, returnvalue2, ...]
-        }
+        """Shut down the pool.
 
         Args:
             wait (bool): Whether to wait for the pool to finish executing
+
+        Returns:
+            results (dict): (unordered) results in the format: {"taskName": [returnvalue1, returnvalue2, ...]}
         """
         results = dict()
         self.log.debug(f'Shutting down thread pool "{self.name}" with wait={wait}')
         if wait:
             while not self.finished and not self.stop:
-                for taskName, q in self.outputQueues.items():
+                for taskName in self.outputQueues:
                     moduleResults = list(self.results(taskName))
                     try:
                         results[taskName] += moduleResults
@@ -119,6 +119,8 @@ class SpiderFootThreadPool:
 
         Args:
             callback (function): callback function
+            *args: Passed through to callback
+            **kwargs: Passed through to callback, except for taskName and maxThreads
         """
         taskName = kwargs.get('taskName', 'default')
         maxThreads = kwargs.pop('maxThreads', 100)
@@ -135,6 +137,9 @@ class SpiderFootThreadPool:
 
         Args:
             taskName (str): Name of task
+
+        Returns:
+            the number of queued function calls plus the number of functions which are currently executing
         """
         queuedTasks = 0
         with suppress(Exception):
@@ -150,17 +155,15 @@ class SpiderFootThreadPool:
         try:
             return self.inputQueues[taskName]
         except KeyError:
-            q = queue.Queue(self.qsize)
-            self.inputQueues[taskName] = q
-            return q
+            self.inputQueues[taskName] = queue.Queue(self.qsize)
+            return self.inputQueues[taskName]
 
     def outputQueue(self, taskName="default"):
         try:
             return self.outputQueues[taskName]
         except KeyError:
-            q = queue.Queue(self.qsize)
-            self.outputQueues[taskName] = q
-            return q
+            self.outputQueues[taskName] = queue.Queue(self.qsize)
+            return self.outputQueues[taskName]
 
     def map(self, callback, iterable, *args, **kwargs):  # noqa: A003
         """
@@ -246,7 +249,7 @@ class ThreadPoolWorker(threading.Thread):
                     try:
                         result = callback(*args, **kwargs)
                         ran = True
-                    except Exception:
+                    except Exception:  # noqa: B902
                         import traceback
                         self.log.error(f'Error in thread worker {self.name}: {traceback.format_exc()}')
                         break

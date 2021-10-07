@@ -8,6 +8,8 @@ import threading
 from time import sleep
 import traceback
 
+from .threadpool import SpiderFootThreadPool
+
 # begin logging overrides
 # these are copied from the python logging module
 # https://github.com/python/cpython/blob/main/Lib/logging/__init__.py
@@ -71,8 +73,6 @@ class SpiderFootPluginLogger(logging.Logger):
         return rv  # noqa R504
 
 # end of logging overrides
-
-from spiderfoot import SpiderFootThreadPool
 
 
 class SpiderFootPlugin():
