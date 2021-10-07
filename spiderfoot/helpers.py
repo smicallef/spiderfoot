@@ -80,7 +80,7 @@ class SpiderFootHelpers():
             {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
             {r"^[0-9a-f:]+::/[0-9]+$": "NETBLOCKV6_OWNER"},
             {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"},
-            {r"^([13][a-km-zA-HJ-NP-Z1-9]{25,34})$": "BITCOIN_ADDRESS"}
+            {r"^(bc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})|[13][a-km-zA-HJ-NP-Z1-9]{25,35})$": "BITCOIN_ADDRESS"},
         ]
 
         # Parse the target and set the target type
