@@ -213,9 +213,6 @@ class SpiderFootScanner():
         # Used when module threading is enabled
         self.eventQueue = None
 
-        # Pause event distribution when this many modules are actively processing data
-        self.backoffThreshold = 20
-
         if start:
             self.__startScan()
 
@@ -467,12 +464,6 @@ class SpiderFootScanner():
                 log_status = counter % 100 == 0
                 counter += 1
 
-                modules_running = len([m for m in self.__moduleInstances.values() if m.running])
-                if modules_running > self.backoffThreshold:
-                    self.__sf.debug(f"Backing off event distribution, {modules_running:,} modules running.")
-                    sleep(1)
-                    continue
-
                 try:
                     sfEvent = self.eventQueue.get_nowait()
                     self.__sf.debug(f"waitForThreads() got event, {sfEvent.eventType}, from eventQueue.")
@@ -509,6 +500,14 @@ class SpiderFootScanner():
                     if mod._stopScanning:
                         # break out of the while loop
                         raise AssertionError(f"{mod.__name__} requested stop")
+
+                    # if the modules are too busy, wait
+                    while 1:
+                        modules_running = len([m for m in self.__moduleInstances.values() if m.running])
+                        if modules_running < self.__config.get('_maxthreads', 10):
+                            break
+                        self.__sf.debug(f"Backing off event distribution, {modules_running:,} modules running.")
+                        sleep(1)
 
                     # send it the new event if applicable
                     if not mod.errorState and mod.incomingEventQueue is not None:
