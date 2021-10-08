@@ -78,6 +78,7 @@ class sfp_torexits(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
+            "TOR_EXIT_NODE",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
             "MALICIOUS_SUBNET",
@@ -223,6 +224,9 @@ class sfp_torexits(SpiderFootPlugin):
 
         if self.queryExitNodes(eventData, targetType):
             if targetType == 'ip':
+                evt = SpiderFootEvent("TOR_EXIT_NODE", eventData, self.__name__, event)
+                self.notifyListeners(evt)
+
                 url = f"https://metrics.torproject.org/rs.html#search/{eventData}"
             else:
                 url = "https://metrics.torproject.org/rs.html"
