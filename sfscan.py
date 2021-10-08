@@ -210,6 +210,8 @@ class SpiderFootScanner():
 
         self.__setStatus("INITIALIZING", time.time() * 1000, None)
 
+        self.__sharedThreadPool = SpiderFootThreadPool(threads=self.__config.get("_maxthreads", 3), name='sharedThreadPool')
+
         # Used when module threading is enabled
         self.eventQueue = None
 
@@ -265,6 +267,8 @@ class SpiderFootScanner():
 
         self.eventQueue = queue.Queue()
 
+        self.__sharedThreadPool.start()
+
         # moduleList = list of modules the user wants to run
         self.__sf.debug(f"Loading {len(self.__moduleList)} modules ...")
         for modName in self.__moduleList:
@@ -289,9 +293,6 @@ class SpiderFootScanner():
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 continue
 
-            sharedThreadPool = SpiderFootThreadPool(threads=self.__config.get("_maxthreads", 3), name='sharedThreadPool')
-            sharedThreadPool.start()
-
             # Set up the module options, scan ID, database handle and listeners
             try:
                 # Configuration is a combined global config with module-specific options
@@ -304,7 +305,7 @@ class SpiderFootScanner():
                 mod.setScanId(self.__scanId)
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
-                mod.setSharedThreadPool(sharedThreadPool)
+                mod.setSharedThreadPool(self.__sharedThreadPool)
             except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 mod.errorState = True
@@ -491,6 +492,7 @@ class SpiderFootScanner():
             # tell the modules to stop
             for mod in self.__moduleInstances.values():
                 mod._stopScanning = True
+            self.__sharedThreadPool.shutdown(wait=True)
 
     def threadsFinished(self, log_status=False):
         if self.eventQueue is None:

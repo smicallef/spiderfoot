@@ -133,8 +133,6 @@ class SpiderFootPlugin():
     maxThreads = 1
 
     def __init__(self):
-        # Whether the module is currently processing data
-        self._running = False
         # Holds the thread object when module threading is enabled
         self.thread = None
         # logging overrides
@@ -438,7 +436,7 @@ class SpiderFootPlugin():
         Returns:
             bool
         """
-        return self._running
+        return self.sharedThreadPool.countQueuedTasks(f"{self.__name__}_threadWorker") > 0
 
     def watchedEvents(self):
         """What events is this module interested in for input. The format is a list
@@ -516,17 +514,12 @@ class SpiderFootPlugin():
                 except queue.Empty:
                     sleep(.3)
                     continue
-                self._running = True
                 if sfEvent == 'FINISHED':
                     self.sf.debug(f"{self.__name__}.threadWorker() got \"FINISHED\" from incomingEventQueue.")
-                    self.finish()
+                    self.poolExecute(self.finish)
                 else:
                     self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
-                    if self.__name__.startswith('sfp__stor_'):
-                        self.handleEvent(sfEvent)
-                    else:
-                        self.sharedThreadPool.submit(self.handleEvent, sfEvent, taskName=f"{self.__name__}_threadWorker", maxThreads=self.maxThreads)
-                self._running = False
+                    self.poolExecute(self.handleEvent, sfEvent)
         except KeyboardInterrupt:
             self.sf.debug(f"Interrupted module {self.__name__}.")
             self._stopScanning = True
@@ -547,8 +540,20 @@ class SpiderFootPlugin():
                 # if there are leftover objects in the queue, the scan will hang.
                 self.incomingEventQueue = None
 
-        finally:
-            self._running = False
+    def poolExecute(self, callback, *args, **kwargs):
+        """Execute a callback with the given args.
+        If we're in a storage module, execute normally.
+        Otherwise, use the shared thread pool.
+
+        Args:
+            callback: function to call
+            args: args (passed through to callback)
+            kwargs: kwargs (passed through to callback)
+        """
+        if self.__name__.startswith('sfp__stor_'):
+            callback(*args, **kwargs)
+        else:
+            self.sharedThreadPool.submit(callback, *args, taskName=f"{self.__name__}_threadWorker", maxThreads=self.maxThreads, **kwargs)
 
     def threadPool(self, *args, **kwargs):
         return SpiderFootThreadPool(*args, **kwargs)
