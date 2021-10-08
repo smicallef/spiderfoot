@@ -404,7 +404,7 @@
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('${docroot}/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<table id='scanlogs-content' class='table table-bordered table-striped table-condensed tablesorter font-size-90-percent'>";
+                            var table = "<table id='scanlogs-content' class='table table-bordered table-striped table-condensed small tablesorter' style='table-layout: fixed'>";
                             table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 if (data[i][2] == "ERROR") {
