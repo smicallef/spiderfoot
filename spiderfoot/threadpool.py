@@ -97,7 +97,7 @@ class SpiderFootThreadPool:
         self.stop = True
         # make sure input queues are empty
         with self._lock:
-            inputQueues = list(self.pool.inputQueues.values())
+            inputQueues = list(self.inputQueues.values())
         for q in inputQueues:
             with suppress(Exception):
                 while 1:
