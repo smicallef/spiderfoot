@@ -498,13 +498,34 @@ class SpiderFootScanner():
         if self.eventQueue is None:
             return True
 
-        modules_waiting = {
-            m.__name__: m.incomingEventQueue.qsize() for m in
-            self.__moduleInstances.values() if m.incomingEventQueue is not None
-        }
+        modules_waiting = dict()
+        for m in self.__moduleInstances.values():
+            try:
+                if m.incomingEventQueue is not None:
+                    modules_waiting[m.__name__] = m.incomingEventQueue.qsize()
+            except Exception:
+                with suppress(Exception):
+                    m.errorState = True
         modules_waiting = sorted(modules_waiting.items(), key=lambda x: x[-1], reverse=True)
-        modules_running = [m.__name__ for m in self.__moduleInstances.values() if m.running]
-        modules_errored = [m.__name__ for m in self.__moduleInstances.values() if m.errorState]
+
+        modules_running = []
+        for m in self.__moduleInstances.values():
+            try:
+                if m.running:
+                    modules_running.append(m.__name__)
+            except Exception:
+                with suppress(Exception):
+                    m.errorState = True
+
+        modules_errored = []
+        for m in self.__moduleInstances.values():
+            try:
+                if m.errorState:
+                    modules_errored.append(m.__name__)
+            except Exception:
+                with suppress(Exception):
+                    m.errorState = True
+
         queues_empty = [qsize == 0 for m, qsize in modules_waiting]
 
         for mod in self.__moduleInstances.values():
