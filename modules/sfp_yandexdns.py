@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_yandexdns
 # Purpose:      SpiderFoot plug-in for looking up whether hosts are blocked by
-#               Yandex DNS (77.88.8.88 and 77.88.8.2)
+#               Yandex DNS.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,7 +20,7 @@ class sfp_yandexdns(SpiderFootPlugin):
 
     meta = {
         'name': "Yandex DNS",
-        'summary': "Check if a host would be blocked by Yandex DNS",
+        'summary': "Check if a host would be blocked by Yandex DNS.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -28,13 +28,16 @@ class sfp_yandexdns(SpiderFootPlugin):
             'website': "https://yandex.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://tech.yandex.com/"
+                "https://tech.yandex.com/",
+                "https://dns.yandex.com/advanced/",
             ],
             'favIcon': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
             'logo': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
-            'description': "Yandex is a technology company that builds intelligent products and services powered by machine learning. "
-            "Our goal is to help consumers and businesses better navigate the online and offline world. "
-            "Since 1997, we have delivered world-class, locally relevant search and information services.",
+            'description': "Yandex.DNS is a free, recursive DNS service. "
+            "Yandex.DNS' servers are located in Russia, CIS countries, and Western Europe."
+            'In "Basic" mode, there is no traffic filtering. '
+            'In "Safe" mode, protection from infected and fraudulent sites is provided. '
+            '"Family" mode enables protection from dangerous sites and blocks sites with adult content.'
         }
     }
 
@@ -48,6 +51,11 @@ class sfp_yandexdns(SpiderFootPlugin):
 
     results = None
 
+    checks = {
+        "213.180.193.250": "Yandex - Infected",
+        "93.158.134.250": "Yandex - Adult",
+    }
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
@@ -55,73 +63,67 @@ class sfp_yandexdns(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "CO_HOSTED_SITE"
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return [
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_COHOST"
+        ]
 
-    # Query Yandex DNS "safe" servers
-    # https://dns.yandex.com/advanced/
+    # Query Yandex DNS "family" servers
     def queryAddr(self, qaddr):
+        if not qaddr:
+            return None
+
         res = dns.resolver.Resolver()
-        res.nameservers = ["77.88.8.88", "77.88.8.2"]
+        res.nameservers = ["77.88.8.7", "77.88.8.3"]
 
         try:
-            addrs = res.resolve(qaddr)
-            self.debug(f"Addresses returned: {addrs}")
+            return res.resolve(qaddr)
         except Exception:
             self.debug(f"Unable to resolve {qaddr}")
-            return False
 
-        if addrs:
-            return True
-        return False
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
-        resolved = False
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
 
         self.results[eventData] = True
 
-        # Check that it resolves first, as it becomes a valid
-        # malicious host only if NOT resolved by Yandex.
-        try:
-            if self.sf.resolveHost(eventData) or self.sf.resolveHost6(eventData):
-                resolved = True
-        except Exception:
-            self.debug(f"Unable to resolve {eventData}")
-            return
-
-        if not resolved:
-            return
-
-        found = self.queryAddr(eventData)
-
-        if found:
-            return
-
-        if eventName == "CO_HOSTED_SITE":
-            typ = "MALICIOUS_COHOST"
+        if eventName == "INTERNET_NAME":
+            e = "MALICIOUS_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            e = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            e = "MALICIOUS_COHOST"
         else:
-            typ = "MALICIOUS_" + eventName
+            self.debug(f"Unexpected event type {eventName}, skipping")
 
-        evt = SpiderFootEvent(typ, "Blocked by Yandex [" + eventData + "]",
-                              self.__name__, parentEvent)
-        self.notifyListeners(evt)
+        res = self.queryAddr(eventData)
+
+        if not res:
+            return
+
+        self.debug(f"{eventData} found in Yandex Blocklist: {res}")
+
+        for result in res:
+            k = str(result)
+            if k in self.checks:
+                evt = SpiderFootEvent(e, f"{self.checks[k]} [{eventData}]", self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_yandexdns class
