@@ -78,7 +78,7 @@ class TestModuleopendns(unittest.TestCase):
         module.setTarget(target)
 
         def new_notifyListeners(self, event):
-            expected = 'MALICIOUS_INTERNET_NAME'
+            expected = 'BLACKLISTED_INTERNET_NAME'
             if str(event.eventType) != expected:
                 raise Exception(f"{event.eventType} != {expected}")
 
