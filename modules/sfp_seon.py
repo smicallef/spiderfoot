@@ -92,7 +92,10 @@ class sfp_seon(SpiderFootPlugin):
             "PROVIDER_TELCO",
             "PHONE_NUMBER_TYPE",
             "WEBSERVER_TECHNOLOGY",
-            "RAW_RIR_DATA"
+            "RAW_RIR_DATA",
+            "TOR_EXIT_NODE",
+            "VPN_HOST",
+            "PROXY_HOST",
         ]
 
     def query(self, qry, eventName):
@@ -168,22 +171,30 @@ class sfp_seon(SpiderFootPlugin):
                     if resultSet.get('tor'):
                         evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is TOR node: {resultSet.get('tor')}", self.__name__, event)
                         self.notifyListeners(evt)
-                        dataFound = True
+
+                        evt = SpiderFootEvent("TOR_EXIT_NODE", eventData, self.__name__, event)
+                        self.notifyListeners(evt)
 
                     if resultSet.get('vpn'):
                         evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is VPN: {resultSet.get('vpn')}", self.__name__, event)
                         self.notifyListeners(evt)
-                        dataFound = True
+
+                        evt = SpiderFootEvent("VPN_HOST", eventData, self.__name__, event)
+                        self.notifyListeners(evt)
 
                     if resultSet.get('web_proxy'):
                         evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Web Proxy: {resultSet.get('web_proxy')}", self.__name__, event)
                         self.notifyListeners(evt)
-                        dataFound = True
+
+                        evt = SpiderFootEvent("PROXY_HOST", eventData, self.__name__, event)
+                        self.notifyListeners(evt)
 
                     if resultSet.get('public_proxy'):
                         evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Public Proxy: {resultSet.get('public_proxy')}", self.__name__, event)
                         self.notifyListeners(evt)
-                        dataFound = True
+
+                        evt = SpiderFootEvent("PROXY_HOST", eventData, self.__name__, event)
+                        self.notifyListeners(evt)
 
                 if resultSet.get('country'):
                     location = ', '.join(filter(None, [resultSet.get('city'), resultSet.get('state_prov'), resultSet.get('country')]))
@@ -193,11 +204,13 @@ class sfp_seon(SpiderFootPlugin):
                     evt = SpiderFootEvent('PHYSICAL_COORDINATES', f"{resultSet.get('latitude')}, {resultSet.get('longitude')}", self.__name__, event)
                     self.notifyListeners(evt)
                     dataFound = True
+
                 if resultSet.get('open_ports'):
                     for port in resultSet.get('open_ports'):
                         evt = SpiderFootEvent('TCP_PORT_OPEN', f"{eventData}:{port}", self.__name__, event)
                         self.notifyListeners(evt)
                         dataFound = True
+
                 if dataFound:
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
