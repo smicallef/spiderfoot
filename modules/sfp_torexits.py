@@ -13,7 +13,7 @@
 
 import json
 
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -42,14 +42,12 @@ class sfp_torexits(SpiderFootPlugin):
         'checkaffiliates': True,
         'cacheperiod': 1,
         'checknetblocks': True,
-        'checksubnets': True
     }
 
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
         'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
-        'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
 
     results = None
@@ -70,38 +68,27 @@ class sfp_torexits(SpiderFootPlugin):
             "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
             "AFFILIATE_IPV6_ADDRESS",
-            "NETBLOCK_MEMBER",
-            "NETBLOCKV6_MEMBER",
             "NETBLOCK_OWNER",
             "NETBLOCKV6_OWNER",
         ]
 
     def producedEvents(self):
         return [
+            "IP_ADDRESS",
+            "IPV6_ADDRESS",
             "TOR_EXIT_NODE",
-            "MALICIOUS_IPADDR",
-            "MALICIOUS_AFFILIATE_IPADDR",
-            "MALICIOUS_SUBNET",
-            "MALICIOUS_NETBLOCK"
         ]
 
-    def queryExitNodes(self, target, targetType):
+    def queryExitNodes(self, ip):
         exit_addresses = self.retrieveExitNodes()
 
         if not exit_addresses:
             self.errorState = True
             return False
 
-        if targetType == "ip":
-            if target in exit_addresses:
-                self.debug(f"IP address {target} found in TOR exit node list.")
-                return True
-        elif targetType == "netblock":
-            netblock = IPNetwork(target)
-            for ip in exit_addresses:
-                if IPAddress(ip) in netblock:
-                    self.debug(f"IP address {ip} found within netblock/subnet {target} in TOR exit node list.")
-                    return True
+        if ip in exit_addresses:
+            self.debug(f"IP address {ip} found in TOR exit node list.")
+            return True
 
         return False
 
@@ -184,10 +171,9 @@ class sfp_torexits(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
@@ -198,40 +184,45 @@ class sfp_torexits(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
-            targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
-        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
+        if eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             if not self.opts.get('checkaffiliates', False):
                 return
-            targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-        elif eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
+
+        if eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts.get('checknetblocks', False):
                 return
-            targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
-        elif eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
-            if not self.opts.get('checksubnets', False):
-                return
-            targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+
+        addrs = list()
+        if eventName.startswith("NETBLOCK"):
+            for addr in IPNetwork(eventData):
+                addrs.append(str(addr))
         else:
-            self.debug(f"Unexpected event type {eventName}, skipping")
-            return
+            addrs.append(eventData)
 
-        self.debug(f"Checking if {eventData} ({eventName}) is a TOR exit node")
+        for addr in addrs:
+            if self.checkForStop():
+                return
 
-        if self.queryExitNodes(eventData, targetType):
-            if targetType == 'ip':
-                evt = SpiderFootEvent("TOR_EXIT_NODE", eventData, self.__name__, event)
-                self.notifyListeners(evt)
+            if self.errorState:
+                return
 
-                url = f"https://metrics.torproject.org/rs.html#search/{eventData}"
+            self.results[addr] = True
+
+            if not self.queryExitNodes(addr):
+                continue
+
+            # For netblocks, we need to create the associated IP address event first.
+            if eventName == 'NETBLOCK_OWNER':
+                pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            if eventName == 'NETBLOCKV6_OWNER':
+                pevent = SpiderFootEvent("IPV6_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
             else:
-                url = "https://metrics.torproject.org/rs.html"
-            text = f"TOR Exit Node [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
+                pevent = event
+
+            self.debug(f"IP address {addr} found in TOR exit node list.")
+            evt = SpiderFootEvent("TOR_EXIT_NODE", addr, self.__name__, pevent)
             self.notifyListeners(evt)
 
 # End of sfp_torexits class
