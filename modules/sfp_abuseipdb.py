@@ -88,6 +88,8 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
         ]
@@ -297,10 +299,13 @@ class sfp_abuseipdb(SpiderFootPlugin):
             return
 
         if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
-            evtType = 'MALICIOUS_IPADDR'
+            blacklist_type = "BLACKLISTED_IPADDR"
+            malicious_type = 'MALICIOUS_IPADDR'
         elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+            malicious_type = 'MALICIOUS_AFFILIATE_IPADDR'
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
@@ -318,7 +323,15 @@ class sfp_abuseipdb(SpiderFootPlugin):
         url = f"https://www.abuseipdb.com/check/{eventData}"
 
         evt = SpiderFootEvent(
-            evtType,
+            malicious_type,
+            f"AbuseIPDB [{eventData}]\n<SFURL>{url}</SFURL>",
+            self.__name__,
+            event
+        )
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(
+            blacklist_type,
             f"AbuseIPDB [{eventData}]\n<SFURL>{url}</SFURL>",
             self.__name__,
             event
