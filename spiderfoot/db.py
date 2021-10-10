@@ -481,6 +481,52 @@ class SpiderFootDb:
             except sqlite3.Error as e:
                 raise IOError(f"SQL error encountered when retrieving event types: {e.args[0]}")
 
+    def scanLogEvents(self, batch):
+        """Logs a batch of events to the database.
+
+        Args:
+            batch (list): tuples containing: instanceId, classification, message, component, logTime
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+
+        Returns:
+            logResult: Whether the logging operation succeeded
+        """
+
+        inserts = []
+
+        for instanceId, classification, message, component, logTime in batch:
+            if not isinstance(instanceId, str):
+                raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+            if not isinstance(classification, str):
+                raise TypeError(f"classification is {type(classification)}; expected str()")
+
+            if not isinstance(message, str):
+                raise TypeError(f"message is {type(message)}; expected str()")
+
+            if not component:
+                component = "SpiderFoot"
+
+            inserts.append((instanceId, logTime * 1000, component, classification, message))
+
+        if inserts:
+            qry = "INSERT INTO tbl_scan_log \
+                (scan_instance_id, generated, component, type, message) \
+                VALUES (?, ?, ?, ?, ?)"
+
+            with self.dbhLock:
+                try:
+                    self.dbh.executemany(qry, inserts)
+                    self.conn.commit()
+                except sqlite3.Error as e:
+                    if "locked" not in e.args[0] and "thread" not in e.args[0]:
+                        raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
+                    return False
+        return True
+
     def scanLogEvent(self, instanceId, classification, message, component=None):
         """Log an event to the database.
 

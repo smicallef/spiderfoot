@@ -1,5 +1,7 @@
+import atexit
 import logging
 import sys
+import time
 from contextlib import suppress
 from logging.handlers import QueueHandler, QueueListener
 
@@ -21,6 +23,12 @@ class SpiderFootSqliteLogHandler(logging.Handler):
         """
         self.opts = opts
         self.dbh = None
+        self.batch = []
+        if self.opts.get('_debug', False):
+            self.batch_size = 100
+        else:
+            self.batch_size = 5
+        self.shutdown_hook = False
         super().__init__()
 
     def emit(self, record: 'logging.LogRecord') -> None:
@@ -29,18 +37,28 @@ class SpiderFootSqliteLogHandler(logging.Handler):
         Args:
             record (logging.LogRecord): Log event record
         """
-        if self.dbh is None:
-            # Create a new database handle when the first log record is received
-            self.makeDbh()
+        if not self.shutdown_hook:
+            atexit.register(self.logBatch)
+            self.shutdown_hook = True
         scanId = getattr(record, "scanId", None)
         component = getattr(record, "module", None)
         if scanId:
             level = ("STATUS" if record.levelname == "INFO" else record.levelname)
-            logResult = self.dbh.scanLogEvent(scanId, level, record.getMessage(), component=component)
-            if logResult is False:
-                # Try to recreate database handle if insert failed
-                self.makeDbh()
-                self.dbh.scanLogEvent(scanId, level, record.getMessage(), component=component)
+            self.batch.append((scanId, level, record.getMessage(), component, time.time()))
+            if len(self.batch) >= self.batch_size:
+                self.logBatch()
+
+    def logBatch(self):
+        batch = self.batch
+        self.batch = []
+        if self.dbh is None:
+            # Create a new database handle when the first log batch is processed
+            self.makeDbh()
+        logResult = self.dbh.scanLogEvents(batch)
+        if logResult is False:
+            # Try to recreate database handle if insert failed
+            self.makeDbh()
+            self.dbh.scanLogEvents(batch)
 
     def makeDbh(self) -> None:
         """TBD."""
@@ -104,7 +122,6 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
     else:
         handlers = []
 
-    import atexit
     if doLogging and opts is not None:
         sqlite_handler = SpiderFootSqliteLogHandler(opts)
         sqlite_handler.setLevel(logLevel)
