@@ -100,6 +100,10 @@ class sfp_dronebl(SpiderFootPlugin):
             "BLACKLISTED_AFFILIATE_IPADDR",
             "BLACKLISTED_SUBNET",
             "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
             "VPN_HOST",
             "PROXY_HOST"
         ]
