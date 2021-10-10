@@ -52,6 +52,7 @@ def main():
     # be overridden from saved configuration settings stored in the DB.
     sfConfig = {
         '_debug': False,  # Debug
+        '_maxthreads': 3,  # Number of modules to run concurrently
         '__logging': True,  # Logging in general
         '__outputfilter': None,  # Event types to filter from modules' output
         '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -71,6 +72,7 @@ def main():
 
     sfOptdescs = {
         '_debug': "Enable debugging?",
+        '_maxthreads': "Max number of modules to run concurrently",
         '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
         '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
         '_fetchtimeout': "Number of seconds before giving up on a HTTP request.",
