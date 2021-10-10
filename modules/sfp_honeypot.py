@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_honeypot
-# Purpose:      SpiderFoot plug-in for looking up whether IPs appear in the
-#               projecthoneypot.org database.
+# Name:        sfp_honeypot
+# Purpose:     SpiderFoot plug-in for looking up whether IPs appear in the
+#              ProjectHoneyPot.org database.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -19,8 +19,8 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_honeypot(SpiderFootPlugin):
 
     meta = {
-        'name': "Honeypot Checker",
-        'summary': "Query the projecthoneypot.org database for entries.",
+        'name': "Project Honey Pot",
+        'summary': "Query the Project Honey Pot database for IP addresses.",
         'flags': ["apikey"],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -50,7 +50,6 @@ class sfp_honeypot(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'api_key': "",
         'searchengine': False,
@@ -62,9 +61,8 @@ class sfp_honeypot(SpiderFootPlugin):
         'maxsubnet': 24
     }
 
-    # Option descriptions
     optdescs = {
-        'api_key': "Projecthoneypot.org API key.",
+        'api_key': "ProjectHoneyPot.org API key.",
         'searchengine': "Include entries considered search engines?",
         'threatscore': "Threat score minimum, 0 being everything and 255 being only the most serious.",
         'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
@@ -100,24 +98,32 @@ class sfp_honeypot(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
-                'NETBLOCK_MEMBER']
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "NETBLOCK_OWNER",
+            "NETBLOCK_MEMBER",
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
-                "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_NETBLOCK",
+            "BLACKLISTED_SUBNET",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+        ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
         return '.'.join(reversed(ipaddr.split('.')))
 
     # Returns text about the IP status returned from DNS
-    def reportIP(self, addr):
+    def parseDNS(self, addr):
         bits = addr.split(".")
         if int(bits[1]) > self.opts['timelimit']:
             return None
@@ -128,91 +134,99 @@ class sfp_honeypot(SpiderFootPlugin):
         if int(bits[3]) == 0 and self.opts['searchengine']:
             return None
 
-        return "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
-               "\nLast Activity: " + bits[1] + " days ago" + \
-               "\nThreat Level: " + bits[2]
+        return f"{self.statuses[bits[3]]}\nLast Activity: {bits[1]} days ago\nThreat Level: {bits[2]}"
 
     def queryAddr(self, qaddr, parentEvent):
         eventName = parentEvent.eventType
 
+        text = None
         try:
             lookup = f"{self.opts['api_key']}.{self.reverseAddr(qaddr)}.dnsbl.httpbl.org"
 
-            self.debug(f"Checking Honeypot: {lookup}")
+            self.debug(f"Checking ProjectHoneyPot: {lookup}")
             addrs = self.sf.resolveHost(lookup)
             if not addrs:
                 return
 
             self.debug(f"Addresses returned: {addrs}")
 
-            text = None
             for addr in addrs:
-                text = self.reportIP(addr)
+                text = self.parseDNS(addr)
                 if text is not None:
                     break
-
-            if text is not None:
-                if eventName == "AFFILIATE_IPADDR":
-                    e = "BLACKLISTED_AFFILIATE_IPADDR"
-                if eventName == "IP_ADDRESS":
-                    e = "BLACKLISTED_IPADDR"
-                if eventName == "NETBLOCK_OWNER":
-                    e = "BLACKLISTED_NETBLOCK"
-                if eventName == "NETBLOCK_MEMBER":
-                    e = "BLACKLISTED_SUBNET"
-
-                evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, parentEvent)
-                self.notifyListeners(evt)
         except Exception as e:
-            self.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+            self.debug(f"ProjectHoneyPot did not resolve {qaddr} / {lookup}: {e}")
 
-    # Handle events sent to this module
+        if not text:
+            return
+
+        if eventName == "AFFILIATE_IPADDR":
+            malicious_type = "MALICIOUS_AFFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+        elif eventName == "IP_ADDRESS":
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
+        elif eventName == "NETBLOCK_OWNER":
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
+        elif eventName == "NETBLOCK_MEMBER":
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
+        url = f"https://www.projecthoneypot.org/ip_{qaddr}"
+
+        evt = SpiderFootEvent(malicious_type, f"ProjectHoneyPot ({qaddr}): {text}\n<SFURL>{url}</SFURL>", self.__name__, parentEvent)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, f"ProjectHoneyPot ({qaddr}): {text}\n<SFURL>{url}</SFURL>", self.__name__, parentEvent)
+        self.notifyListeners(evt)
+
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
 
         if self.errorState:
             return
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
-        if self.opts['api_key'] == "":
-            self.error("You enabled sfp_honeypot but did not set an API key!")
+        if not self.opts['api_key']:
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return
 
         if eventData in self.results:
             return
+
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxnetblock']))
-                    return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.debug("Network size bigger than permitted: "
-                               + str(IPNetwork(eventData).prefixlen) + " > "
-                               + str(self.opts['maxsubnet']))
-                    return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
                     return
-                self.queryAddr(str(addr), parentEvent)
+                self.queryAddr(str(addr), event)
         else:
-            self.queryAddr(eventData, parentEvent)
+            self.queryAddr(eventData, event)
 
 # End of sfp_honeypot class
