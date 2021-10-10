@@ -109,7 +109,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         elif eventName == "AFFILIATE_INTERNET_NAME":
             e = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
         elif eventName == "CO_HOSTED_SITE":
-            e = "BACKLISTED_COHOST"
+            e = "BLACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
 

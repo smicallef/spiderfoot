@@ -144,7 +144,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
             blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
         elif eventName == "CO_HOSTED_SITE":
             malicious_type = "MALICIOUS_COHOST"
-            blacklist_type = "BACKLISTED_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
 
