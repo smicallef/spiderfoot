@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_comodo
-# Purpose:      SpiderFoot plug-in for looking up whether hosts are blocked by
-#               Comodo DNS (8.26.56.26 and 8.20.247.20)
+# Name:        sfp_comodo
+# Purpose:     SpiderFoot plug-in for looking up whether hosts are blocked by
+#              Comodo Secure DNS.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -19,34 +19,32 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_comodo(SpiderFootPlugin):
 
     meta = {
-        'name': "Comodo",
-        'summary': "Check if a host would be blocked by Comodo DNS",
+        'name': "Comodo Secure DNS",
+        'summary': "Check if a host would be blocked by Comodo Secure DNS.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.comodo.com/secure-dns/",
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "FREE_NOAUTH_LIMITED",
             'references': [
-                "https://cdome.comodo.com/pdf/Datasheet-Dome-Shield.pdf?af=7639#_ga=2.9039612.872056824.1587327669-445877257.1587327669",
-                "https://wiki.comodo.com/frontend/web/category/dome-shield?af=7639#_ga=2.9039612.872056824.1587327669-445877257.1587327669",
-                "https://www.comodo.com/secure-dns/secure-dns-assets/dowloads/ccs-dome-shield-whitepaper-threat-intelligence.pdf?af=7639",
-                "https://www.comodo.com/secure-dns/secure-dns-assets/dowloads/domeshield-all-use-cases.pdf?af=7639"
+                "https://cdome.comodo.com/pdf/Datasheet-Dome-Shield.pdf",
+                "http://securedns.dnsbycomodo.com/",
+                "https://www.comodo.com/secure-dns/secure-dns-assets/dowloads/ccs-dome-shield-whitepaper-threat-intelligence.pdf",
+                "https://www.comodo.com/secure-dns/secure-dns-assets/dowloads/domeshield-all-use-cases.pdf",
             ],
             'favIcon': "https://www.comodo.com/favicon.ico",
             'logo': "https://www.comodo.com/new-assets/images/logo.png",
-            'description': "100% cloud-based, load-balanced, geo-distributed, highly available Anycast DNS infrastructure hosted in 25+ countries.\n"
-            "Cloud-based web security delivered at the DNS level, first layer for everything internet connected.\n"
-            "Per company, location, endpoint, mobile device, IP, subnet and user.\n"
-            "Get real-time web visibility for everything internet connected and schedule reports to be sent to your email.",
+            'description': "Comodo Secure DNS is a domain name resolution service "
+            "that resolves your DNS requests through our worldwide network of redundant DNS servers, "
+            "bringing you the most reliable fully redundant DNS service anywhere, for a safer, "
+            "smarter and faster Internet experience."
         }
     }
 
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
 
@@ -59,24 +57,30 @@ class sfp_comodo(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "CO_HOSTED_SITE"
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_COHOST",
+        ]
 
-    def queryAddr(self, qaddr):
+    def query(self, qaddr):
         res = dns.resolver.Resolver()
         res.nameservers = ["8.26.56.26", "8.20.247.20"]
 
         try:
             addrs = res.resolve(qaddr)
-            self.debug("Addresses returned: " + str(addrs))
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.debug(f"Unable to resolve {qaddr}")
             return False
@@ -85,36 +89,44 @@ class sfp_comodo(SpiderFootPlugin):
             return True
         return False
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
-        resolved = False
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
+
         self.results[eventData] = True
 
+        if eventName == "INTERNET_NAME":
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+
         # Check that it resolves first, as it becomes a valid
-        # malicious host only if NOT resolved by Comodo.
-        try:
-            if self.sf.resolveHost(eventData) or self.sf.resolveHost6(eventData):
-                resolved = True
-        except Exception:
+        # malicious host only if NOT resolved by Comodo Secure DNS.
+        if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
             return
 
-        if resolved:
-            found = self.queryAddr(eventData)
-            typ = "MALICIOUS_" + eventName
-            if eventName == "CO_HOSTED_SITE":
-                typ = "MALICIOUS_COHOST"
-            if not found:
-                evt = SpiderFootEvent(typ, "Blocked by Comodo DNS [" + eventData + "]",
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+        found = self.query(eventData)
+
+        # Host was found, not blocked
+        if found:
+            return
+
+        evt = SpiderFootEvent(blacklist_type, f"Comodo Secure DNS [{eventData}]", self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(malicious_type, f"Comodo Secure DNS [{eventData}]", self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_comodo class

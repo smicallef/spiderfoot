@@ -34,10 +34,7 @@ class TestModulecomodo(unittest.TestCase):
         module = sfp_comodo()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_queryAddr_should_resolve_unblocked_host(self):
-        """
-        Test queryAddr(self, qaddr)
-        """
+    def test_handleEvent_event_data_safe_internet_name_not_blocked_should_not_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_comodo()
@@ -48,22 +45,10 @@ class TestModulecomodo(unittest.TestCase):
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
-        resolved = module.queryAddr('comodo.com')
-        self.assertTrue(resolved)
+        def new_notifyListeners(self, event):
+            raise Exception(f"Raised event {event.eventType}: {event.data}")
 
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        module = sfp_comodo()
-        module.setup(sf, dict())
-
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
-        target = SpiderFootTarget(target_value, target_type)
-        module.setTarget(target)
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_comodo)
 
         event_type = 'ROOT'
         event_data = 'example data'
@@ -71,6 +56,12 @@ class TestModulecomodo(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
+        event_type = 'INTERNET_NAME'
+        event_data = 'comodo.com'
+        event_module = 'example module'
+        source_event = evt
+
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
