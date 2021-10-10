@@ -46,11 +46,11 @@ class TestModulecleanbrowsing(unittest.TestCase):
         module.setTarget(target)
 
         def new_notifyListeners(self, event):
-            expected = 'MALICIOUS_INTERNET_NAME'
+            expected = 'BLACKLISTED_INTERNET_NAME'
             if str(event.eventType) != expected:
                 raise Exception(f"{event.eventType} != {expected}")
 
-            expected = 'Blocked by CleanBrowsing DNS [pornhub.com]'
+            expected = 'CleanBrowsing DNS - Adult [pornhub.com]'
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 

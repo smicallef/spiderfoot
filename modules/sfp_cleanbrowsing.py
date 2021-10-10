@@ -72,19 +72,47 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"
+            "MALICIOUS_COHOST",
         ]
 
-    def queryAddr(self, qaddr):
+    def queryFamilyDNS(self, qaddr):
         res = dns.resolver.Resolver()
-        # Family Filter
         res.nameservers = ["185.228.168.168", "185.228.168.169"]
-        # Adult Filter
-        # res.nameservers = ["185.228.168.10", "185.228.169.11"]
-        # Security Filter
-        # res.nameservers = ["185.228.168.9", "185.228.169.9"]
+
+        try:
+            addrs = res.resolve(qaddr)
+            self.debug(f"Addresses returned: {addrs}")
+        except Exception:
+            self.debug(f"Unable to resolve {qaddr}")
+            return False
+
+        if addrs:
+            return True
+        return False
+
+    def queryAdultDNS(self, qaddr):
+        res = dns.resolver.Resolver()
+        res.nameservers = ["185.228.168.10", "185.228.169.11"]
+
+        try:
+            addrs = res.resolve(qaddr)
+            self.debug(f"Addresses returned: {addrs}")
+        except Exception:
+            self.debug(f"Unable to resolve {qaddr}")
+            return False
+
+        if addrs:
+            return True
+        return False
+
+    def querySecurityDNS(self, qaddr):
+        res = dns.resolver.Resolver()
+        res.nameservers = ["185.228.168.9", "185.228.169.9"]
 
         try:
             addrs = res.resolve(qaddr)
@@ -108,30 +136,64 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
         self.results[eventData] = True
 
+        if eventName == "INTERNET_NAME":
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BACKLISTED_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by CleanBrowsing DNS.
         if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
             return
 
-        found = self.queryAddr(eventData)
+        family = self.queryFamilyDNS(eventData)
+        adult = self.queryAdultDNS(eventData)
+        security = self.querySecurityDNS(eventData)
 
         # Host was found, not blocked
-        if found:
+        if family and adult and security:
             return
 
         self.debug(f"{eventData} was blocked by CleanBrowsing DNS")
 
-        typ = "MALICIOUS_" + eventName
+        if not security:
+            evt = SpiderFootEvent(
+                blacklist_type,
+                f"CleanBrowsing DNS - Security [{eventData}]",
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
 
-        if eventName == "CO_HOSTED_SITE":
-            typ = "MALICIOUS_COHOST"
-
-        evt = SpiderFootEvent(
-            typ,
-            f"Blocked by CleanBrowsing DNS [{eventData}]",
-            self.__name__,
-            event
-        )
-        self.notifyListeners(evt)
+            evt = SpiderFootEvent(
+                malicious_type,
+                f"CleanBrowsing DNS - Security [{eventData}]",
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
+        elif not adult:
+            evt = SpiderFootEvent(
+                blacklist_type,
+                f"CleanBrowsing DNS - Adult [{eventData}]",
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
+        elif not family:
+            evt = SpiderFootEvent(
+                blacklist_type,
+                f"CleanBrowsing DNS - Family [{eventData}]",
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
 
 # End of sfp_cleanbrowsing class
