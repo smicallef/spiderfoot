@@ -75,9 +75,12 @@ class sfp_opendns(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"
+            "MALICIOUS_COHOST",
         ]
 
     def queryAddr(self, qaddr):
@@ -106,11 +109,14 @@ class sfp_opendns(SpiderFootPlugin):
         self.results[eventData] = True
 
         if eventName == "INTERNET_NAME":
-            e = "MALICIOUS_INTERNET_NAME"
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
         elif eventName == "AFFILIATE_INTERNET_NAME":
-            e = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
         elif eventName == "CO_HOSTED_SITE":
-            e = "MALICIOUS_COHOST"
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
 
@@ -123,8 +129,14 @@ class sfp_opendns(SpiderFootPlugin):
 
         for result in res:
             k = str(result)
-            if k in self.checks:
-                evt = SpiderFootEvent(e, f"{self.checks[k]} [{eventData}]", self.__name__, event)
+            if k not in self.checks:
+                continue
+
+            evt = SpiderFootEvent(blacklist_type, f"{self.checks[k]} [{eventData}]", self.__name__, event)
+            self.notifyListeners(evt)
+
+            if k in ['146.112.61.105', '146.112.61.107', '146.112.61.108', '146.112.61.110']:
+                evt = SpiderFootEvent(malicious_type, f"{self.checks[k]} [{eventData}]", self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_opendns class
