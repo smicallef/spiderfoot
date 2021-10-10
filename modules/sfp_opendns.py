@@ -28,6 +28,7 @@ class sfp_opendns(SpiderFootPlugin):
             'website': "https://www.opendns.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
+                "https://www.opendns.com/setupguide/?url=familyshield",
                 "https://support.opendns.com/hc/en-us/categories/204012807-OpenDNS-Knowledge-Base",
                 "https://support.opendns.com/hc/en-us/categories/204012907-OpenDNS-Device-Configuration"
             ],
@@ -35,8 +36,9 @@ class sfp_opendns(SpiderFootPlugin):
             'logo': "https://d15ni2z53ptwz9.cloudfront.net/opendns-www/img/logo-opendns.png",
             'description': "Cisco Umbrella provides protection against threats on the internet such as "
             "malware, phishing, and ransomware.\n"
-            "OpenDNS is a suite of consumer products aimed at "
-            "making your internet faster, safer, and more reliable.",
+            "OpenDNS is a suite of consumer products aimed at making your internet faster, safer, and more reliable. "
+            "FamilyShield is the single easiest way to protect your kids online, block adult websites, "
+            "and protect your family from phishing and malware.",
         }
     }
 
@@ -47,6 +49,15 @@ class sfp_opendns(SpiderFootPlugin):
     }
 
     results = None
+
+    checks = {
+        "146.112.61.105": "OpenDNS - Botnet",
+        "146.112.61.106": "OpenDNS - Adult",
+        "146.112.61.107": "OpenDNS - Malware",
+        "146.112.61.108": "OpenDNS - Phishing",
+        "146.112.61.109": "OpenDNS - Blocked",
+        "146.112.61.110": "OpenDNS - Malware",
+    }
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -66,24 +77,22 @@ class sfp_opendns(SpiderFootPlugin):
         return [
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"]
+            "MALICIOUS_COHOST"
+        ]
 
     def queryAddr(self, qaddr):
+        if not qaddr:
+            return None
+
         res = dns.resolver.Resolver()
-        res.nameservers = ["208.67.222.222", "208.67.220.220"]
-        # FamilyShield
-        # res.nameservers = ["208.67.222.123", "208.67.220.123"]
+        res.nameservers = ["208.67.222.123", "208.67.220.123"]
 
         try:
-            addrs = res.resolve(qaddr)
-            self.debug(f"Addresses returned: {addrs}")
+            return res.resolve(qaddr)
         except Exception:
             self.debug(f"Unable to resolve {qaddr}")
-            return False
 
-        if addrs:
-            return True
-        return False
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -96,30 +105,26 @@ class sfp_opendns(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        # Check that it resolves first, as it becomes a valid
-        # malicious host only if NOT resolved by OpenDNS.
-        if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
+        if eventName == "INTERNET_NAME":
+            e = "MALICIOUS_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            e = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            e = "MALICIOUS_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+
+        res = self.queryAddr(eventData)
+
+        if not res:
             return
 
-        found = self.queryAddr(eventData)
+        self.debug(f"{eventData} found in OpenDNS Blocklist: {res}")
 
-        # Host was found, not blocked
-        if found:
-            return
-
-        self.debug(f"{eventData} was blocked by OpenDNS")
-
-        typ = "MALICIOUS_" + eventName
-
-        if eventName == "CO_HOSTED_SITE":
-            typ = "MALICIOUS_COHOST"
-
-        evt = SpiderFootEvent(
-            typ,
-            f"Blocked by OpenDNS [{eventData}]",
-            self.__name__,
-            event
-        )
-        self.notifyListeners(evt)
+        for result in res:
+            k = str(result)
+            if k in self.checks:
+                evt = SpiderFootEvent(e, f"{self.checks[k]} [{eventData}]", self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_opendns class
