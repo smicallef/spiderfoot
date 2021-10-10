@@ -186,7 +186,7 @@ class sfp_talosintel(SpiderFootPlugin):
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            malicious_type = "MALICIOUS_AFFFILIATE_IPADDR"
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
             blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):

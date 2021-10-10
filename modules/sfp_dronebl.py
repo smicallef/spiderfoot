@@ -175,7 +175,7 @@ class sfp_dronebl(SpiderFootPlugin):
             addrs.append(eventData)
 
         if eventName == "AFFILIATE_IPADDR":
-            malicious_type = "MALICIOUS_AFFFILIATE_IPADDR"
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
             blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == "IP_ADDRESS":
             malicious_type = "MALICIOUS_IPADDR"
