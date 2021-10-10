@@ -106,6 +106,9 @@ class sfp_dronebl(SpiderFootPlugin):
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
+        if not self.sf.validIP(ipaddr):
+            self.debug(f"Invalid IPv4 address {ipaddr}")
+            return None
         return '.'.join(reversed(ipaddr.split('.')))
 
     def queryAddr(self, qaddr):
@@ -133,11 +136,9 @@ class sfp_dronebl(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
@@ -170,13 +171,17 @@ class sfp_dronebl(SpiderFootPlugin):
             addrs.append(eventData)
 
         if eventName == "AFFILIATE_IPADDR":
-            e = "BLACKLISTED_AFFILIATE_IPADDR"
+            malicious_type = "MALICIOUS_AFFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == "IP_ADDRESS":
-            e = "BLACKLISTED_IPADDR"
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == "NETBLOCK_OWNER":
-            e = "BLACKLISTED_NETBLOCK"
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == "NETBLOCK_MEMBER":
-            e = "BLACKLISTED_SUBNET"
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
 
@@ -203,19 +208,35 @@ class sfp_dronebl(SpiderFootPlugin):
             for result in res:
                 k = str(result)
                 if k not in self.checks:
-                    # This is an error. The "checks" dict may beed to be updated.
-                    self.error(f"DroneBL resolved address {addr} to unknown IP address {result} not found in DroneBL list.")
+                    if not result.endswith('.dnsbl.dronebl.org'):
+                        # This is an error. The "checks" dict may need to be updated.
+                        self.error(f"DroneBL resolved address {addr} to unknown IP address {result} not found in DroneBL list.")
                     continue
 
-                evt = SpiderFootEvent(e, f"{self.checks[k]} [{addr}]", self.__name__, parentEvent)
+                evt = SpiderFootEvent(blacklist_type, f"{self.checks[k]} [{addr}]", self.__name__, event)
                 self.notifyListeners(evt)
 
-                if k in ["127.0.0.8", "127.0.0.9", "127.0.0.10", "127.0.0.11"]:
-                    evt = SpiderFootEvent("PROXY_HOST", addr, self.__name__, parentEvent)
+                if k in [
+                    "127.0.0.3",
+                    "127.0.0.5",
+                    "127.0.0.6",
+                    "127.0.0.7",
+                    "127.0.0.13",
+                    "127.0.0.15",
+                    "127.0.0.16",
+                    "127.0.0.17",
+                    "127.0.0.18",
+                    "127.0.0.19",
+                ]:
+                    evt = SpiderFootEvent(malicious_type, f"{self.checks[k]} [{addr}]", self.__name__, event)
+                    self.notifyListeners(evt)
+
+                if k in ["127.0.0.8", "127.0.0.9", "127.0.0.10", "127.0.0.11", "127.0.0.14"]:
+                    evt = SpiderFootEvent("PROXY_HOST", addr, self.__name__, event)
                     self.notifyListeners(evt)
 
                 if k == "127.0.0.19":
-                    evt = SpiderFootEvent("VPN_HOST", addr, self.__name__, parentEvent)
+                    evt = SpiderFootEvent("VPN_HOST", addr, self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_dronebl class
