@@ -80,10 +80,14 @@ class sfp_talosintel(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
             "MALICIOUS_SUBNET",
-            "MALICIOUS_NETBLOCK"
+            "MALICIOUS_NETBLOCK",
         ]
 
     def queryBlacklist(self, target, targetType):
@@ -176,31 +180,42 @@ class sfp_talosintel(SpiderFootPlugin):
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking maliciousness of {eventData} ({eventName}) with Talos Intelligence")
 
-        if self.queryBlacklist(eventData, targetType):
-            url = "https://snort.org/downloads/ip-block-list"
-            text = f"Talos Intelligence [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryBlacklist(eventData, targetType):
+            return
+
+        url = "https://snort.org/downloads/ip-block-list"
+        text = f"Talos Intelligence [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_talosintel class
