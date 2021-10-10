@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_cloudflaredns
 # Purpose:      SpiderFoot plug-in for looking up whether hosts are blocked by
-#               CloudFlare malware DNS (1.1.1.2).
+#               CloudFlare family and malware filtering DNS servers.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -19,8 +19,8 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_cloudflaredns(SpiderFootPlugin):
 
     meta = {
-        'name': "CloudFlare Malware DNS",
-        'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
+        'name': "CloudFlare DNS",
+        'summary': "Check if a host would be blocked by CloudFlare DNS.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -39,11 +39,9 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
 
@@ -56,66 +54,96 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "CO_HOSTED_SITE"
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_COHOST",
+        ]
 
-    def queryAddr(self, qaddr):
+    def queryFamilyDNS(self, qaddr):
+        res = dns.resolver.Resolver()
+        res.nameservers = ["1.1.1.3", "1.0.0.3"]
+
+        try:
+            return res.resolve(qaddr)
+        except Exception:
+            self.debug(f"Unable to resolve {qaddr}")
+
+        return None
+
+    def queryMalwareDNS(self, qaddr):
         res = dns.resolver.Resolver()
         res.nameservers = ["1.1.1.2", "1.0.0.2"]
 
         try:
-            addrs = res.resolve(qaddr)
-            self.debug(f"Addresses returned: {addrs}")
+            return res.resolve(qaddr)
         except Exception:
             self.debug(f"Unable to resolve {qaddr}")
-            return False
 
-        if not addrs:
-            return False
+        return None
 
-        if "0.0.0.0" in self.sf.normalizeDNS(addrs):
-            return False
-
-        return True
-
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
-        resolved = False
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
+
         self.results[eventData] = True
 
-        # Check that it resolves first, as it becomes a valid
-        # malicious host only if NOT resolved by CloudFlare DNS.
-        try:
-            if self.sf.resolveHost(eventData) or self.sf.resolveHost6(eventData):
-                resolved = True
-        except Exception:
+        if eventName == "INTERNET_NAME":
+            e = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            e = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            e = "BACKLISTED_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+
+        family = self.sf.normalizeDNS(self.queryFamilyDNS(eventData))
+        malware = self.sf.normalizeDNS(self.queryMalwareDNS(eventData))
+
+        if not family or not malware:
             return
 
-        if resolved:
-            found = self.queryAddr(eventData)
-            typ = "MALICIOUS_" + eventName
-            if eventName == "CO_HOSTED_SITE":
-                typ = "MALICIOUS_COHOST"
-            if not found:
-                evt = SpiderFootEvent(typ, "Blocked by CloudFlare DNS [" + eventData + "]",
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+        if '0.0.0.0' not in family and '0.0.0.0' not in malware:
+            return
+
+        # Host is blocked only by family filters
+        if '0.0.0.0' not in malware:
+            self.debug(f"{eventData} blocked by CloudFlare Family DNS")
+            evt = SpiderFootEvent(e, f"CloudFlare - Family [{eventData}]", self.__name__, event)
+            self.notifyListeners(evt)
+            return
+
+        # Host is blocked only by malware filters
+        self.debug(f"{eventData} blocked by CloudFlare Malware DNS")
+        evt = SpiderFootEvent(e, f"CloudFlare - Malware [{eventData}]", self.__name__, event)
+        self.notifyListeners(evt)
+
+        if eventName == "INTERNET_NAME":
+            e = "MALICIOUS_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            e = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            e = "MALICIOUS_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+
+        evt = SpiderFootEvent(e, f"CloudFlare - Malware [{eventData}]", self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_cloudflaredns class
