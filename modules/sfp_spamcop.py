@@ -21,7 +21,7 @@ class sfp_spamcop(SpiderFootPlugin):
 
     meta = {
         'name': "SpamCop",
-        'summary': "Query various spamcop databases for open relays, open proxies, vulnerable servers, etc.",
+        'summary': "Check if a netblock or IP address is in the SpamCop database.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -49,7 +49,6 @@ class sfp_spamcop(SpiderFootPlugin):
         'maxsubnet': 24
     }
 
-    # Option descriptions
     optdescs = {
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
@@ -57,16 +56,7 @@ class sfp_spamcop(SpiderFootPlugin):
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    # Target
     results = None
-
-    # Whole bunch here:
-    # http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
-    # Check out:
-    # http://www.blocklist.de/en/rbldns.html
-    checks = {
-        "bl.spamcop.net": "SpamCop Blacklist"
-    }
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -75,90 +65,73 @@ class sfp_spamcop(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
-                'NETBLOCK_MEMBER']
+        return [
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
+            'NETBLOCK_OWNER',
+            'NETBLOCK_MEMBER'
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
-                "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+        ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
+        if not self.sf.validIP(ipaddr):
+            self.debug(f"Invalid IPv4 address {ipaddr}")
+            return None
         return '.'.join(reversed(ipaddr.split('.')))
 
-    def queryAddr(self, qaddr, parentEvent):
-        eventName = parentEvent.eventType
+    def queryAddr(self, qaddr):
+        """Query SpamCop DNS for an IPv4 address.
 
-        for domain in self.checks:
-            if self.checkForStop():
-                return
+        Args:
+            qaddr (str): IPv4 address.
 
-            try:
-                lookup = self.reverseAddr(qaddr) + "." + domain
-                self.debug("Checking Blacklist: " + lookup)
-                addrs = self.sf.resolveHost(lookup)
-                self.debug("Addresses returned: " + str(addrs))
+        Returns:
+            list: SpamCop DNS entries
+        """
+        if not self.sf.validIP(qaddr):
+            self.debug(f"Invalid IPv4 address {qaddr}")
+            return None
 
-                if not addrs:
-                    continue
+        try:
+            lookup = self.reverseAddr(qaddr) + '.bl.spamcop.net'
+            self.debug(f"Checking SpamCop blacklist: {lookup}")
+            return self.sf.resolveHost(lookup)
+        except Exception as e:
+            self.debug(f"SpamCop did not resolve {qaddr} / {lookup}: {e}")
 
-                text = None
-                for addr in addrs:
-                    if type(self.checks[domain]) is str:
-                        text = self.checks[domain] + " (" + qaddr + ")"
-                        break
+        return None
 
-                    if str(addr) in list(self.checks[domain].keys()):
-                        k = str(addr)
-                        text = self.checks[domain][k] + " (" + qaddr + ")"
-                        break
-
-                    self.debug(f"Return code not found in list: {addr}")
-
-                if text is not None:
-                    if eventName == "AFFILIATE_IPADDR":
-                        e = "BLACKLISTED_AFFILIATE_IPADDR"
-                    if eventName == "IP_ADDRESS":
-                        e = "BLACKLISTED_IPADDR"
-                    if eventName == "NETBLOCK_OWNER":
-                        e = "BLACKLISTED_NETBLOCK"
-                    if eventName == "NETBLOCK_MEMBER":
-                        e = "BLACKLISTED_SUBNET"
-
-                    evt = SpiderFootEvent(e, text, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-
-            except Exception as e:
-                self.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
-
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             return
+
         self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER':
-            if not self.opts['netblocklookup']:
-                return
-
-            max_netblock = self.opts['maxnetblock']
-            if IPNetwork(eventData).prefixlen < max_netblock:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
-                return
-
-        if eventName == 'NETBLOCK_MEMBER':
+        if eventName == "AFFILIATE_IPADDR":
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+        elif eventName == "IP_ADDRESS":
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
+        elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return
 
@@ -167,12 +140,58 @@ class sfp_spamcop(SpiderFootPlugin):
                 self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
+        elif eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
+
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
+        addrs = list()
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
-                if self.checkForStop():
-                    return
-                self.queryAddr(str(addr), parentEvent)
+                addrs.append(str(addr))
         else:
-            self.queryAddr(eventData, parentEvent)
+            addrs.append(eventData)
+
+        for addr in addrs:
+            if self.checkForStop():
+                return
+
+            res = self.queryAddr(addr)
+
+            self.results[addr] = True
+
+            if not res:
+                continue
+
+            self.debug(f"{addr} found in SpamCop DNS")
+
+            for result in res:
+                k = str(result)
+                if k != '127.0.0.2':
+                    if not result.endswith('.bl.spamcop.net'):
+                        # This is an error. SpamCop should only return 127.0.0.2 for matches.
+                        self.error(f"SpamCop resolved address {addr} to unknown IP address {result}.")
+                    continue
+
+                url = f"https://www.spamcop.net/w3m?action=checkblock&ip={addr}"
+                description = f"SpamCop Blacklist [{addr}]\n<SFURL>{url}</SFURL>"
+
+                evt = SpiderFootEvent(blacklist_type, description, self.__name__, event)
+                self.notifyListeners(evt)
+
+                evt = SpiderFootEvent(malicious_type, description, self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_spamcop class
