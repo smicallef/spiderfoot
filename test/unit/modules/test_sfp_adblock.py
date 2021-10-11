@@ -50,7 +50,7 @@ class TestModuleadblock(unittest.TestCase):
             if str(event.eventType) != expected:
                 raise Exception(f"{event.eventType} != {expected}")
 
-            expected = 'https://example.local/frontend_loader.js'
+            expected = 'https://example.local/lib/ad.js'
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
@@ -65,7 +65,7 @@ class TestModuleadblock(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         event_type = 'PROVIDER_JAVASCRIPT'
-        event_data = 'https://example.local/frontend_loader.js'
+        event_data = 'https://example.local/lib/ad.js'
         event_module = 'example module'
         source_event = evt
 
@@ -92,7 +92,7 @@ class TestModuleadblock(unittest.TestCase):
             if str(event.eventType) != expected:
                 raise Exception(f"{event.eventType} != {expected}")
 
-            expected = 'https://example.local/adbanner.example'
+            expected = 'https://example.local/lib/ad.js'
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
@@ -107,7 +107,7 @@ class TestModuleadblock(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         event_type = 'LINKED_URL_EXTERNAL'
-        event_data = 'https://example.local/adbanner.example'
+        event_data = 'https://example.local/lib/ad.js'
         event_module = 'example module'
         source_event = evt
 
@@ -141,7 +141,7 @@ class TestModuleadblock(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         event_type = 'LINKED_URL_EXTERNAL'
-        event_data = 'https://example.local/example'
+        event_data = 'https://example.local/lib/example.js'
         event_module = 'example module'
         source_event = evt
 
