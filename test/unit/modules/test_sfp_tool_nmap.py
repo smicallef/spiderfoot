@@ -4,7 +4,7 @@ import unittest
 
 from modules.sfp_tool_nmap import sfp_tool_nmap
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent, SpiderFootTarget
+from spiderfoot import SpiderFootTarget
 
 
 @pytest.mark.usefixtures
@@ -48,5 +48,4 @@ class TestModuletool_nmap(unittest.TestCase):
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
-        self.assertIsNone(result)
         self.assertTrue(module.errorState)
