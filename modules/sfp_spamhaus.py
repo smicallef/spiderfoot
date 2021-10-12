@@ -62,6 +62,7 @@ class sfp_spamhaus(SpiderFootPlugin):
     }
 
     results = None
+    errorState = False
 
     checks = {
         '127.0.0.2': "Spamhaus (Zen) - Spammer",
@@ -76,6 +77,7 @@ class sfp_spamhaus(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.errorState = False
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
@@ -191,7 +193,7 @@ class sfp_spamhaus(SpiderFootPlugin):
             if not res:
                 continue
 
-            self.debug(f"{addr} found in Spaumhaus Zen DNS")
+            self.debug(f"{addr} found in Spamhaus Zen DNS")
 
             for result in res:
                 k = str(result)
@@ -211,8 +213,9 @@ class sfp_spamhaus(SpiderFootPlugin):
                     continue
 
                 if k not in self.checks:
-                    # This is an error. The "checks" dict may need to be updated.
-                    self.error(f"Spamhaus Zen resolved address {addr} to unknown IP address {result} not found in Spamhaus Zen list.")
+                    if not k.endswith('.zen.spamhaus.org'):
+                        # This is an error. The "checks" dict may need to be updated.
+                        self.error(f"Spamhaus Zen resolved address {addr} to unknown IP address {result} not found in Spamhaus Zen list.")
                     continue
 
                 evt = SpiderFootEvent(blacklist_type, f"{self.checks[k]} [{addr}]", self.__name__, event)
