@@ -45,6 +45,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = None
+    maxThreads = 10
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -59,7 +60,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "LINKED_URL_INTERNAL", "IP_ADDRESS"]
+        return ["INTERNET_NAME", "LINKED_URL_INTERNAL", "IP_ADDRESS", "TCP_PORT_OPEN_SSL"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -94,6 +95,9 @@ class sfp_sslcert(SpiderFootPlugin):
             except Exception:
                 self.debug("Couldn't parse URL: " + eventData)
                 return
+        elif eventName == "TCP_PORT_OPEN_SSL":
+            fqdn, port = eventData.split(":")
+            port = int(port)
         else:
             fqdn = eventData
             port = 443
