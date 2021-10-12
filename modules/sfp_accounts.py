@@ -46,7 +46,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
-        "permutate": "Look for the existence of account name permutations.",
+        "permutate": "Look for the existence of account name permutations. Useful to identify fraudulent social media accounts or account squatting.",
         "_maxthreads": "Maximum threads"
     }
 
@@ -99,7 +99,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def producedEvents(self):
         return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED",
-                "SIMILAR_ACCOUNT_EXTERNAL_OWNED"]
+                "SIMILAR_ACCOUNT_EXTERNAL"]
 
     def checkSite(self, name, site):
         if 'check_uri' not in site:
@@ -196,7 +196,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def generatePermutations(self, username):
         permutations = list()
-        prefixsuffix = [ '_', '-' ]
+        prefixsuffix = ['_', '-']
         replacements = {
             'a': ['4', 's'],
             'b': ['v', 'n'],
@@ -247,9 +247,9 @@ class sfp_accounts(SpiderFootPlugin):
             if c not in replacements:
                 continue
             if len(replacements[c]) == 0:
-                continue 
+                continue
             npos = pos + 1
-            for xc in replacements[c]: 
+            for xc in replacements[c]:
                 newuser = username[0:pos] + xc + username[npos:len(username)]
                 permutations.append(newuser)
 
@@ -257,7 +257,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         # Search for common double-letter replacements
         for p in pairs:
-            if p in username: 
+            if p in username:
                 for r in pairs[p]:
                     permutations.append(username.replace(p, r))
 
@@ -384,7 +384,7 @@ class sfp_accounts(SpiderFootPlugin):
                     res = self.checkSites(puser)
                     for site in res:
                         evt = SpiderFootEvent(
-                            "SIMILAR_ACCOUNT_EXTERNAL_OWNED",
+                            "SIMILAR_ACCOUNT_EXTERNAL",
                             site,
                             self.__name__,
                             event
