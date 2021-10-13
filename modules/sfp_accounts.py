@@ -36,6 +36,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": True,
         "musthavename": True,
         "userfromemail": True,
+        "permutate": False,
         "_maxthreads": 20
     }
 
@@ -45,6 +46,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
+        "permutate": "Look for the existence of account name permutations. Useful to identify fraudulent social media accounts or account squatting.",
         "_maxthreads": "Maximum threads"
     }
 
@@ -96,7 +98,8 @@ class sfp_accounts(SpiderFootPlugin):
         return ["EMAILADDR", "DOMAIN_NAME", "HUMAN_NAME", "USERNAME"]
 
     def producedEvents(self):
-        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED"]
+        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED",
+                "SIMILAR_ACCOUNT_EXTERNAL"]
 
     def checkSite(self, name, site):
         if 'check_uri' not in site:
@@ -190,6 +193,86 @@ class sfp_accounts(SpiderFootPlugin):
         self.debug(f'Scan statistics: name={username}, count={len(self.siteResults)}, duration={duration:.2f}, rate={scanRate:.0f}')
 
         return [site for site, found in self.siteResults.items() if found]
+
+    def generatePermutations(self, username):
+        permutations = list()
+        prefixsuffix = ['_', '-']
+        replacements = {
+            'a': ['4', 's'],
+            'b': ['v', 'n'],
+            'c': ['x', 'v'],
+            'd': ['s', 'f'],
+            'e': ['w', 'r'],
+            'f': ['d', 'g'],
+            'g': ['f', 'h'],
+            'h': ['g', 'j', 'n'],
+            'i': ['o', 'u', '1'],
+            'j': ['k', 'h', 'i'],
+            'k': ['l', 'j'],
+            'l': ['i', '1', 'k'],
+            'm': ['n'],
+            'n': ['m'],
+            'o': ['p', 'i', '0'],
+            'p': ['o', 'q'],
+            'r': ['t', 'e'],
+            's': ['a', 'd', '5'],
+            't': ['7', 'y', 'z', 'r'],
+            'u': ['v', 'i', 'y', 'z'],
+            'v': ['u', 'c', 'b'],
+            'w': ['v', 'vv', 'q', 'e'],
+            'x': ['z', 'y', 'c'],
+            'y': ['z', 'x'],
+            'z': ['y', 'x'],
+            '0': ['o'],
+            '1': ['l'],
+            '2': ['5'],
+            '3': ['e'],
+            '4': ['a'],
+            '5': ['s'],
+            '6': ['b'],
+            '7': ['t'],
+            '8': ['b'],
+            '9': []
+        }
+        pairs = {
+            'oo': ['00'],
+            'll': ['l1l', 'l1l', '111', '11'],
+            '11': ['ll', 'lll', 'l1l', '1l1']
+        }
+
+        # Generate a set with replacements, then
+        # add suffixes and prefixes.
+        pos = 0
+        for c in username:
+            if c not in replacements:
+                continue
+            if len(replacements[c]) == 0:
+                continue
+            npos = pos + 1
+            for xc in replacements[c]:
+                newuser = username[0:pos] + xc + username[npos:len(username)]
+                permutations.append(newuser)
+
+            pos += 1
+
+        # Search for common double-letter replacements
+        for p in pairs:
+            if p in username:
+                for r in pairs[p]:
+                    permutations.append(username.replace(p, r))
+
+        # Search for prefixed and suffixed usernames
+        for c in prefixsuffix:
+            permutations.append(username + c)
+            permutations.append(c + username)
+
+        # Search for double character usernames
+        pos = 0
+        for c in username:
+            permutations.append(username[0:pos] + c + c + username[(pos + 1):len(username)])
+            pos += 1
+
+        return list(set(permutations))
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -295,4 +378,16 @@ class sfp_accounts(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
+            if self.opts['permutate']:
+                permutations = self.generatePermutations(user)
+                for puser in permutations:
+                    res = self.checkSites(puser)
+                    for site in res:
+                        evt = SpiderFootEvent(
+                            "SIMILAR_ACCOUNT_EXTERNAL",
+                            site,
+                            self.__name__,
+                            event
+                        )
+                        self.notifyListeners(evt)
 # End of sfp_accounts class
