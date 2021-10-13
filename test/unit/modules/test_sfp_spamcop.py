@@ -57,7 +57,7 @@ class TestModulespamcop(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         event_type = 'IP_ADDRESS'
-        event_data = '1.1.1.1'
+        event_data = '1.0.0.1'
         event_module = 'example module'
         source_event = evt
 
