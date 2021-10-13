@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -----------------------------------------------------------------------------
 
+import threading
 import dns.resolver
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -73,9 +74,12 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         '_xmpp-server._tcp'
     ]
 
+    maxThreads = 50
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.events = self.tempStorage()
+        self.lock = threading.Lock()
         self.__dataSource__ = "DNS"
 
         for opt in list(userOpts.keys()):
@@ -101,10 +105,11 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
-        if eventDataHash in self.events:
-            return
+        with self.lock:
+            if eventDataHash in self.events:
+                return
 
-        self.events[eventDataHash] = True
+            self.events[eventDataHash] = True
 
         res = dns.resolver.Resolver()
         if self.opts.get('_dnsserver', "") != "":
@@ -120,8 +125,9 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
             name = srv + "." + eventData
 
             # Skip hosts we've processed already
-            if self.sf.hashstring(name) in self.events:
-                continue
+            with self.lock:
+                if self.sf.hashstring(name) in self.events:
+                    continue
 
             try:
                 answers = res.query(name, 'SRV')
