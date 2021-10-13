@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import threading
 from urllib.parse import urlparse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -50,6 +51,7 @@ class sfp_sslcert(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.lock = threading.Lock()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -102,10 +104,11 @@ class sfp_sslcert(SpiderFootPlugin):
             fqdn = eventData
             port = 443
 
-        if fqdn not in self.results:
-            self.results[fqdn] = True
-        else:
-            return
+        with self.lock:
+            if fqdn not in self.results:
+                self.results[fqdn] = True
+            else:
+                return
 
         self.debug("Testing SSL for: " + fqdn + ':' + str(port))
         # Re-fetch the certificate from the site and process
