@@ -12,6 +12,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import threading
+
 from netaddr import IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -95,9 +97,12 @@ class sfp_sorbs(SpiderFootPlugin):
         "127.0.0.14": "SORBS - Network does not contain servers",
     }
 
+    maxThreads = 20
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.lock = threading.Lock()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -158,10 +163,11 @@ class sfp_sorbs(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {event.module}")
 
-        if eventData in self.results:
-            return
+        with self.lock:
+            if eventData in self.results:
+                return
 
-        self.results[eventData] = True
+            self.results[eventData] = True
 
         if eventName == "AFFILIATE_IPADDR":
             malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
