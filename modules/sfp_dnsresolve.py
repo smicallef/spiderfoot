@@ -13,6 +13,7 @@
 
 import re
 import urllib
+import threading
 
 from netaddr import IPNetwork
 
@@ -50,12 +51,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
     events = None
     domresults = None
     hostresults = None
+    maxThreads = 20
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.events = self.tempStorage()
         self.domresults = self.tempStorage()
         self.hostresults = self.tempStorage()
+        self.lock = threading.Lock()
         self.__dataSource__ = "DNS"
 
         for opt in list(userOpts.keys()):
@@ -220,11 +223,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if eventDataHash in self.events:
-            self.debug("Skipping duplicate event.")
-            return
+        with self.lock:
+            if eventDataHash in self.events:
+                self.debug("Skipping duplicate event.")
+                return
 
-        self.events[eventDataHash] = True
+            self.events[eventDataHash] = True
 
         # Parse Microsoft workaround "ipv6-literal.net" fake domain for IPv6 UNC paths
         # For internal use on Windows systems (should not resolve in DNS)
@@ -415,13 +419,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None) -> None:
         parentHash = self.sf.hashstring(parentEvent.data)
-        if host in self.hostresults:
-            if parentHash in self.hostresults[host] or parentEvent.data == host:
-                self.debug(f"Skipping host, {host}, already processed.")
-                return
-            self.hostresults[host] = self.hostresults[host] + [parentHash]
-        else:
-            self.hostresults[host] = [parentHash]
+        with self.lock:
+            if host in self.hostresults:
+                if parentHash in self.hostresults[host] or parentEvent.data == host:
+                    self.debug(f"Skipping host, {host}, already processed.")
+                    return
+                self.hostresults[host] = self.hostresults[host] + [parentHash]
+            else:
+                self.hostresults[host] = [parentHash]
 
         self.debug(f"Found host: {host}")
 
@@ -492,13 +497,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 return
             for ip6 in ip6s:
                 parentHash = self.sf.hashstring(evt.data)
-                if ip6 not in self.hostresults:
-                    self.hostresults[ip6] = [parentHash]
-                else:
-                    if parentHash in self.hostresults[ip6] or evt.data == ip6:
-                        self.debug(f"Skipping host, {ip6}, already processed.")
-                        continue
-                    self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
+                with self.lock:
+                    if ip6 not in self.hostresults:
+                        self.hostresults[ip6] = [parentHash]
+                    else:
+                        if parentHash in self.hostresults[ip6] or evt.data == ip6:
+                            self.debug(f"Skipping host, {ip6}, already processed.")
+                            continue
+                        self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
 
                 evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                 self.notifyListeners(evt6)
@@ -512,11 +518,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.processDomain(dom, evt, True, host)
 
     def processDomain(self, domainName, parentEvent, affil=False, host=None) -> None:
-        if domainName in self.domresults:
-            self.debug(f"Skipping domain, {domainName}, already processed.")
-            return
+        with self.lock:
+            if domainName in self.domresults:
+                self.debug(f"Skipping domain, {domainName}, already processed.")
+                return
 
-        self.domresults[domainName] = True
+            self.domresults[domainName] = True
 
         if affil:
             domevt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", domainName,
