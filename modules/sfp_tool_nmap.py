@@ -26,7 +26,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
     meta = {
         'name': "Tool - Nmap",
         'summary': "Port scan to identify open ports, URLs, and operating systems.",
-        'flags': ["tool", "invasive", "slow"],
+        'flags': ["tool", "invasive"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Crawling and Scanning"],
         'toolDetails': {
@@ -99,11 +99,6 @@ class sfp_tool_nmap(SpiderFootPlugin):
             '-n',
             # overrides --max-retries for faster results
             '--max-retries', '2',
-            # Probe open ports to determine service/version info
-            '-sV',
-            # This is a convenience alias for --version-intensity 2.
-            # This light mode makes version scanning much faster, but it is slightly less likely to identify services.
-            '--version-light',
             # Nmap has the ability to port scan or version scan multiple hosts in parallel
             # Nmap does this by dividing the target IP space into groups and then scanning
             # one group at a time. In general, larger groups are more efficient.
@@ -134,7 +129,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["OPERATING_SYSTEM", "TCP_PORT_OPEN", "UDP_PORT_OPEN", "TCP_PORT_OPEN_SSL", "LINKED_URL_INTERNAL"]
+        return ["OPERATING_SYSTEM", "TCP_PORT_OPEN", "UDP_PORT_OPEN", "LINKED_URL_INTERNAL"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -244,11 +239,6 @@ class sfp_tool_nmap(SpiderFootPlugin):
                             self.results[web_service] = True
                             evt = SpiderFootEvent("LINKED_URL_INTERNAL", web_service, self.__name__, sourceEvent)
                             self.notifyListeners(evt)
-                    # SSL
-                    if port and protocol == "tcp" and tunnel in ("ssl", "tls"):
-                        ssl_protocol = f"{host.address}:{port}"
-                        evt = SpiderFootEvent("TCP_PORT_OPEN_SSL", ssl_protocol, self.__name__, sourceEvent)
-                        self.notifyListeners(evt)
 
             # Look for Operating Systems
             detectedOS = False
