@@ -27,6 +27,7 @@ class sfp_recondev(SpiderFootPlugin):
         'categories': ["Passive DNS"],
         "dataSource": {
             "website": "https://recon.dev",
+            'model': "FREE_AUTH_UNLIMITED",
             "references": ["https://recon.dev/api/docs"],
             "apiKeyInstructions": [
                 "Visit https://recon.dev/",
