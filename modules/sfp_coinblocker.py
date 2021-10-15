@@ -70,9 +70,12 @@ class sfp_coinblocker(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"
+            "MALICIOUS_COHOST",
         ]
 
     def queryBlocklist(self, target):
@@ -160,25 +163,34 @@ class sfp_coinblocker(SpiderFootPlugin):
         self.results[eventData] = True
 
         if eventName == "INTERNET_NAME":
-            evtType = "MALICIOUS_INTERNET_NAME"
-        elif eventName == 'AFFILIATE_INTERNET_NAME':
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-        elif eventName == 'CO_HOSTED_SITE':
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
             if not self.opts.get('checkcohosts', False):
                 return
-            evtType = 'MALICIOUS_COHOST'
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking maliciousness of {eventData} ({eventName}) with CoinBlocker list")
 
-        if self.queryBlocklist(eventData):
-            url = "https://zerodot1.gitlab.io/CoinBlockerLists/list.txt"
-            text = f"CoinBlocker [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryBlocklist(eventData):
+            return
+
+        url = "https://zerodot1.gitlab.io/CoinBlockerLists/list.txt"
+        text = f"CoinBlocker [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_coinblocker class
