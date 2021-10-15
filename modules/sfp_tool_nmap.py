@@ -46,6 +46,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'nmappath': "",
         'topports': 1000,
         'ports': '',
+        'detectos': True,
         'timing': 4,
         'netblockscan': True,
         'netblockscanmax': 24,
@@ -58,6 +59,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'nmappath': "Path to nmap executable. Optional.",
         'topports': "Scan top commonly-open ports.",
         'ports': "Manually specify ports to scan, comma-separated. Overrides \"top ports\".",
+        'detectos': "Detect operating system (requires root privileges)",
         'timing': "Scanning speed, 0-5.",
         'netblockscan': "Port scan all IPs within identified owned netblocks?",
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
@@ -111,7 +113,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         else:
             self.args += ("--top-ports", str(int(self.opts["topports"])))
         # if we're root, enable OS detection
-        if not (os.name == "posix" and os.geteuid() != 0):
+        if self.opts.get('detectos', False) and not (os.name == "posix" and os.geteuid() != 0):
             # Enable OS detection
             self.args += ("-O",)
             # Limit OS detection to promising targets
