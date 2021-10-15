@@ -28,7 +28,7 @@ class sfp_spur(SpiderFootPlugin):
         'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://spur.us/",
-            'model': "COMMERCIAL ONLY",
+            'model': "COMMERCIAL_ONLY",
             'references': [
                 "https://spur.us/api"
             ],
