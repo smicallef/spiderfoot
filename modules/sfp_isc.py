@@ -48,12 +48,10 @@ class sfp_isc(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?"
     }
@@ -69,13 +67,21 @@ class sfp_isc(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "IPV6_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+        ]
 
     def query(self, ip):
         if not ip:
@@ -99,13 +105,11 @@ class sfp_isc(SpiderFootPlugin):
 
         return res['content']
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
@@ -116,13 +120,16 @@ class sfp_isc(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'IP_ADDRESS':
-            evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
+            malicious_type = 'MALICIOUS_IPADDR'
+            blacklist_type = 'BLACKLISTED_IPADDR'
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = 'MALICIOUS_AFFILIATE_IPADDR'
+            blacklist_type = 'BLACKLISTED_AFFILIATE_IPADDR'
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         data = self.query(eventData)
@@ -131,10 +138,17 @@ class sfp_isc(SpiderFootPlugin):
             return
 
         attacks = re.findall(r"<attacks>([0-9]+)</attacks>", data)
-        if attacks:
-            url = f"https://isc.sans.edu/api/ip/{eventData}"
-            text = f"Internet Storm Center [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+
+        if not attacks:
+            return
+
+        url = f"https://isc.sans.edu/api/ip/{eventData}"
+        text = f"Internet Storm Center [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_isc class
