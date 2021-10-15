@@ -433,7 +433,7 @@ class SpiderFootScanner():
             # start one thread for each module
             for mod in self.__moduleInstances.values():
                 mod.start()
-            modulesFinished = False
+            final_passes = 3
 
             # watch for newly-generated events
             while True:
@@ -451,7 +451,7 @@ class SpiderFootScanner():
                         sleep(.1)
                         # but are we really?
                         if self.threadsFinished(log_status):
-                            if modulesFinished:
+                            if final_passes < 1:
                                 break
                             # Trigger module.finished()
                             for mod in self.__moduleInstances.values():
@@ -462,7 +462,7 @@ class SpiderFootScanner():
                                 log_status = counter % 100 == 0
                                 counter += 1
                                 sleep(.01)
-                            modulesFinished = True
+                            final_passes -= 1
 
                     else:
                         # save on CPU
