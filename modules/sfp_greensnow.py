@@ -39,7 +39,6 @@ class sfp_greensnow(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18,
@@ -47,7 +46,6 @@ class sfp_greensnow(SpiderFootPlugin):
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliate IP addresses?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -66,15 +64,25 @@ class sfp_greensnow(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
-                "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
+        return [
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
+            'NETBLOCK_OWNER',
+            'NETBLOCK_MEMBER',
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+        ]
 
     def query(self, qry, targetType):
         cid = "_greensnow"
@@ -105,7 +113,7 @@ class sfp_greensnow(SpiderFootPlugin):
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
                         self.debug(f"{ip} found within netblock/subnet {qry} in greensnow.co list.")
-                        return url
+                        return f"https://greensnow.co/view/{ip}"
                 except Exception as e:
                     self.debug(f"Error encountered parsing: {e}")
                     continue
@@ -113,11 +121,10 @@ class sfp_greensnow(SpiderFootPlugin):
             if targetType == "ip":
                 if qry.lower() == ip:
                     self.debug(f"{qry} found in greensnow.co list.")
-                    return url
+                    return f"https://greensnow.co/view/{ip}"
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -136,26 +143,31 @@ class sfp_greensnow(SpiderFootPlugin):
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
-        self.debug(f"Checking maliciousness of {eventData} with greensnow.co")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with greensnow.co")
 
         url = self.query(eventData, targetType)
 
@@ -163,7 +175,11 @@ class sfp_greensnow(SpiderFootPlugin):
             return
 
         text = f"greensnow.co [{eventData}]\n<SFURL>{url}</SFURL>"
-        evt = SpiderFootEvent(evtType, text, self.__name__, event)
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_greensnow class
