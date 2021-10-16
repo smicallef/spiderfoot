@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:        sfp_cinsscore
-# Purpose:     Checks if an IP address is malicious according to the CINS Army List.
+# Purpose:     Checks if an IP address is malicious according to the CINS Army list.
 #
 # Author:      steve@binarypool.com
 #
@@ -19,21 +19,23 @@ class sfp_cinsscore(SpiderFootPlugin):
 
     meta = {
         'name': "CINS Army List",
-        'summary': "Check if a netblock or IP address is malicious according to cinsscore.com's Army List.",
+        'summary': "Check if a netblock or IP address is malicious according to Collective Intelligence Network Security (CINS) Army list.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://cinsscore.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://cinsscore.com/media/images/fav-icon.png',
+            'logo': 'https://cinsscore.com/media/images/logo-small-grey-inset.png',
             'description': "Leveraging data from our network of Sentinel "
                 "devices and other trusted InfoSec sources, CINS is a "
                 "Threat Intelligence database that provides an accurate "
-                "and timely score for any IP address in the world.",
+                "and timely score for any IP address in the world."
+                "The CINS Army list is a subset of the CINS Active Threat Intelligence ruleset.",
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18,
@@ -41,7 +43,6 @@ class sfp_cinsscore(SpiderFootPlugin):
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliate IP addresses?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -60,19 +61,29 @@ class sfp_cinsscore(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
-                "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "NETBLOCK_MEMBER",
+            "NETBLOCK_OWNER",
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_SUBNET",
+            "MALICIOUS_NETBLOCK",
+        ]
 
     def query(self, qry, targetType):
         cid = "_cinsscore"
-        url = "http://cinsscore.com/list/ci-badguys.txt"
+        url = "https://cinsscore.com/list/ci-badguys.txt"
 
         data = dict()
         data["content"] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
@@ -111,13 +122,11 @@ class sfp_cinsscore(SpiderFootPlugin):
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
@@ -130,23 +139,28 @@ class sfp_cinsscore(SpiderFootPlugin):
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
@@ -157,7 +171,11 @@ class sfp_cinsscore(SpiderFootPlugin):
             return
 
         text = f"cinsscore.com [{eventData}]\n<SFURL>{url}</SFURL>"
-        evt = SpiderFootEvent(evtType, text, self.__name__, event)
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_cinsscore class
