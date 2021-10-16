@@ -44,13 +44,11 @@ class sfp_multiproxy(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
         'cacheperiod': "Hours to cache list data before re-fetching."
@@ -67,22 +65,24 @@ class sfp_multiproxy(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return [
-            "IP_ADDRESS",
-            "AFFILIATE_IPADDR",
-            "NETBLOCK_MEMBER",
-            "NETBLOCK_OWNER"
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
+            'NETBLOCK_OWNER',
+            'NETBLOCK_MEMBER',
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
             "MALICIOUS_SUBNET",
-            "MALICIOUS_NETBLOCK"
         ]
 
     def queryProxyList(self, target, targetType):
@@ -155,7 +155,6 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         return ips
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -174,31 +173,42 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.debug(f"Checking maliciousness of {eventData} ({eventName}) with multiproxy.org open proxy list")
 
-        if self.queryProxyList(eventData, targetType):
-            url = "http://multiproxy.org/txt_all/proxy.txt"
-            text = f"multiproxy.org Open Proxies [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryProxyList(eventData, targetType):
+            return
+
+        url = "http://multiproxy.org/txt_all/proxy.txt"
+        text = f"multiproxy.org Open Proxies [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_multiproxy class
