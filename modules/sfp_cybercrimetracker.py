@@ -16,20 +16,20 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_cybercrimetracker(SpiderFootPlugin):
 
     meta = {
-        'name': "cybercrime-tracker.net",
-        'summary': "Check if a host/domain or IP address is malicious according to cybercrime-tracker.net.",
+        'name': "CyberCrime-Tracker.net",
+        'summary': "Check if a host/domain or IP address is malicious according to CyberCrime-Tracker.net.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "http://cybercrime-tracker.net/",
+            'website': "https://cybercrime-tracker.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://cybercrime-tracker.net/tools.php",
                 "https://cybercrime-tracker.net/about.php"
             ],
-            'favIcon': "http://cybercrime-tracker.net/favicon.ico",
-            'logo': "http://cybercrime-tracker.net/favicon.ico",
+            'favIcon': "https://cybercrime-tracker.net/favicon.ico",
+            'logo': "https://cybercrime-tracker.net/favicon.ico",
             'description': "CyberCrime is a C&C panel tracker, in other words, "
             "it lists the administration interfaces of certain in-the-wild botnets.",
         }
@@ -60,7 +60,6 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return [
             "INTERNET_NAME",
@@ -70,9 +69,13 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             "CO_HOSTED_SITE"
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_IPADDR",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_IPADDR",
@@ -87,7 +90,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             return False
 
         if target.lower() in blacklist:
-            self.debug(f"Host name {target} found in cybercrime-tracker.net blacklist.")
+            self.debug(f"Host name {target} found in CyberCrime-Tracker.net blacklist.")
             return True
 
         return False
@@ -99,18 +102,18 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             return self.parseBlacklist(blacklist)
 
         res = self.sf.fetchUrl(
-            "http://cybercrime-tracker.net/all.php",
+            "https://cybercrime-tracker.net/all.php",
             timeout=10,
             useragent=self.opts['_useragent'],
         )
 
         if res['code'] != "200":
-            self.error(f"Unexpected HTTP response code {res['code']} from cybercrime-tracker.net.")
+            self.error(f"Unexpected HTTP response code {res['code']} from CyberCrime-Tracker.net.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.error("Received no content from cybercrime-tracker.net")
+            self.error("Received no content from CyberCrime-Tracker.net")
             self.errorState = True
             return None
 
@@ -122,7 +125,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         """Parse plaintext blacklist
 
         Args:
-            blacklist (str): plaintext blacklist from cybercrime-tracker.net
+            blacklist (str): plaintext blacklist from CyberCrime-Tracker.net
 
         Returns:
             list: list of blacklisted IP addresses and host names
@@ -144,11 +147,10 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                 continue
             if "." not in host:
                 continue
-            hosts.append(host)
+            hosts.append(host.split(':')[0])
 
         return hosts
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -165,31 +167,43 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == "IP_ADDRESS":
-            evtType = 'MALICIOUS_IPADDR'
-        elif eventName == "AFFILIATE_IPADDR":
+        if eventName == 'IP_ADDRESS':
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
+        elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == "INTERNET_NAME":
-            evtType = "MALICIOUS_INTERNET_NAME"
-        elif eventName == 'AFFILIATE_INTERNET_NAME':
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-        elif eventName == 'CO_HOSTED_SITE':
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
             if not self.opts.get('checkcohosts', False):
                 return
-            evtType = 'MALICIOUS_COHOST'
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
-        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with cybercrime-tracker.net")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with CyberCrime-Tracker.net")
 
-        if self.queryBlacklist(eventData):
-            url = "http://cybercrime-tracker.net/all.php"
-            text = f"cybercrime-tracker.net Malicious Submissions [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryBlacklist(eventData):
+            return
+
+        url = f"https://cybercrime-tracker.net/index.php?search={eventData}"
+        text = f"CyberCrime-Tracker.net Malicious Submissions [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_cybercrimetracker class
