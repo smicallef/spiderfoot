@@ -29,6 +29,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://itunes.apple.com/",
+            'model': "FREE_AUTH_UNLIMITED",
             'favIcon': "https://itunes.apple.com/favicon.ico",
             'logo': "https://itunes.apple.com/favicon.ico",
             'description': "The Apple iTunes store is a store for downloading "
