@@ -30,6 +30,7 @@ class sfp_threatfox(SpiderFootPlugin):
                 "https://threatfox.abuse.ch/api/",
             ],
             'website': "https://threatfox.abuse.ch",
+            'favIcon': 'https://threatfox.abuse.ch/favicon.ico',
             'logo': "https://threatfox.abuse.ch/images/threatfox_logo.png",
             'description': "ThreatFox is a free platform from abuse.ch with the goal of sharing"
             "indicators of compromise (IOCs) associated with malware with the infosec community,"
@@ -56,10 +57,18 @@ class sfp_threatfox(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR"
+        ]
 
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+        ]
 
     def query(self, qry):
         """Query IOCs
@@ -128,13 +137,12 @@ class sfp_threatfox(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
             return
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
@@ -146,12 +154,15 @@ class sfp_threatfox(SpiderFootPlugin):
         self.results[eventData] = True
 
         if eventName == 'IP_ADDRESS':
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = 'MALICIOUS_IPADDR'
+            blacklist_type = 'BLACKLISTED_IPADDR'
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = 'MALICIOUS_AFFILIATE_IPADDR'
+            blacklist_type = 'BLACKLISTED_AFFILIATE_IPADDR'
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         data = self.query(eventData)
@@ -159,9 +170,13 @@ class sfp_threatfox(SpiderFootPlugin):
         if not data:
             return
 
-        url = "https://threatfox-api.abuse.ch/api/v1/"
+        url = f"https://threatfox.abuse.ch/browse.php?search=ioc:{eventData}"
         text = f"ThreatFox [{eventData}]\n<SFURL>{url}</SFURL>"
-        evt = SpiderFootEvent(evtType, text, self.__name__, event)
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_threatfox class
