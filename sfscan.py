@@ -397,22 +397,14 @@ class SpiderFootScanner():
 
             # Check in case the user requested to stop the scan between modules
             # initializing
-            for mod in list(self.__moduleInstances.values()):
-                if mod.checkForStop():
-                    self.__setStatus('ABORTING')
-                    aborted = True
-                    break
+            scanstatus = self.__dbh.scanInstanceGet(self.__scanId)
+            if scanstatus and scanstatus[5] == "ABORT-REQUESTED":
+                aborted = True
 
             # start threads
             if not aborted:
                 self.waitForThreads()
 
-            if aborted:
-                self.__sf.status(f"Scan [{self.__scanId}] aborted.")
-                self.__setStatus("ABORTED", None, time.time() * 1000)
-            else:
-                self.__sf.status(f"Scan [{self.__scanId}] completed.")
-                self.__setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.__sf.error(f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
@@ -425,6 +417,7 @@ class SpiderFootScanner():
 
     def waitForThreads(self):
         counter = 0
+        aborted = False
 
         try:
             if not self.eventQueue:
@@ -441,6 +434,11 @@ class SpiderFootScanner():
                 # log status of threads every 100 iterations
                 log_status = counter % 100 == 0
                 counter += 1
+
+                scanstatus = self.__dbh.scanInstanceGet(self.__scanId)
+                self.__sf.debug(str(scanstatus))
+                if scanstatus and scanstatus[5] == "ABORT-REQUESTED":
+                    raise AssertionError("ABORT-REQUESTED")
 
                 try:
                     sfEvent = self.eventQueue.get_nowait()
@@ -466,7 +464,7 @@ class SpiderFootScanner():
 
                     else:
                         # save on CPU
-                        sleep(.01)
+                        sleep(.1)
                     continue
 
                 if not isinstance(sfEvent, SpiderFootEvent):
@@ -485,14 +483,20 @@ class SpiderFootScanner():
                         if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
                             mod.incomingEventQueue.put(deepcopy(sfEvent))
 
-        except (KeyboardInterrupt, AssertionError) as e:
-            self.__sf.status(f"Scan [{self.__scanId}] aborted, {e}.")
+        except (KeyboardInterrupt, AssertionError):
+            aborted = True
 
         finally:
             # tell the modules to stop
             for mod in self.__moduleInstances.values():
                 mod._stopScanning = True
             self.__sharedThreadPool.shutdown(wait=True)
+            if aborted:
+                self.__sf.status(f"Scan [{self.__scanId}] aborted.")
+                self.__setStatus("ABORTED", None, time.time() * 1000)
+            else:
+                self.__sf.status(f"Scan [{self.__scanId}] completed.")
+                self.__setStatus("FINISHED", None, time.time() * 1000)
 
     def threadsFinished(self, log_status=False):
         if self.eventQueue is None:
