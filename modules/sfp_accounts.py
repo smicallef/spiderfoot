@@ -106,7 +106,11 @@ class sfp_accounts(SpiderFootPlugin):
             return
 
         url = site['check_uri'].format(account=name)
-        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{url}</SFURL>"
+        if 'pretty_uri' in site:
+            ret_url = site['pretty_uri'].format(account=name)
+        else:
+            ret_url = url
+        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{ret_url}</SFURL>"
 
         res = self.sf.fetchUrl(
             url,
