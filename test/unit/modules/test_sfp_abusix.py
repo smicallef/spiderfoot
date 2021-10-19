@@ -1,20 +1,20 @@
-# test_sfp_botscout.py
+# test_sfp_abusix.py
 import pytest
 import unittest
 
-from modules.sfp_botscout import sfp_botscout
+from modules.sfp_abusix import sfp_abusix
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModulebotscout(unittest.TestCase):
+class TestModuleAbusix(unittest.TestCase):
     """
-    Test modules.sfp_botscout
+    Test modules.sfp_abusix
     """
 
     def test_opts(self):
-        module = sfp_botscout()
+        module = sfp_abusix()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -23,25 +23,24 @@ class TestModulebotscout(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_botscout()
+        module = sfp_abusix()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_botscout()
+        module = sfp_abusix()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_botscout()
+        module = sfp_abusix()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
-    def test_handleEvent(self):
+    def test_handleEvent_no_api_key_should_set_errorState(self):
         """
         Test handleEvent(self, event)
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_botscout()
+        module = sfp_abusix()
         module.setup(sf, dict())
 
         target_value = 'example target value'
@@ -58,3 +57,4 @@ class TestModulebotscout(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)

@@ -167,13 +167,6 @@ class sfp_dronebl(SpiderFootPlugin):
                 self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
-        addrs = list()
-        if eventName.startswith("NETBLOCK_"):
-            for addr in IPNetwork(eventData):
-                addrs.append(str(addr))
-        else:
-            addrs.append(eventData)
-
         if eventName == "AFFILIATE_IPADDR":
             malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
             blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
@@ -188,6 +181,7 @@ class sfp_dronebl(SpiderFootPlugin):
             blacklist_type = "BLACKLISTED_SUBNET"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
         addrs = list()
         if eventName.startswith("NETBLOCK_"):

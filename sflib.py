@@ -2364,7 +2364,7 @@ class SpiderFoot:
 
         return True
 
-    def googleIterate(self, searchString: str, opts: dict = {}) -> dict:
+    def googleIterate(self, searchString: str, opts: dict = None) -> dict:
         """Request search results from the Google API.
 
         Will return a dict:
@@ -2384,7 +2384,8 @@ class SpiderFoot:
         Returns:
             dict: Search results as {"webSearchUrl": "URL", "urls": [results]}
         """
-
+        if opts is None:
+            opts = {}
         search_string = searchString.replace(" ", "%20")
         params = urllib.parse.urlencode({
             "cx": opts["cse_id"],

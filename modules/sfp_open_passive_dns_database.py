@@ -42,13 +42,11 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         "timeout": 30,
         "verify": True,
     }
 
-    # Option descriptions
     optdescs = {
         "timeout": "Query timeout, in seconds.",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
@@ -65,16 +63,21 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["DOMAIN_NAME"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "IP_ADDRESS", "IPV6_ADDRESS"]
 
-    # Query the Open Passive DNS Database for a domain
     def query(self, qry):
+        """Query the Open Passive DNS Database for subdomains of a domain name.
+
+        Args:
+            qry (str): Domain name
+
+        Returns:
+            list: List of subdomain details
+        """
         params = {
             "alike": 1,  # alike is required to find subdomains
             "q": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
@@ -96,7 +99,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         rows = re.findall(r'<tr>(.+?)</tr>', str(res['content']), re.DOTALL)
 
         if not rows:
-            self.debug("No passive DNS results for " + qry)
+            self.debug(f"No passive DNS results for {qry}")
             return None
 
         data = list()
@@ -109,16 +112,15 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
                 continue
 
             if len(columns) != 7:
-                self.error("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)))
+                self.error(f"Unexpected number of columns for row. Expected 7, Found {len(columns)}")
                 continue
 
             data.append(columns)
 
-        self.info("Retrieved " + str(len(data)) + " DNS records")
+        self.info(f"Retrieved {len(data)} DNS records for {qry}")
 
         return data
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -127,8 +129,8 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         if self.errorState:
             return
 
-        if srcModuleName == "sfp_open_passive_dns_database":
-            self.debug("Ignoring " + eventName + ", from self.")
+        if srcModuleName == self.__class__.__name__:
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:
@@ -142,7 +144,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         data = self.query(eventData)
 
         if data is None or len(data) == 0:
-            self.info("No passive DNS data found for " + eventData)
+            self.info(f"No passive DNS data found for {eventData}")
             return
 
         domains = list()
@@ -203,7 +205,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(query, answer):
-                    self.debug("Host " + query + " no longer resolves to " + answer)
+                    self.debug(f"Host {query} no longer resolves to {answer}")
                     continue
 
                 evt = SpiderFootEvent("IP_ADDRESS", answer, self.__name__, event)
@@ -214,11 +216,11 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
                     continue
 
                 if not self.sf.validIP6(answer):
-                    self.debug("Skipping invalid IPv6 address " + answer)
+                    self.debug(f"Skipping invalid IPv6 address {answer}")
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(query, answer):
-                    self.debug("Host " + query + " no longer resolves to " + answer)
+                    self.debug(f"Host {query} no longer resolves to {answer}")
                     continue
 
                 evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)

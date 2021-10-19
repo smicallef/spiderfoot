@@ -76,7 +76,13 @@ class sfp_metadefender(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['MALICIOUS_IPADDR', 'MALICIOUS_INTERNET_NAME', 'GEOINFO']
+        return [
+            'MALICIOUS_IPADDR',
+            'MALICIOUS_INTERNET_NAME',
+            'BLACKLISTED_IPADDR',
+            'BLACKLISTED_INTERNET_NAME',
+            'GEOINFO'
+        ]
 
     # Query domain REST API
     # https://onlinehelp.opswat.com/mdcloud/4.5_Domain_Reputation.html
@@ -140,7 +146,6 @@ class sfp_metadefender(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
@@ -156,7 +161,7 @@ class sfp_metadefender(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventName == 'IP_ADDRESS':
             data = self.queryIp(eventData)
@@ -185,10 +190,13 @@ class sfp_metadefender(SpiderFootPlugin):
                 return
 
             for m in sources:
-                if m.get('assessment'):
-                    provider = m.get('provider')
-                    evt = SpiderFootEvent('MALICIOUS_IPADDR', provider + ' [' + eventData + ']', self.__name__, event)
-                    self.notifyListeners(evt)
+                if not m.get('assessment'):
+                    continue
+                provider = m.get('provider')
+                evt = SpiderFootEvent('MALICIOUS_IPADDR', provider + ' [' + eventData + ']', self.__name__, event)
+                self.notifyListeners(evt)
+                evt = SpiderFootEvent('BLACKLISTED_IPADDR', provider + ' [' + eventData + ']', self.__name__, event)
+                self.notifyListeners(evt)
 
         if eventName == 'INTERNET_NAME':
             data = self.queryDomain(eventData)
@@ -210,9 +218,12 @@ class sfp_metadefender(SpiderFootPlugin):
                 return
 
             for m in sources:
-                if m.get('assessment'):
-                    provider = m.get('provider')
-                    evt = SpiderFootEvent('MALICIOUS_INTERNET_NAME', provider + ' [' + eventData + ']', self.__name__, event)
-                    self.notifyListeners(evt)
+                if not m.get('assessment'):
+                    continue
+                provider = m.get('provider')
+                evt = SpiderFootEvent('MALICIOUS_INTERNET_NAME', provider + ' [' + eventData + ']', self.__name__, event)
+                self.notifyListeners(evt)
+                evt = SpiderFootEvent('BLACKLISTED_INTERNET_NAME', provider + ' [' + eventData + ']', self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_metadefender class

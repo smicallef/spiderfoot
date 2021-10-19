@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_phishstats
-# Purpose:      Spiderfoot plugin to search PhishStats API
-#               to determine if an IP is malicious
+# Name:        sfp_phishstats
+# Purpose:     Spiderfoot plugin to search PhishStats API
+#              to determine if an IP is malicious.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -25,7 +25,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
     meta = {
         'name': "PhishStats",
-        'summary': "Determine if an IP Address is malicious",
+        'summary': "Check if a netblock or IP address is malicious according to PhishStats.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -36,26 +36,24 @@ class sfp_phishstats(SpiderFootPlugin):
                 "https://phishstats.info/#apidoc"
             ],
             'favIcon': "https://phishstats.info/phish.ico",
-            'logo': "",
-            'description': "PhishStats - is a real time Phishing database that gathers phishing URLs from several sources.",
+            'description': "PhishStats is a real time Phishing database that gathers phishing URLs from several sources.",
         }
     }
 
     opts = {
         'checkaffiliates': True,
-        'subnetlookup': False,
         'netblocklookup': True,
         'maxnetblock': 24,
-        'maxsubnet': 24
+        'subnetlookup': True,
+        'maxsubnet': 24,
     }
 
-    # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
-        'checkaffiliates': "Check affiliates?",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
+        'checkaffiliates': "Apply checks to affiliates?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
     }
 
     results = None
@@ -64,34 +62,37 @@ class sfp_phishstats(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
-    # For a list of all events, check sfdb.py.
     def watchedEvents(self):
         return [
-            "IP_ADDRESS",
-            "NETBLOCK_OWNER",
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
             "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"
+            "NETBLOCK_OWNER",
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
-            "IP_ADDRESS",
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
             "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
             "RAW_RIR_DATA",
-            "MALICIOUS_AFFILIATE_IPADDR"
         ]
 
-    # Check whether the IP Address is malicious using Phishstats API
+    # Check whether the IP address is malicious using PhishStats API
     # https://phishstats.info/
     def queryIPAddress(self, qry):
         params = {
-            '_where': "(ip,eq," + qry.encode('raw_unicode_escape').decode("ascii", errors='replace') + ")",
+            '_where': f"(ip,eq,{qry})",
             '_size': 1
         }
 
@@ -107,113 +108,116 @@ class sfp_phishstats(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.debug("No information found from Phishstats for IP Address")
+            self.debug(f"No information found from PhishStats for {qry}.")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
             self.error(f"Error processing JSON response: {e}")
-            return None
 
-    # Handle events sent to this module
+        return None
+
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
             return
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER':
-            if not self.opts['netblocklookup']:
+        if eventName == 'AFFILIATE_IPADDR':
+            if not self.opts.get('checkaffiliates', False):
                 return
-
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.debug("Network size bigger than permitted: "
-                           + str(IPNetwork(eventData).prefixlen) + " > "
-                           + str(self.opts['maxnetblock']))
-                return
-
-        if eventName == 'NETBLOCK_MEMBER':
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+        elif eventName == 'IP_ADDRESS':
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
+        elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return
 
-            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.debug("Network size bigger than permitted: "
-                           + str(IPNetwork(eventData).prefixlen) + " > "
-                           + str(self.opts['maxsubnet']))
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
+        elif eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
+
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
         qrylist = list()
-        if eventName.startswith("NETBLOCK_"):
+        if eventName.startswith("NETBLOCK"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
                 self.results[str(ipaddr)] = True
         else:
-            # If user has enabled affiliate checking
-            if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
-                return
             qrylist.append(eventData)
 
         for addr in qrylist:
-
             if self.checkForStop():
                 return
 
             data = self.queryIPAddress(addr)
 
-            if data is None:
-                break
+            if not data:
+                continue
 
+            # TODO: iterate through hosts and extract co-hosts
             try:
                 maliciousIP = data[0].get('ip')
             except Exception:
                 # If ArrayIndex is out of bounds then data doesn't exist
                 continue
 
-            if maliciousIP is None:
+            if not maliciousIP:
                 continue
 
             if addr != maliciousIP:
-                self.error("Reported address doesn't match requested, skipping")
+                self.error(f"Reported address {maliciousIP} doesn't match queried IP address {addr}, skipping")
                 continue
 
-            # Data is reported about the IP Address
-            if eventName.startswith("NETBLOCK_"):
-                ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
-                self.notifyListeners(ipEvt)
-
-            if eventName.startswith("NETBLOCK_"):
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
-                self.notifyListeners(evt)
+            # For netblocks, we need to create the IP address event so that
+            # the threat intel event is more meaningful.
+            if eventName == 'NETBLOCK_OWNER':
+                pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            elif eventName == 'NETBLOCK_MEMBER':
+                pevent = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
+                self.notifyListeners(pevent)
             else:
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
-                self.notifyListeners(evt)
+                pevent = event
 
-            maliciousIPDesc = f"Phishstats [{maliciousIP}]\n"
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, pevent)
+            self.notifyListeners(evt)
 
-            maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
-            if maliciousIPDescHash in self.results:
-                continue
-            self.results[maliciousIPDescHash] = True
+            text = f"PhishStats [{addr}]"
 
-            if eventName.startswith("NETBLOCK_"):
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
-            elif eventName.startswith("AFFILIATE_"):
-                evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
-            else:
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
+            evt = SpiderFootEvent(blacklist_type, text, self.__name__, pevent)
+            self.notifyListeners(evt)
 
+            evt = SpiderFootEvent(malicious_type, text, self.__name__, pevent)
             self.notifyListeners(evt)
 
 # End of sfp_phishstats class

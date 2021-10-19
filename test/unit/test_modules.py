@@ -77,6 +77,36 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             for cat in m.get('cats', list()):
                 self.assertIn(cat, valid_categories)
 
+    def test_module_model_is_valid(self):
+        sf = SpiderFoot(self.default_options)
+        valid_models = [
+            "COMMERCIAL_ONLY",
+            "FREE_AUTH_LIMITED",
+            "FREE_AUTH_UNLIMITED",
+            "FREE_NOAUTH_LIMITED",
+            "FREE_NOAUTH_UNLIMITED",
+            "PRIVATE_ONLY",
+        ]
+
+        sfModules = self.load_modules(sf)
+        for module in sfModules:
+            m = sfModules[module]
+
+            meta = m.get('meta')
+
+            self.assertTrue(meta)
+            self.assertIsInstance(meta, dict)
+
+            data_source = meta.get('dataSource')
+
+            if not data_source:
+                continue
+
+            self.assertIsInstance(data_source, dict)
+            model = data_source.get('model')
+            self.assertIsInstance(model, str)
+            self.assertIn(model, valid_models)
+
     def test_modules_with_api_key_have_apiKeyInstructions(self):
         sf = SpiderFoot(self.default_options)
         sfModules = self.load_modules(sf)
@@ -114,7 +144,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
     def test_module_watched_events_are_valid(self):
         sf = SpiderFoot(self.default_options)
-        sf.dbh = SpiderFootDb(self.default_options, False)
+        sf.dbh = SpiderFootDb(self.default_options, True)
 
         valid_events = []
         for event in sf.dbh.eventTypes():
@@ -131,7 +161,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
     def test_module_produced_events_are_valid(self):
         sf = SpiderFoot(self.default_options)
-        sf.dbh = SpiderFootDb(self.default_options, False)
+        sf.dbh = SpiderFootDb(self.default_options, True)
 
         valid_events = []
         for event in sf.dbh.eventTypes():
@@ -178,7 +208,15 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertIsInstance(m.get('consumes'), list)
             self.assertIsInstance(m.get('meta'), dict)
 
-            # output modules do not have use cases, categories or produced events
+            # not all modules will have a data source (sfp_dnsresolve, sfp_dnscommonsrv, etc)
+            if m.get('dataSource'):
+                self.assertIsInstance(m.get('dataSource'), dict)
+                self.assertTrue(m.get('dataSource').get('website'))
+                self.assertTrue(m.get('dataSource').get('references'))
+                self.assertTrue(m.get('dataSource').get('model'))
+                self.assertTrue(m.get('dataSource').get('description'))
+
+            # output modules do not have use cases, categories, produced events or data source
             if module in ["sfp__stor_db", "sfp__stor_stdout"]:
                 continue
 

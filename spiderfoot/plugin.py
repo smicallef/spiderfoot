@@ -492,6 +492,7 @@ class SpiderFootPlugin():
 
     def finish(self):
         """Perform final/cleanup functions before module exits
+        Note that this function may be called multiple times
         Overridden by the implementer
         """
 
