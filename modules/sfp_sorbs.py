@@ -51,7 +51,8 @@ class sfp_sorbs(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'subnetlookup': True,
-        'maxsubnet': 24
+        'maxsubnet': 24,
+        'maxthreads': 20
     }
 
     # Option descriptions
@@ -59,7 +60,8 @@ class sfp_sorbs(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxthreads': "Maximum concurrent requests"
     }
 
     results = None
@@ -96,8 +98,6 @@ class sfp_sorbs(SpiderFootPlugin):
         "127.0.0.12": "SORBS - Host does not send mail",
         "127.0.0.14": "SORBS - Network does not contain servers",
     }
-
-    maxThreads = 20
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -151,7 +151,7 @@ class sfp_sorbs(SpiderFootPlugin):
         try:
             lookup = self.reverseAddr(qaddr) + '.dnsbl.sorbs.net'
             self.debug(f"Checking SORBS blacklist: {lookup}")
-            return self.sf.resolveHost(lookup)
+            return (qaddr, self.sf.resolveHost(lookup))
         except Exception as e:
             self.debug(f"SORBS did not resolve {qaddr} / {lookup}: {e}")
 
@@ -208,16 +208,19 @@ class sfp_sorbs(SpiderFootPlugin):
         else:
             addrs.append(eventData)
 
-        for addr in addrs:
-            if self.checkForStop():
-                return
+        for queryResult in self.sharedThreadPool.map(
+            self.queryAddr,
+            addrs,
+            taskName="sfp_sorbs_queryAddr",
+            maxThreads=self.opts.get("maxthreads", 20),
+            saveResult=True
+        ):
+            if not queryResult:
+                continue
 
-            res = self.queryAddr(addr)
+            addr, res = queryResult
 
             self.results[addr] = True
-
-            if not res:
-                continue
 
             self.debug(f"{addr} found in SORBS DNS")
 
