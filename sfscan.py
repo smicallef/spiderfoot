@@ -259,109 +259,112 @@ class SpiderFootScanner():
 
     def __startScan(self):
         """Start running a scan.
+
+        Raises:
+            AssertionError: Never actually raised.
         """
-        aborted = False
-
-        self.__setStatus("STARTING", time.time() * 1000, None)
-        self.__sf.status(f"Scan [{self.__scanId}] for '{self.__target.targetValue}' initiated.")
-
-        self.eventQueue = queue.Queue()
-
-        self.__sharedThreadPool.start()
-
-        # moduleList = list of modules the user wants to run
-        self.__sf.debug(f"Loading {len(self.__moduleList)} modules ...")
-        for modName in self.__moduleList:
-            if not modName:
-                continue
-
-            # Module may have been renamed or removed
-            if modName not in self.__config['__modules__']:
-                self.__sf.error(f"Failed to load module: {modName}")
-                continue
-
-            try:
-                module = __import__('modules.' + modName, globals(), locals(), [modName])
-            except ImportError:
-                self.__sf.error(f"Failed to load module: {modName}")
-                continue
-
-            try:
-                mod = getattr(module, modName)()
-                mod.__name__ = modName
-            except Exception:
-                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
-                continue
-
-            # Set up the module options, scan ID, database handle and listeners
-            try:
-                # Configuration is a combined global config with module-specific options
-                self.__modconfig[modName] = deepcopy(self.__config['__modules__'][modName]['opts'])
-                for opt in list(self.__config.keys()):
-                    self.__modconfig[modName][opt] = deepcopy(self.__config[opt])
-
-                # clear any listener relationships from the past
-                mod.clearListeners()
-                mod.setScanId(self.__scanId)
-                mod.setup(self.__sf, self.__modconfig[modName])
-                mod.setDbh(self.__dbh)
-                mod.setSharedThreadPool(self.__sharedThreadPool)
-            except Exception:
-                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
-                mod.errorState = True
-                continue
-
-            # Override the module's local socket module to be the SOCKS one.
-            if self.__config['_socks1type'] != '':
-                try:
-                    mod._updateSocket(socket)
-                except Exception as e:
-                    self.__sf.error(f"Module {modName} socket setup failed: {e}")
-                    continue
-
-            # Set up event output filters if requested
-            if self.__config['__outputfilter']:
-                try:
-                    mod.setOutputFilter(self.__config['__outputfilter'])
-                except Exception as e:
-                    self.__sf.error(f"Module {modName} output filter setup failed: {e}")
-                    continue
-
-            # Give modules a chance to 'enrich' the original target with aliases of that target.
-            try:
-                newTarget = mod.enrichTarget(self.__target)
-                if newTarget is not None:
-                    self.__target = newTarget
-            except Exception as e:
-                self.__sf.error(f"Module {modName} target enrichment failed: {e}")
-                continue
-
-            # Register the target with the module
-            try:
-                mod.setTarget(self.__target)
-            except Exception as e:
-                self.__sf.error(f"Module {modName} failed to set target '{self.__target}': {e}")
-                continue
-
-            # Set up the outgoing event queue
-            try:
-                mod.outgoingEventQueue = self.eventQueue
-                mod.incomingEventQueue = queue.Queue()
-            except Exception as e:
-                self.__sf.error(f"Module {modName} event queue setup failed: {e}")
-                continue
-
-            self.__moduleInstances[modName] = mod
-            self.__sf.status(f"{modName} module loaded.")
-
-        self.__sf.debug(f"Scan [{self.__scanId}] loaded {len(self.__moduleInstances)} modules.")
-
-        if not self.__moduleInstances:
-            self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
-            self.__dbh.close()
-            return
+        failed = True
 
         try:
+            self.__setStatus("STARTING", time.time() * 1000, None)
+            self.__sf.status(f"Scan [{self.__scanId}] for '{self.__target.targetValue}' initiated.")
+
+            self.eventQueue = queue.Queue()
+
+            self.__sharedThreadPool.start()
+
+            # moduleList = list of modules the user wants to run
+            self.__sf.debug(f"Loading {len(self.__moduleList)} modules ...")
+            for modName in self.__moduleList:
+                if not modName:
+                    continue
+
+                # Module may have been renamed or removed
+                if modName not in self.__config['__modules__']:
+                    self.__sf.error(f"Failed to load module: {modName}")
+                    continue
+
+                try:
+                    module = __import__('modules.' + modName, globals(), locals(), [modName])
+                except ImportError:
+                    self.__sf.error(f"Failed to load module: {modName}")
+                    continue
+
+                try:
+                    mod = getattr(module, modName)()
+                    mod.__name__ = modName
+                except Exception:
+                    self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                    continue
+
+                # Set up the module options, scan ID, database handle and listeners
+                try:
+                    # Configuration is a combined global config with module-specific options
+                    self.__modconfig[modName] = deepcopy(self.__config['__modules__'][modName]['opts'])
+                    for opt in list(self.__config.keys()):
+                        self.__modconfig[modName][opt] = deepcopy(self.__config[opt])
+
+                    # clear any listener relationships from the past
+                    mod.clearListeners()
+                    mod.setScanId(self.__scanId)
+                    mod.setSharedThreadPool(self.__sharedThreadPool)
+                    mod.setDbh(self.__dbh)
+                    mod.setup(self.__sf, self.__modconfig[modName])
+                except Exception:
+                    self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                    mod.errorState = True
+                    continue
+
+                # Override the module's local socket module to be the SOCKS one.
+                if self.__config['_socks1type'] != '':
+                    try:
+                        mod._updateSocket(socket)
+                    except Exception as e:
+                        self.__sf.error(f"Module {modName} socket setup failed: {e}")
+                        continue
+
+                # Set up event output filters if requested
+                if self.__config['__outputfilter']:
+                    try:
+                        mod.setOutputFilter(self.__config['__outputfilter'])
+                    except Exception as e:
+                        self.__sf.error(f"Module {modName} output filter setup failed: {e}")
+                        continue
+
+                # Give modules a chance to 'enrich' the original target with aliases of that target.
+                try:
+                    newTarget = mod.enrichTarget(self.__target)
+                    if newTarget is not None:
+                        self.__target = newTarget
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} target enrichment failed: {e}")
+                    continue
+
+                # Register the target with the module
+                try:
+                    mod.setTarget(self.__target)
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} failed to set target '{self.__target}': {e}")
+                    continue
+
+                # Set up the outgoing event queue
+                try:
+                    mod.outgoingEventQueue = self.eventQueue
+                    mod.incomingEventQueue = queue.Queue()
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} event queue setup failed: {e}")
+                    continue
+
+                self.__moduleInstances[modName] = mod
+                self.__sf.status(f"{modName} module loaded.")
+
+            self.__sf.debug(f"Scan [{self.__scanId}] loaded {len(self.__moduleInstances)} modules.")
+
+            if not self.__moduleInstances:
+                self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
+                self.__dbh.close()
+                return
+
             # sort modules by priority
             self.__moduleInstances = OrderedDict(sorted(self.__moduleInstances.items(), key=lambda m: m[-1]._priority))
 
@@ -399,11 +402,15 @@ class SpiderFootScanner():
             # initializing
             scanstatus = self.__dbh.scanInstanceGet(self.__scanId)
             if scanstatus and scanstatus[5] == "ABORT-REQUESTED":
-                aborted = True
+                raise AssertionError("ABORT-REQUESTED")
 
             # start threads
-            if not aborted:
-                self.waitForThreads()
+            self.waitForThreads()
+            failed = False
+
+        except (KeyboardInterrupt, AssertionError):
+            self.__sf.status(f"Scan [{self.__scanId}] aborted.")
+            self.__setStatus("ABORTED", None, time.time() * 1000)
 
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -413,11 +420,14 @@ class SpiderFootScanner():
             self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
-        self.__dbh.close()
+        finally:
+            if not failed:
+                self.__sf.status(f"Scan [{self.__scanId}] completed.")
+                self.__setStatus("FINISHED", None, time.time() * 1000)
+            self.__dbh.close()
 
     def waitForThreads(self):
         counter = 0
-        aborted = False
 
         try:
             if not self.eventQueue:
@@ -431,14 +441,14 @@ class SpiderFootScanner():
             # watch for newly-generated events
             while True:
 
-                # log status of threads every 100 iterations
-                log_status = counter % 100 == 0
+                # log status of threads every 10 iterations
+                log_status = counter % 10 == 0
                 counter += 1
 
-                scanstatus = self.__dbh.scanInstanceGet(self.__scanId)
-                self.__sf.debug(str(scanstatus))
-                if scanstatus and scanstatus[5] == "ABORT-REQUESTED":
-                    raise AssertionError("ABORT-REQUESTED")
+                if log_status:
+                    scanstatus = self.__dbh.scanInstanceGet(self.__scanId)
+                    if scanstatus and scanstatus[5] == "ABORT-REQUESTED":
+                        raise AssertionError("ABORT-REQUESTED")
 
                 try:
                     sfEvent = self.eventQueue.get_nowait()
@@ -483,20 +493,11 @@ class SpiderFootScanner():
                         if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
                             mod.incomingEventQueue.put(deepcopy(sfEvent))
 
-        except (KeyboardInterrupt, AssertionError):
-            aborted = True
-
         finally:
             # tell the modules to stop
             for mod in self.__moduleInstances.values():
                 mod._stopScanning = True
             self.__sharedThreadPool.shutdown(wait=True)
-            if aborted:
-                self.__sf.status(f"Scan [{self.__scanId}] aborted.")
-                self.__setStatus("ABORTED", None, time.time() * 1000)
-            else:
-                self.__sf.status(f"Scan [{self.__scanId}] completed.")
-                self.__setStatus("FINISHED", None, time.time() * 1000)
 
     def threadsFinished(self, log_status=False):
         if self.eventQueue is None:
