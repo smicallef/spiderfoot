@@ -127,16 +127,17 @@ class sfp_crt(SpiderFootPlugin):
                 fetch_certs.append(cert_id)
 
             domain = cert_info.get('name_value')
-            if '\n' in domain:
-                doms = domain.split("\n")
-                for d in doms:
-                    domains.append(d.replace("*.", ""))
-            else:
-                if domain and domain != eventData:
-                    domains.append(domain.replace("*.", ""))
+
+            if not domain:
+                continue
+
+            for d in domain.split("\n"):
+                if d.lower() == eventData.lower():
+                    continue
+                domains.append(d.lower().replace("*.", ""))
 
         if self.opts['verify'] and len(domains) > 0:
-            self.info("Resolving " + str(len(set(domains))) + " domains ...")
+            self.info(f"Resolving {len(set(domains))} domains ...")
 
         for domain in set(domains):
             if domain in self.results:
