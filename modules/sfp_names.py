@@ -162,7 +162,7 @@ class sfp_names(SpiderFootPlugin):
             name = r[0] + " " + secondOrig
 
             self.debug("Name of " + name + " has score: " + str(p))
-            if p > self.opts['algolimit']:
+            if p >= self.opts['algolimit']:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 if event.moduleDataSource:
