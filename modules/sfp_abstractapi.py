@@ -51,9 +51,9 @@ class sfp_abstractapi(SpiderFootPlugin):
     }
 
     optdescs = {
-        "companyenrichment_api_key": "Company Enrichment API key.",
-        "phonevalidation_api_key": "Phone Validation API key.",
-        "ipgeolocation_api_key": "IP Geolocation API key.",
+        "companyenrichment_api_key": "AbstractAPI Company Enrichment API key.",
+        "phonevalidation_api_key": "AbstractAPI Phone Validation API key.",
+        "ipgeolocation_api_key": "AbstractAPI IP Geolocation API key.",
     }
 
     results = None
