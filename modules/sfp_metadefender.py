@@ -220,6 +220,8 @@ class sfp_metadefender(SpiderFootPlugin):
             for m in sources:
                 if not m.get('assessment'):
                     continue
+                if m['assessment'] == "trustworthy":
+                    continue
                 provider = m.get('provider')
                 evt = SpiderFootEvent('MALICIOUS_INTERNET_NAME', provider + ' [' + eventData + ']', self.__name__, event)
                 self.notifyListeners(evt)
