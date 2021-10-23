@@ -39,6 +39,7 @@
             <ul class="dropdown-menu">
               <li><a class='link' onClick='exportEventData("${id}", currentType, "csv")'>CSV</a></li>
               <li><a class='link' onClick='exportEventData("${id}", currentType, "excel")'>Excel</a></li>
+              <li><a class='link' onClick='exportEventData("${id}", currentType, "html")'>Html</a></li>
             </ul>
         </div> 
         <div id='customtabview' role="group" class="btn-group pull-right">
@@ -691,6 +692,9 @@
             if (currentSection == "btn-browse") {
                 if (fileType == "excel") {
                     var urlBase = '${docroot}/scaneventresultexport?filetype=excel&id=';
+                } else if(fileType == "html"){
+                    var urlBase = '${docroot}/scaneventresultexport?filetype=html&id=';
+                    console.log("html Trigger");
                 } else {
                     var urlBase = '${docroot}/scaneventresultexport?id=';
                 }

@@ -377,7 +377,6 @@ class SpiderFootWebUi:
         """
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-
         if filetype.lower() in ["xlsx", "excel"]:
             rows = []
             for row in data:
@@ -410,6 +409,9 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Content-Type'] = "application/csv"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
+
+        elif filetype.lower() == 'html':
+            print("HTML export triggered.")
 
         else:
             return self.error("Invalid export filetype.")
