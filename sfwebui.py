@@ -411,7 +411,21 @@ class SpiderFootWebUi:
             return fileobj.getvalue().encode('utf-8')
 
         elif filetype.lower() == 'html':
-            print("HTML export triggered.")
+            templ = Template(filename='spiderfoot/templates/htmlexport.tmpl')
+            head = ["Updated","Type","Module", "F/P" , "Source", "Data"]
+            rows = []
+            for row in data:
+                if row[4] == "ROOT":
+                    continue
+                lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
+                datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
+                rows.append( [str(lastseen) ,  str(row[4]) , str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
+            content = templ.render(docroot=self.docroot, head=head, status=200, version=__version__, data=rows)
+            fname = "SpiderFoot.html"
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
+            cherrypy.response.headers['Content-Type'] = "application/html"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return content.encode('utf-8')
 
         else:
             return self.error("Invalid export filetype.")

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>SpiderFoot v${version}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <style>
+            .tablesorter-default {
+ width:100%;
+ font:12px/18px Arial,Sans-serif;
+ color:#333;
+ background-color:#fff;
+ border-spacing:0;
+ margin:10px 0 15px;
+ text-align:left
+}
+.tablesorter-default th,
+.tablesorter-default thead td {
+ font-weight:700;
+ color:#000;
+ background-color:#fff;
+ border-collapse:collapse;
+ border-bottom:#ccc 2px solid;
+ padding:0
+}
+.tablesorter-default tfoot td,
+.tablesorter-default tfoot th {
+ border:0
+}
+
+
+
+.tablesorter-default td {
+ background-color:#fff;
+ border-bottom:#ccc 1px solid;
+ padding:4px;
+ vertical-align:top
+}
+.tablesorter-default tbody>tr.even:hover>td,
+.tablesorter-default tbody>tr.hover>td,
+.tablesorter-default tbody>tr.odd:hover>td,
+.tablesorter-default tbody>tr:hover>td {
+ background-color:#fff;
+ color:#000
+}
+            
+        </style>
+    </head>
+    <body>
+        <h1>Test</h1>
+        <table id="scansummary-content" class="table table-bordered table-striped small tablesorter tablesorter-default tablesorter524719795f1ea8">
+            </thead>
+                <tr>
+                    % for h in head:
+                        <th>${h}</th>
+                    % endfor
+                </tr>
+            </thead>
+            <tbody>
+                % for d in data:  
+                        <tr>
+                            % for x in d:
+                            <td>${x}</td> 
+                            % endfor
+                         </tr>
+                % endfor
+            </tbody>
+        </table>
+    </body>
+
+</html>
