@@ -369,11 +369,11 @@ class SpiderFootWebUi:
         Args:
             id (str): scan ID
             type (str): TBD
-            filetype (str): type of file ("xlsx|excel" or "csv")
+            filetype (str): type of file ("xlsx|excel", "csv" or "html")
             dialect (str): CSV dialect (default: excel)
 
         Returns:
-            str: results in CSV or Excel format
+            str: results in CSV, Excel or HTML format
         """
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
@@ -412,15 +412,32 @@ class SpiderFootWebUi:
 
         elif filetype.lower() == 'html':
             templ = Template(filename='spiderfoot/templates/htmlexport.tmpl')
-            head = ["Updated","Type","Module", "F/P" , "Source", "Data"]
-            rows = []
-            for row in data:
-                if row[4] == "ROOT":
-                    continue
-                lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-                datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-                rows.append( [str(lastseen) ,  str(row[4]) , str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
-            content = templ.render(docroot=self.docroot, head=head, status=200, version=__version__, data=rows)
+            head = ["Type","Updated","Module", "F/P" , "Source", "Data"]
+            rows = [] 
+            previoustype = ""
+            tabelofcontent=[]
+            if type.lower()=="all":
+                data.sort(key=lambda x: x[4])
+                for row in data:
+                    if row[4] == "ROOT": # ToDo: check if this breaks something
+                        continue
+                    lastseen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0])))
+                    datafield = str(row[1])
+                    currenttype = str(row[4])
+                    if currenttype != previoustype:
+                        previoustype = currenttype
+                        tabelofcontent.append(currenttype)
+                        currenttype = "<span id='"+currenttype+"' class='first-element'>"+ currenttype + "</span>"
+                    rows.append([currenttype, lastseen, str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
+                
+            else:
+                for row in data:
+                    if row[4] == "ROOT":
+                        continue
+                    lastseen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0])))
+                    datafield = str(row[1])
+                    rows.append([str(row[4]), lastseen, str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
+            content = templ.render(docroot=self.docroot, alltypes=True, tabelofcontent=tabelofcontent, head=head, status=200, version=__version__, data=rows)
             fname = "SpiderFoot.html"
             cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
             cherrypy.response.headers['Content-Type'] = "application/html"

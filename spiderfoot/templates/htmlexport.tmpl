@@ -6,11 +6,28 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="author" content="">
+        <script type='text/javascript'>
+        replace_sfurltag = function (data) {
+            if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
+              data = data.replace(
+                RegExp("&lt;sfurl&gt;(.*)&lt;/sfurl&gt;", "img"),
+                "<a target=_new href='$1'>$1</a>"
+              );
+            }
+            if (data.toLowerCase().indexOf("<sfurl>") >= 0) {
+              data = data.replace(
+                RegExp("<sfurl>(.*)</sfurl>", "img"),
+                "<a target=_new href='$1'>$1</a>"
+              );
+            }
+            return data;
+          };
+          </script>
         <style>
             .tablesorter-default {
  width:100%;
  font:12px/18px Arial,Sans-serif;
- color:#333;
+ color:#555;
  background-color:#fff;
  border-spacing:0;
  margin:10px 0 15px;
@@ -49,8 +66,15 @@
         </style>
     </head>
     <body>
-        <h1>Test</h1>
-        <table id="scansummary-content" class="table table-bordered table-striped small tablesorter tablesorter-default tablesorter524719795f1ea8">
+        
+        <ul>
+            % if alltypes:
+                % for title in tabelofcontent:
+                    <li> <a href="#${title}">${title}</a></li> 
+                % endfor
+        % endif
+        </ul>
+        <table id="scansummary-content" class="table table-bordered tablesorter-default tablesorter524719795f1ea8">
             </thead>
                 <tr>
                     % for h in head:
@@ -59,15 +83,30 @@
                 </tr>
             </thead>
             <tbody>
+
                 % for d in data:  
+
                         <tr>
                             % for x in d:
-                            <td>${x}</td> 
+                                % if loop.index == 4:
+                                    <td><a href="https://${x}">${x}</a></td>
+                                % elif loop.index == 5:
+                                    <td class="data-element">${x}</td>
+                                % else:
+                                    <td>${x}</td>
+                                % endif
                             % endfor
                          </tr>
                 % endfor
             </tbody>
         </table>
+        <script type='text/javascript'>[].forEach.call(document.getElementsByClassName("first-element"),function (element) {
+            element.outerHTML="<b>"+element.outerHTML+"</b>";
+            }); </script>
     </body>
+    <script type='text/javascript'>[].forEach.call(document.getElementsByClassName("data-element"), function (element) {
+        element.outerHTML=replace_sfurltag(element.outerHTML);
+        });
 
+        </script>
 </html>
