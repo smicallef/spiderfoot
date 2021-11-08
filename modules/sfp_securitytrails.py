@@ -175,6 +175,8 @@ class sfp_securitytrails(SpiderFootPlugin):
             if rec is not None:
                 for r in rec:
                     if "host_provider" in r:
+                        if not r['host_provider']:
+                            continue
                         for dat in r['host_provider']:
                             if dat in hosters:
                                 continue
@@ -187,6 +189,8 @@ class sfp_securitytrails(SpiderFootPlugin):
                             continue
 
                         h = r['hostname']
+                        if not h:
+                            continue
                         if not self.opts['cohostsamedomain']:
                             if self.getTarget().matches(h, includeParents=True):
                                 self.debug("Skipping " + h + " because it is on the same domain.")
