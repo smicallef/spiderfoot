@@ -87,7 +87,7 @@ class sfp_crt(SpiderFootPlugin):
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         params = {
-            'q': '%.' + str(eventData),
+            'q': '%.' + eventData.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'output': 'json'
         }
 
