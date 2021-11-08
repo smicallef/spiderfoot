@@ -269,7 +269,7 @@ class sfp_seon(SpiderFootPlugin):
                 if resultSet.get('breach_details').get('breaches'):
                     breachList = resultSet.get('breach_details').get('breaches')
                     for breachSet in breachList:
-                        evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{breachSet.get('name')}]", self.__name__, event)
+                        evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{breachSet.get('name', 'Unknown')}]", self.__name__, event)
                         self.notifyListeners(evt)
                         dataFound = True
 
