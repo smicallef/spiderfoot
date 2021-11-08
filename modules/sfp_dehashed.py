@@ -176,13 +176,13 @@ class sfp_dehashed(SpiderFootPlugin):
             data = self.query(event, perPage, currentPage)
 
             if not data:
-                return None
+                return
 
             breachResults = set()
             emailResults = set()
 
             if not data.get('entries'):
-                return None
+                return
 
             for row in data.get('entries'):
                 email = row.get('email')
