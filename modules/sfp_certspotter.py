@@ -193,9 +193,10 @@ class sfp_certspotter(SpiderFootPlugin):
                     continue
 
                 try:
-                    dercert = result.get('cert').get('data')
-                    pemcert = self.sf.sslDerToPem(dercert)
-                    cert = self.sf.parseCert(pemcert, eventData, self.opts['certexpiringdays'])
+                    rawcert = "-----BEGIN CERTIFICATE-----\n"
+                    rawcert += result.get('cert').get('data')
+                    rawcert += "\n-----END CERTIFICATE-----\n"
+                    cert = self.sf.parseCert(rawcert, eventData, self.opts['certexpiringdays'])
                 except Exception as e:
                     self.info(f"Error parsing certificate: {e}")
                     continue
