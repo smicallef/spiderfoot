@@ -22,9 +22,9 @@ class sfp_viewdns(SpiderFootPlugin):
 
     meta = {
         'name': "ViewDNS.info",
-        'summary': "Reverse Whois lookups using ViewDNS.info.",
+        'summary': "Identify co-hosted websites and perform reverse Whois lookups using ViewDNS.info.",
         'flags': ["apikey"],
-        'useCases': ["Investigate", "Passive"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://viewdns.info/",
@@ -74,24 +74,34 @@ class sfp_viewdns(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["EMAILADDR", "IP_ADDRESS", "PROVIDER_DNS"]
+        return [
+            "EMAILADDR",
+            "IP_ADDRESS",
+            "PROVIDER_DNS"
+        ]
 
     def producedEvents(self):
-        return ['AFFILIATE_INTERNET_NAME', 'AFFILIATE_DOMAIN_NAME', 'CO_HOSTED_SITE']
+        return [
+            'AFFILIATE_INTERNET_NAME',
+            'AFFILIATE_DOMAIN_NAME',
+            'CO_HOSTED_SITE'
+        ]
 
     def query(self, qry, querytype, page=1):
         if querytype == "reverseip":
             attr = "host"
             pagesize = 10000
             responsekey = "domains"
-        if querytype == "reversens":
+        elif querytype == "reversens":
             attr = "ns"
             pagesize = 10000
             responsekey = "domains"
-        if querytype == "reversewhois":
+        elif querytype == "reversewhois":
             attr = "q"
             responsekey = "matches"
             pagesize = 1000
+        else:
+            return
 
         params = urllib.parse.urlencode({
             'apikey': self.opts['api_key'],
@@ -132,28 +142,30 @@ class sfp_viewdns(SpiderFootPlugin):
             return
 
         response = info.get("response")
-        if response:
-            if response.get("error"):
-                self.error(f"Error querying ViewDNS.info: {response.get('error')}")
-                return
 
-            if len(response.get(responsekey, list())) == pagesize:
-                self.debug(f"Looping at ViewDNS page {page}")
-                self.accum.extend(response.get(responsekey))
-                self.query(qry, querytype, page + 1)
+        if not response:
+            return
 
-            # We are at the last or only page
-            self.accum.extend(response.get(responsekey, []))
+        if response.get("error"):
+            self.error(f"Error querying ViewDNS.info: {response.get('error')}")
+            return
+
+        if len(response.get(responsekey, list())) == pagesize:
+            self.debug(f"Looping at ViewDNS page {page}")
+            self.accum.extend(response.get(responsekey))
+            self.query(qry, querytype, page + 1)
+
+        # We are at the last or only page
+        self.accum.extend(response.get(responsekey, []))
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
             return
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if self.opts['api_key'] == "":
             self.error("You enabled sfp_viewdns but did not set an API key!")
@@ -166,7 +178,6 @@ class sfp_viewdns(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        valkey = ""
         if eventName == "EMAILADDR":
             ident = "reversewhois"
             valkey = "domain"
@@ -175,11 +186,12 @@ class sfp_viewdns(SpiderFootPlugin):
             valkey = "name"
         elif eventName == "PROVIDER_DNS":
             if not self.getTarget().matches(eventData):
-                self.debug("DNS provider found but not related to target, skipping")
+                self.debug(f"DNS provider {eventData} not related to target, skipping")
                 return
             ident = "reversens"
             valkey = "domain"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
         self.accum = list()
@@ -190,7 +202,8 @@ class sfp_viewdns(SpiderFootPlugin):
             return
 
         # Leave out registrar parking sites, and other highly used IPs
-        if eventName == "IP_ADDRESS" and len(rec) > self.opts['maxcohost']:
+        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"] and len(rec) > self.opts['maxcohost']:
+            self.debug(f"IP address {eventData} has {len(rec)} co-hosts; larger than {self.opts['maxcohost']}, skipping")
             return
 
         myres = list()
@@ -212,24 +225,29 @@ class sfp_viewdns(SpiderFootPlugin):
 
             myres.append(h.lower())
 
-            if eventName == "EMAILADDR":
-                e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
+        for domain in set(myres):
+            if not domain:
+                continue
 
-                if self.sf.isDomain(h, self.opts['_internettlds']):
-                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', h, self.__name__, event)
+            if eventName == "EMAILADDR":
+                e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", domain, self.__name__, event)
+                self.notifyListeners(e)
+
+                if self.sf.isDomain(domain, self.opts['_internettlds']):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
                     self.notifyListeners(evt)
             else:
                 if self.cohostcount >= self.opts['maxcohost']:
                     continue
 
+                if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"] and self.opts['verify']:
+                    if not self.sf.validateIP(domain, eventData):
+                        self.debug(f"Host {domain} no longer resolves to IP address: {eventData}")
+                        continue
+
                 self.cohostcount += 1
 
-                if eventName == "IP_ADDRESS" and self.opts['verify']:
-                    if not self.sf.validateIP(h, eventData):
-                        self.debug(f"Host {h} no longer resolves to IP address: {eventData}")
-                        continue
-                e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)
-
-            self.notifyListeners(e)
+                e = SpiderFootEvent("CO_HOSTED_SITE", domain, self.__name__, event)
+                self.notifyListeners(e)
 
 # End of sfp_viewdns class
