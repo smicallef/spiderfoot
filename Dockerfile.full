@@ -11,6 +11,10 @@ FROM python:3
 # Install tools/dependencies from apt
 RUN apt-get -y update && apt-get -y install nmap
 
+# Install wafw00f
+RUN git clone https://github.com/EnableSecurity/wafw00f \
+    && cd wafw00f && python setup.py install
+
 # Compile other tools from source
 # MassDNS
 RUN mkdir /tools || true
