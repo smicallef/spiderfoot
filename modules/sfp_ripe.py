@@ -168,9 +168,9 @@ class sfp_ripe(SpiderFootPlugin):
 
         return str(asn)
 
-    # Owner information about an AS
-    def asOwnerInfo(self, asn):
-        whois = self.queryWhois(asn)
+    # Owner information about an AS or netblock
+    def entityOwnerInfo(self, entity):
+        whois = self.queryWhois(entity)
 
         if not whois:
             return None
@@ -201,7 +201,7 @@ class sfp_ripe(SpiderFootPlugin):
                     else:
                         ownerinfo[key] = [value]
 
-        self.debug(f"Found AS owner info: {ownerinfo}")
+        self.debug(f"Found owner info: {ownerinfo}")
         return ownerinfo
 
     # Netblocks owned by an AS
@@ -262,9 +262,9 @@ class sfp_ripe(SpiderFootPlugin):
 
         # Slightly more complex..
         rx = [
-            r'^{0}[-_/\'\"\\\.,\?\!\s\d]',
-            r'[-_/\'\"\\\.,\?\!\s]{0}$',
-            r'[-_/\'\"\\\.,\?\!\s]{0}[-_/\'\"\\\.,\?\!\s\d]'
+            r'^{0}[-_/\'\"\\\.,\?\!\s\d].*',
+            r'.*[-_/\'\"\\\.,\?\!\s]{0}$',
+            r'.*[-_/\'\"\\\.,\?\!\s]{0}[-_/\'\"\\\.,\?\!\s\d].*'
         ]
 
         # Mess with the keyword as a last resort..
@@ -286,7 +286,23 @@ class sfp_ripe(SpiderFootPlugin):
     # Owns the AS or not?
     def ownsAs(self, asn):
         # Determine whether the AS is owned by our target
-        ownerinfo = self.asOwnerInfo(asn)
+        ownerinfo = self.entityOwnerInfo(asn)
+
+        if not ownerinfo:
+            return False
+
+        for k in list(ownerinfo.keys()):
+            items = ownerinfo[k]
+            for item in items:
+                if self.findName(item.lower()):
+                    return True
+
+        return False
+
+    # Owns the netblock or not?
+    def ownsNetblock(self, netblock):
+        # Determine whether the netblock is owned by our target
+        ownerinfo = self.entityOwnerInfo(netblock)
 
         if not ownerinfo:
             return False
@@ -383,11 +399,15 @@ class sfp_ripe(SpiderFootPlugin):
                 return
 
             self.info(f"Netblock found: {prefix} ({asn})")
+            if self.ownsNetblock(prefix):
+                relationship = "OWNER"
+            else:
+                relationship = "MEMBER"
 
             if ":" in prefix:
-                evt = SpiderFootEvent("NETBLOCKV6_MEMBER", prefix, self.__name__, event)
+                evt = SpiderFootEvent("NETBLOCKV6_" + relationship, prefix, self.__name__, event)
             else:
-                evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
+                evt = SpiderFootEvent("NETBLOCK_" + relationship, prefix, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_ripe class
