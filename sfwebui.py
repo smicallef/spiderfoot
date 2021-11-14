@@ -412,31 +412,33 @@ class SpiderFootWebUi:
 
         elif filetype.lower() == 'html':
             templ = Template(filename='spiderfoot/templates/htmlexport.tmpl')
-            head = ["Type","Updated","Module", "F/P" , "Source", "Data"]
+            head = ["Updated", "Type","Module", "F/P" , "Source", "Data"]
             rows = [] 
             previoustype = ""
             tabelofcontent=[]
             if type.lower()=="all":
-                data.sort(key=lambda x: x[4])
-                for row in data:
-                    if row[4] == "ROOT": # ToDo: check if this breaks something
+                data.sort(key=lambda x: x[4]) # sort by type
+                for i in range (0, len(data)-1):
+                    row= data[i]
+                    if row[4] == "ROOT": 
                         continue
                     lastseen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0])))
-                    datafield = str(row[1])
+                    datafield = html.escape(str(row[1]), True)
                     currenttype = str(row[4])
+
                     if currenttype != previoustype:
                         previoustype = currenttype
                         tabelofcontent.append(currenttype)
-                        currenttype = "<span id='"+currenttype+"' class='first-element'>"+ currenttype + "</span>"
-                    rows.append([currenttype, lastseen, str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
+                        lastseen = "<span id='" + currenttype + "'>" + lastseen + "</span>"
+                    rows.append([lastseen, currenttype, str(row[3]) , str(row[13]), html.escape(str(row[2]), True), str(datafield)])
                 
             else:
                 for row in data:
                     if row[4] == "ROOT":
                         continue
                     lastseen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0])))
-                    datafield = str(row[1])
-                    rows.append([str(row[4]), lastseen, str(row[3]) , str(row[13]), str(row[2]), str(datafield)])
+                    datafield = html.escape(str(row[1]),True)
+                    rows.append([str(row[4]), lastseen, str(row[3]) , str(row[13]), html.escape(str(row[2]), True), str(datafield)])
             content = templ.render(docroot=self.docroot, alltypes=True, tabelofcontent=tabelofcontent, head=head, status=200, version=__version__, data=rows)
             fname = "SpiderFoot.html"
             cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
