@@ -203,13 +203,13 @@ class sfp_greynoise(SpiderFootPlugin):
         if "data" in ret and len(ret["data"]) > 0:
             for rec in ret["data"]:
                 if rec.get("seen", None):
-                    self.debug("Found threat info in Greynoise")
+                    self.debug(f"Found threat info in Greynoise: {rec['ip']}")
                     lastseen = rec.get("last_seen", "1970-01-01")
                     lastseen_dt = datetime.strptime(lastseen, "%Y-%m-%d")
                     lastseen_ts = int(time.mktime(lastseen_dt.timetuple()))
                     age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
                     if self.opts["age_limit_days"] > 0 and lastseen_ts < age_limit_ts:
-                        self.debug("Record found but too old, skipping.")
+                        self.debug(f"Record [{rec['ip']}] found but too old, skipping.")
                         return
 
                     # Only report meta data about the target, not affiliates
@@ -236,19 +236,19 @@ class sfp_greynoise(SpiderFootPlugin):
                         self.notifyListeners(e)
 
                     if rec.get("classification"):
-                        if rec["classification"] != "malicious":
-                            evtType = "IP_ADDRESS"
                         descr = (
                             "GreyNoise - Mass-Scanning IP Detected ["
-                            + eventData
+                            + rec.get("ip")
                             + "]\n - Classification: "
                             + rec.get("classification")
                         )
                         if rec.get("tags"):
-                            descr += ", Tags: " + ", ".join(rec.get("tags"))
-                        else:
+                            descr += "\n - " + "Scans For Tags: " + ", ".join(rec.get("tags"))
+                        if rec.get("cve"):
+                            descr += "\n - " + "Scans For CVEs: " + ", ".join(rec.get("cve"))
+                        if rec.get("raw_data") and not (rec.get("tags") or ret.get("cve")):
                             descr += "\n - " + "Raw data: " + str(rec.get("raw_data"))
-                        descr += "\n<SFURL>https://www.greynoise.io/viz/query/?gnql=" + eventData + "</SFURL>"
+                        descr += "\n<SFURL>https://www.greynoise.io/viz/ip/" + rec.get("ip") + "</SFURL>"
                         e = SpiderFootEvent(evtType, descr, self.__name__, event)
                         self.notifyListeners(e)
 
