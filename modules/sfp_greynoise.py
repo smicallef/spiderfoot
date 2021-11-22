@@ -12,9 +12,9 @@
 # Licence:      GPL
 # -------------------------------------------------------------------------------
 
+import json
 import time
 from datetime import datetime
-from greynoise import GreyNoise
 from netaddr import IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -106,15 +106,32 @@ class sfp_greynoise(SpiderFootPlugin):
         ]
 
     def queryIP(self, qry, type):
-        session = GreyNoise(
-            api_key=self.opts["api_key"],
-            integration_name="greynoise-spiderfoot-v1.1.0",
-            timeout=self.opts["_fetchtimeout"],
-        )
+        gn_context_url = "https://api.greynoise.io/v2/noise/context/"
+        gn_riot_url = "https://api.greynoise.io/v2/riot/"
+        gn_gnql_url = "https://api.greynoise.io/v2/experimental/gnql?query="
+
+        headers = {"key": self.opts["api_key"]}
+        res = {}
         if type == "ip":
             self.debug(f"Querying GreyNoise for IP: {qry}")
-            ip_res = session.ip(qry)
-            riot_res = session.riot(qry)
+            ip_res = {}
+            riot_res = {}
+            ip_response = self.sf.fetchUrl(
+                gn_context_url + qry,
+                timeout=self.opts["_fetchtimeout"],
+                useragent="greynoise-spiderfoot-v1.1.0",
+                headers=headers,
+            )
+            if ip_response["code"] == "200":
+                ip_res = json.loads(ip_response["content"])
+            riot_response = self.sf.fetchUrl(
+                gn_riot_url + qry,
+                timeout=self.opts["_fetchtimeout"],
+                useragent="greynoise-spiderfoot-v1.1.0",
+                headers=headers,
+            )
+            if riot_response["code"] in ["200", "404"]:
+                riot_res = json.loads(riot_response["content"])
 
             if ip_res and not riot_res:
                 res = ip_res
@@ -125,7 +142,14 @@ class sfp_greynoise(SpiderFootPlugin):
                 res.update(riot_res)
         else:
             self.debug(f"Querying GreyNoise for Netblock: {qry}")
-            res = session.query(qry)
+            query_response = self.sf.fetchUrl(
+                gn_gnql_url + qry,
+                timeout=self.opts["_fetchtimeout"],
+                useragent="greynoise-spiderfoot-v1.1.0",
+                headers=headers,
+            )
+            if query_response["code"] == "200":
+                res = json.loads(query_response["content"])
 
         if not res:
             self.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.")
