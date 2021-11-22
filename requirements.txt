@@ -11,6 +11,7 @@ pysocks>=1.7.1,<2
 requests>=2.26.0,<3
 ipwhois>=1.1.0,<1.2.0
 ipaddr>=2.2.0,<3
+ivre>=0.9.17
 phonenumbers>=8.12.34,<9
 pygexf>=0.2.2,<0.3
 PyPDF2>=1.26.0,<2
