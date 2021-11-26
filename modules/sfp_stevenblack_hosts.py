@@ -165,7 +165,7 @@ class sfp_stevenblack_hosts(SpiderFootPlugin):
             if not self.opts.get('checkcohosts', False):
                 return
             malicious_type = "MALICIOUS_COHOST"
-            blacklist_type = "BACKLISTED_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
             return

@@ -125,6 +125,8 @@ class sfp_ipapicom(SpiderFootPlugin):
         self.results[eventData] = True
 
         data = self.query(eventData)
+        if not data:
+            return
 
         if data.get('country_name'):
             location = ', '.join(filter(None, [data.get('city'), data.get('region_name'), data.get('region_code'), data.get('country_name'), data.get('country_code')]))
