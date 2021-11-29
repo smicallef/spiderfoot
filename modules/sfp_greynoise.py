@@ -105,14 +105,14 @@ class sfp_greynoise(SpiderFootPlugin):
             "RAW_RIR_DATA",
         ]
 
-    def queryIP(self, qry, type):
+    def queryIP(self, qry, qry_type):
         gn_context_url = "https://api.greynoise.io/v2/noise/context/"
         gn_riot_url = "https://api.greynoise.io/v2/riot/"
         gn_gnql_url = "https://api.greynoise.io/v2/experimental/gnql?query="
 
         headers = {"key": self.opts["api_key"]}
         res = {}
-        if type == "ip":
+        if qry_type == "ip":
             self.debug(f"Querying GreyNoise for IP: {qry}")
             ip_res = {}
             riot_res = {}
