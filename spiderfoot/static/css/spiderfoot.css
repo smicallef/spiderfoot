@@ -129,21 +129,17 @@ input[type="checkbox"] {
 }
 
 /* THEME TOGGLER PROPERTIES */
-#toggler-text {
-  float: left;
-  position: absolute;
-  right: 18rem;
-  top: 29%;
-  color: #777777;
-}
 
+#toggler-text{
+  padding-left: 15px;
+}
 .switch {
   position: relative;
   display: inline-block;
   width: 42px;
   height: 21px;
   margin-top: 1.3rem;
-  right: 100%;
+  
 }
 
 .switch input { 

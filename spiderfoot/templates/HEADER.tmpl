@@ -28,6 +28,8 @@
             link.href = "${docroot}/static/node_modules/tablesorter/dist/css/theme.default.min.css";
         }
         head.appendChild(link);
+
+      
     </script>
   </head>
 
@@ -37,11 +39,13 @@
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
+      <span data-toggle="" data-target="switcher4">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse" aria-expanded="false">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+    </span>
       <a class="navbar-brand brand-logo light" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header.png" /></a>
       <a class="navbar-brand brand-logo dark" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header-dark.png" /></a>
     </div>
@@ -72,15 +76,17 @@ class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-lin
 
       
       
-      <ul class="collapse navbar-collapse nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
         <!-- Theme toggler -->
         <span id="toggler-text">Dark Mode</span>
-        <label class="switch">
+        <label id="switcher4" class="switch">
           <input id="theme-toggler" class="theme-toggler" type="checkbox">
           <span class="slider round"></span>
         </label>
+      </li>
 
-        <li><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
+        <li class="nav-item"><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
@@ -124,6 +130,12 @@ class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-lin
     <script src='${docroot}/static/node_modules/tablesorter/dist/js/jquery.tablesorter.widgets.min.js'></script>
     <script src="${docroot}/static/node_modules/d3/d3.min.js"></script>
     <script type='text/javascript' hash="sha256-0kTZzWMEh3cdgCMVytlY1E8rg7oO13eyLa+kvyAhRmo=">sf.updateTooltips();</script>
+    <script>
+    $('#main-navbar-collaps').on('hidden.bs.collapse', function () {
+  console.log("yiipp");
+  $('#main-navbar-collaps').hide();
+})
+    </script>
 
     <div class="container" id="mainbody" style='padding-bottom: 50px'>
 
