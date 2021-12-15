@@ -63,7 +63,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["VULNERABILITY"]
+        return ["VULNERABILITY_DISCLOSURE"]
 
     # Query h1.nobbd.de
     def queryOBB(self, qry):
@@ -106,7 +106,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
             data.extend(obb)
 
         for n in data:
-            e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
+            e = SpiderFootEvent("VULNERABILITY_DISCLOSURE", n, self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_h1nobbdde class

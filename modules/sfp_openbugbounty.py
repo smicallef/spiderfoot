@@ -69,7 +69,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["VULNERABILITY"]
+        return ["VULNERABILITY_DISCLOSURE"]
 
     # Query XSSposed.org
     def queryOBB(self, qry):
@@ -114,7 +114,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
         for n in data:
             # Notify other modules of what you've found
-            e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
+            e = SpiderFootEvent("VULNERABILITY_DISCLOSURE", n, self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_openbugbounty class
