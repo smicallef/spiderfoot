@@ -18,8 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (localStorage.getItem("mode") === "Dark Mode") {
     togglerText.innerText = "Dark Mode";
+    document.getElementById("theme-toggler").checked = false; // ensure theme toggle is set to light
   } else {
     togglerText.innerText = "Light Mode";
+    document.getElementById("theme-toggler").checked = true; // ensure theme toggle is set to dark
   }
 
 
@@ -29,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (localStorage.getItem("theme") === "dark-theme") {
       localStorage.removeItem("theme");
       localStorage.setItem("mode", "Dark Mode");
-
       link.rel = "stylesheet";
       link.type = "text/css";
       link.href = "${docroot}/static/css/spiderfoot.css";
@@ -39,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       localStorage.setItem("theme", "dark-theme");
       localStorage.setItem("mode", "Light Mode");
-
       link.rel = "stylesheet";
       link.type = "text/css";
       link.href = "${docroot}/static/css/dark.css";
