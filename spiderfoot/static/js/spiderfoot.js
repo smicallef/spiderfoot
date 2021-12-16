@@ -16,12 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglerText = document.getElementById("toggler-text");
   let link = document.createElement("link");
 
-  if (localStorage.getItem("mode") === "Dark Mode") {
-    togglerText.innerText = "Dark Mode";
-    document.getElementById("theme-toggler").checked = false; // ensure theme toggle is set to light
-  } else {
+  if (localStorage.getItem("mode") === "Light Mode") {
     togglerText.innerText = "Light Mode";
     document.getElementById("theme-toggler").checked = true; // ensure theme toggle is set to dark
+  } else { // initial mode ist null
+    togglerText.innerText = "Dark Mode";
+    document.getElementById("theme-toggler").checked = false; // ensure theme toggle is set to light
   }
 
 
