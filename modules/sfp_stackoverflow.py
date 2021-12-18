@@ -12,6 +12,8 @@
 
 import json
 import re
+import netaddr
+
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -69,7 +71,6 @@ class sfp_stackoverflow(SpiderFootPlugin):
     def watchedEvents(self):
         return [
                 "DOMAIN_NAME", 
-                "IP_ADDRESS",
                 ]
 
     # What events this module produces
@@ -110,11 +111,13 @@ class sfp_stackoverflow(SpiderFootPlugin):
         newText = text.replace("<span class=\"highlight\">","")
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', newText)
 
-        for match in matches:
-            if self.sf.validEmail(match):
-                emails.add(match)
-
-        return list(emails)
+        if matches:
+            for match in matches:
+                if self.sf.validEmail(match):
+                    emails.add(match)
+            return list(emails)
+        else:
+            return 
     
     def extractUsername(self, questionId):
         #need to query the questions endpoint with the question_id to find the username
@@ -129,6 +132,19 @@ class sfp_stackoverflow(SpiderFootPlugin):
             username = owner.get('display_name')
         
         return str(username)
+    
+    def extractIPs(self, text):
+        ips = set()
+
+        matches = re.findall(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$', text)
+        
+        if matches:
+            for match in matches:
+                if self.sf.validIP(match) and not(netaddr.IPAddress(match).is_loopback()):
+                    ips.add(match)
+            return list(ips)
+        else:
+            return
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -147,13 +163,14 @@ class sfp_stackoverflow(SpiderFootPlugin):
         items = query_results.get('items')
         allEmails = []
         allUsernames = []
+        allIPs = []
 
         #iterate through all results from query, creating raw_rir_data events and extracting emails      
         for item in items:
             if self.checkForStop():
                 return
             
-            # return raw_rir_data event
+            # create raw_rir_data event
             body = item["body"]
             excerpt = item["excerpt"]
             question = item["question_id"]
@@ -165,21 +182,31 @@ class sfp_stackoverflow(SpiderFootPlugin):
             text = body+excerpt
             #Extract other interesting events
             emails = self.extractEmails(text)
-            allEmails.append(emails)
+            if emails is not None:
+                allEmails.append(emails)
 
             questionId = item["question_id"]
             username = self.extractUsername(questionId)
-            allUsernames.append(username)
+            if username is not None:
+                allUsernames.append(username)
 
-        if allEmails:
-            for email in allEmails:
-                email = str(email)
-                e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
-                self.notifyListeners(e)
+            ips = self.extractIPs(text)
+            if ips is not None:
+                allIPs.append(ips)
 
-        if allUsernames:
-            for username in allUsernames:
-                e = SpiderFootEvent('USERNAME', username, self.__name__, event)
-                self.notifyListeners(e)
+        # create events for all other events
+        for email in allEmails:
+            email = str(email)
+            e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
+            self.notifyListeners(e)
+
+        for username in allUsernames:
+            e = SpiderFootEvent('USERNAME', username, self.__name__, event)
+            self.notifyListeners(e)
+
+        for ip in allIPs:
+            ip = str(ip)
+            e = SpiderFootEvent('IP_ADDRESS', ip, self.__name__, event)
+            self.notifyListeners(e)
 
 # End of sfp_stackoverflow class
