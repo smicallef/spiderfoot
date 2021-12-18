@@ -69,32 +69,29 @@ class sfp_stackoverflow(SpiderFootPlugin):
     def watchedEvents(self):
         return [
                 "DOMAIN_NAME", 
-                "HUMAN_NAME", 
-                "BITCOIN_ADDRESS", 
-                "COMPANY_NAME",
                 "IP_ADDRESS",
-                "USERNAME"
                 ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "EMAILADDR"]
+        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME"]
 
-    def query(self, qry, ):
+    def query(self, qry, qryType):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
-        res = self.sf.fetchUrl(
-                f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
+        if qryType == "excerpts":
+            res = self.sf.fetchUrl(
+                    f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
+                    timeout=self.opts['_fetchtimeout'],
+                    useragent="SpiderFoot"
+                )
+
+        # User profile endpoint
+        if qryType == "questions":
+            res = self.sf.fetchUrl(
+                f"https://api.stackexchange.com/2.3/questions/{qry}?order=desc&sort=activity&site=stackoverflow",
                 timeout=self.opts['_fetchtimeout'],
                 useragent="SpiderFoot"
             )
-
-        # # User profile endpoint
-        # if search == "user":
-        #     res = self.sf.fetchUrl(
-        #         f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
-        #         timeout=self.opts['_fetchtimeout'],
-        #         useragent="SpiderFoot"
-        #     )
 
         if res['content'] is None:
             self.info(f"No Stackoverflow info found for {qry}")
@@ -106,7 +103,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
             self.error(f"Error processing JSON response from Stackoverflow: {e}")
         return None
 
-    def extractEmail(self, text):
+    def extractEmails(self, text):
         emails = set()
 
         #remove span class highlight, automatically added by stackoverflow to highlight search text
@@ -118,6 +115,20 @@ class sfp_stackoverflow(SpiderFootPlugin):
                 emails.add(match)
 
         return list(emails)
+    
+    def extractUsername(self, questionId):
+        #need to query the questions endpoint with the question_id to find the username
+        query_results = self.query(questionId, "questions")
+        items = query_results.get('items')
+
+        if query_results is None:
+            return 
+
+        for item in items:
+            owner = item['owner']
+            username = owner.get('display_name')
+        
+        return str(username)
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -132,16 +143,16 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        query_results = self.query(eventData)
+        query_results = self.query(eventData, "excerpts")
         items = query_results.get('items')
-
         allEmails = []
+        allUsernames = []
 
         #iterate through all results from query, creating raw_rir_data events and extracting emails      
         for item in items:
             if self.checkForStop():
                 return
-
+            
             # return raw_rir_data event
             body = item["body"]
             excerpt = item["excerpt"]
@@ -150,17 +161,25 @@ class sfp_stackoverflow(SpiderFootPlugin):
                                 str("<SFURL>https://stackoverflow.com/questions/")+str(question)+str("</SFURL>")+str("\n")+str(body)+str(excerpt), 
                                 self.__name__, event)
             self.notifyListeners(e)
-
-            #Extract email addresses and add to the allEmails list
+            
             text = body+excerpt
-            emails = self.extractEmail(text)
+            #Extract other interesting events
+            emails = self.extractEmails(text)
             allEmails.append(emails)
 
-        if emails:
-            for email in emails:
+            questionId = item["question_id"]
+            username = self.extractUsername(questionId)
+            allUsernames.append(username)
+
+        if allEmails:
+            for email in allEmails:
+                email = str(email)
                 e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                 self.notifyListeners(e)
 
+        if allUsernames:
+            for username in allUsernames:
+                e = SpiderFootEvent('USERNAME', username, self.__name__, event)
+                self.notifyListeners(e)
 
-        
 # End of sfp_stackoverflow class
