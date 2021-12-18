@@ -11,8 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-
-from netaddr import IPNetwork
+import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -79,7 +78,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA"]
+        return ["RAW_RIR_DATA", "EMAILADDR"]
 
     def query(self, qry, ):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
@@ -107,6 +106,19 @@ class sfp_stackoverflow(SpiderFootPlugin):
             self.error(f"Error processing JSON response from Stackoverflow: {e}")
         return None
 
+    def extractEmail(self, text):
+        emails = set()
+
+        #remove span class highlight, automatically added by stackoverflow to highlight search text
+        newText = text.replace("<span class=\"highlight\">","")
+        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', newText)
+
+        for match in matches:
+            if self.sf.validEmail(match):
+                emails.add(match)
+
+        return list(emails)
+
     def handleEvent(self, event):
         eventName = event.eventType
         eventData = event.data
@@ -122,11 +134,15 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         query_results = self.query(eventData)
         items = query_results.get('items')
-        
+
+        allEmails = []
+
+        #iterate through all results from query, creating raw_rir_data events and extracting emails      
         for item in items:
             if self.checkForStop():
                 return
 
+            # return raw_rir_data event
             body = item["body"]
             excerpt = item["excerpt"]
             question = item["question_id"]
@@ -134,6 +150,17 @@ class sfp_stackoverflow(SpiderFootPlugin):
                                 str("<SFURL>https://stackoverflow.com/questions/")+str(question)+str("</SFURL>")+str("\n")+str(body)+str(excerpt), 
                                 self.__name__, event)
             self.notifyListeners(e)
+
+            #Extract email addresses and add to the allEmails list
+            text = body+excerpt
+            emails = self.extractEmail(text)
+            allEmails.append(emails)
+
+        if emails:
+            for email in emails:
+                e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
+                self.notifyListeners(e)
+
 
         
 # End of sfp_stackoverflow class
