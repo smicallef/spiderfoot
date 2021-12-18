@@ -20,9 +20,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_stackoverflow(SpiderFootPlugin):
 
     meta = {
-        'name': "Stackoverflow Module",
-        'summary': "Search StackOverflow for any mentions of your target. Returns potentially related information.",
-        'flags': ["apikey","errorprone"],
+        'name': "Stackoverflow",
+        'summary': "Search StackOverflow for any mentions of a target domain. Returns potentially related information.",
+        'flags': ["errorprone"],
         'useCases': ["Passive"],
         'categories': ["Content Analysis"],
         'dataSource': {
@@ -68,32 +68,36 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return [
+                "DOMAIN_NAME", 
+                "HUMAN_NAME", 
+                "BITCOIN_ADDRESS", 
+                "COMPANY_NAME",
+                "IP_ADDRESS",
+                "USERNAME"
+                ]
 
     # What events this module produces
     def producedEvents(self):
-        return [
-            "RAW_RIR_DATA"
+        return ["RAW_RIR_DATA"]
 
-        ]
-
-    def query(self, qry, search):
+    def query(self, qry, ):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
-        if search == "excerpts":
-            res = self.sf.fetchUrl(
-                f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
-                timeout=self.opts['_fetchtimeout'],
-                useragent="SpiderFoot"
-            )
-        # User profile endpoint
-        if search == "user":
-            res = self.sf.fetchUrl(
+        res = self.sf.fetchUrl(
                 f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
                 timeout=self.opts['_fetchtimeout'],
                 useragent="SpiderFoot"
             )
 
-        if res['items'] is None:
+        # # User profile endpoint
+        # if search == "user":
+        #     res = self.sf.fetchUrl(
+        #         f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
+        #         timeout=self.opts['_fetchtimeout'],
+        #         useragent="SpiderFoot"
+        #     )
+
+        if res['content'] is None:
             self.info(f"No Stackoverflow info found for {qry}")
             return None
 
@@ -116,16 +120,20 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == "DOMAIN_NAME":
-            data = self.query(eventData, "excerpts")
+        query_results = self.query(eventData)
+        items = query_results.get('items')
+        
+        for item in items:
+            if self.checkForStop():
+                return
 
-        for item in data.items:
-            body = data.get('each.body')
-            excerpt = data.get('each.excerpt')
-            question = data.get('each.question_id')
+            body = item["body"]
+            excerpt = item["excerpt"]
+            question = item["question_id"]
             e = SpiderFootEvent('RAW_RIR_DATA',
-                                str("<SFURL>https://stackoverflow.com/questions/")+str(question)+str("</SFURL>")+str("\n")+str(body)+str( excerpt), 
+                                str("<SFURL>https://stackoverflow.com/questions/")+str(question)+str("</SFURL>")+str("\n")+str(body)+str(excerpt), 
                                 self.__name__, event)
             self.notifyListeners(e)
+
         
 # End of sfp_stackoverflow class
