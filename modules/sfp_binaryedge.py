@@ -108,7 +108,11 @@ class sfp_binaryedge(SpiderFootPlugin):
         return [
             "INTERNET_NAME",
             "DOMAIN_NAME",
-            "VULNERABILITY",
+            "VULNERABILITY_CVE_CRITICAL",
+            "VULNERABILITY_CVE_HIGH",
+            "VULNERABILITY_CVE_MEDIUM",
+            "VULNERABILITY_CVE_LOW",
+            "VULNERABILITY_GENERAL",
             "TCP_PORT_OPEN",
             "TCP_PORT_OPEN_BANNER",
             "EMAILADDR_COMPROMISED",
@@ -386,8 +390,8 @@ class sfp_binaryedge(SpiderFootPlugin):
                     cves = rec.get('cves')
                     if cves:
                         for c in cves:
-                            cve = c['cve']
-                            e = SpiderFootEvent('VULNERABILITY', cve, self.__name__, event)
+                            etype, cvetext = self.sf.cveInfo(c['cve'])
+                            e = SpiderFootEvent(etype, cvetext, self.__name__, event)
                             self.notifyListeners(e)
 
         for addr in qrylist:
