@@ -124,6 +124,9 @@ class sfp_emailrep(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return
+
         if eventData in self.results:
             return
 
