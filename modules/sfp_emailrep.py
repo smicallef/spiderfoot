@@ -55,6 +55,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
     results = None
     errorState = False
+    errorWarned = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -134,8 +135,9 @@ class sfp_emailrep(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if self.opts['api_key'] == '':
+        if self.opts['api_key'] == '' and not self.errorWarned:
             self.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.")
+            self.errorWarned = True
 
         res = self.query(eventData)
 
