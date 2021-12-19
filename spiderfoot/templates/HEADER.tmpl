@@ -28,6 +28,8 @@
             link.href = "${docroot}/static/node_modules/tablesorter/dist/css/theme.default.min.css";
         }
         head.appendChild(link);
+
+      
     </script>
   </head>
 
@@ -37,11 +39,13 @@
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+      <span data-toggle="" data-target="switcher4">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse" aria-expanded="false">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+    </span>
       <a class="navbar-brand brand-logo light" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header.png" /></a>
       <a class="navbar-brand brand-logo dark" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header-dark.png" /></a>
     </div>
@@ -73,14 +77,16 @@ class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-lin
       
       
       <ul class="nav navbar-nav navbar-right">
+        <li>
         <!-- Theme toggler -->
         <span id="toggler-text">Dark Mode</span>
-        <label class="switch">
+        <label id="switcher4" class="switch">
           <input id="theme-toggler" class="theme-toggler" type="checkbox">
           <span class="slider round"></span>
         </label>
+      </li>
 
-        <li><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
+        <li class="nav-item"><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
