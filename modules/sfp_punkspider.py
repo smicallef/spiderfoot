@@ -61,7 +61,7 @@ class sfp_punkspider(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["VULNERABILITY"]
+        return ["VULNERABILITY_GENERAL"]
 
     def query(self, qry):
         qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
@@ -104,7 +104,7 @@ class sfp_punkspider(SpiderFootPlugin):
             for vuln in res[rec]['vulns']:
                 if res[rec]['vulns'][vuln] == 0:
                     continue
-                e = SpiderFootEvent("VULNERABILITY", f"{vuln}: {res[rec]['vulns'][vuln]}", self.__name__, event)
+                e = SpiderFootEvent("VULNERABILITY_GENERAL", f"{vuln}: {res[rec]['vulns'][vuln]}", self.__name__, event)
                 self.notifyListeners(e)
 
 # End of sfp_punkspider class
