@@ -2364,6 +2364,89 @@ class SpiderFoot:
 
         return True
 
+    def cveInfo(self, cveId: str, sources="circl,nist") -> (str, str):
+        """Look up a CVE ID for more information in the first available source.
+
+        Args:
+            cveId (str): CVE ID, e.g. CVE-2018-15473
+            sources (str): Comma-separated list of sources to query. Options available are circl and nist
+
+        Returns:
+            (str, str): Appropriate event type and descriptive text
+        """
+        sources = sources.split(",")
+        # VULNERABILITY_GENERAL is the generic type in case we don't have
+        # a real/mappable CVE.
+        eventType = "VULNERABILITY_GENERAL"
+
+        def cveRating(score):
+            if score == "Unknown":
+                return None
+            if score >= 0 and score <= 3.9:
+                return "LOW"
+            if score >= 4.0 and score <= 6.9:
+                return "MEDIUM"
+            if score >= 7.0 and score <= 8.9:
+                return "HIGH"
+            if score >= 9.0:
+                return "CRITICAL"
+            return None
+
+        for source in sources:
+            jsondata = self.cacheGet(f"{source}-{cveId}", 86400)
+
+            if not jsondata:
+                # Fetch data from source
+                if source == "nist":
+                    ret = self.fetchUrl(f"https://services.nvd.nist.gov/rest/json/cve/1.0/{cveId}", timeout=5)
+                if source == "circl":
+                    ret = self.fetchUrl(f"https://cve.circl.lu/api/cve/{cveId}", timeout=5)
+
+                if not ret:
+                    continue
+
+                if not ret['content']:
+                    continue
+
+                self.cachePut(f"{source}-{cveId}", ret['content'])
+                jsondata = ret['content']
+
+            try:
+                data = json.loads(jsondata)
+
+                if source == "circl":
+                    score = data.get('cvss', 'Unknown')
+                    rating = cveRating(score)
+                    if rating:
+                        eventType = f"VULNERABILITY_CVE_{rating}"
+                        return (eventType, f"{cveId}\n<SFURL>https://nvd.nist.gov/vuln/detail/{cveId}</SFURL>\n"
+                                f"Score: {score}\nDescription: {data.get('summary', 'Unknown')}")
+
+                if source == "nist":
+                    try:
+                        if data['CVE_Items'][0]['impact'].get('baseMetricV3'):
+                            score = data['CVE_Items'][0]['impact']['baseMetricV3']['cvssV3']['baseScore']
+                        else:
+                            score = data['CVE_Items'][0]['impact']['baseMetricV2']['cvssV2']['baseScore']
+                        rating = cveRating(score)
+                        if rating:
+                            eventType = f"VULNERABILITY_CVE_{rating}"
+                    except Exception:
+                        score = "Unknown"
+
+                    try:
+                        descr = data['CVE_Items'][0]['cve']['description']['description_data'][0]['value']
+                    except Exception:
+                        descr = "Unknown"
+
+                    return (eventType, f"{cveId}\n<SFURL>https://nvd.nist.gov/vuln/detail/{cveId}</SFURL>\n"
+                            f"Score: {score}\nDescription: {descr}")
+            except BaseException as e:
+                self.debug(f"Unable to parse CVE response from {source.upper()}: {e}")
+                continue
+
+        return (eventType, f"{cveId}\nScore: Unknown\nDescription: Unknown")
+
     def googleIterate(self, searchString: str, opts: dict = None) -> dict:
         """Request search results from the Google API.
 
