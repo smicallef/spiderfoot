@@ -75,7 +75,7 @@ class sfp_intelx(SpiderFootPlugin):
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'maxage': "Maximum age (in days) of results to be considered valid."
+        'maxage': "Maximum age (in days) of results to be considered valid. 0 = unlimited."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -224,13 +224,13 @@ class sfp_intelx(SpiderFootPlugin):
             for rec in info.get("records", dict()):
                 try:
                     last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
-                    if last_seen < agelimit:
+                    if self.opts['maxage'] > 0 and last_seen < agelimit:
                         self.debug("Record found but too old, skipping.")
                         continue
 
                     val = None
                     evt = None
-                    if rec['bucket'] == "pastes":
+                    if "pastes" in rec['bucket']:
                         evt = "LEAKSITE_URL"
                         val = rec['keyvalues'][0]['value']
                     if rec['bucket'].startswith("darknet."):
@@ -238,8 +238,11 @@ class sfp_intelx(SpiderFootPlugin):
                         val = rec['name']
 
                     if not val or not evt:
-                        self.debug(f"Unexpected record, skipping ({rec['bucket']})")
-                        continue
+                        # Try generically extracting it
+                        if "systemid" not in rec:
+                            continue
+                        evt = "LEAKSITE_URL"
+                        val = "https://intelx.io/?did=" + rec['systemid']
                 except Exception as e:
                     self.error(f"Error processing content from IntelX: {e}")
                     continue
