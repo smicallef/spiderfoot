@@ -72,7 +72,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["OPERATING_SYSTEM"]
+        return ["OPERATING_SYSTEM", "IP_ADDRESS"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
