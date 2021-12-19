@@ -117,7 +117,11 @@ class sfp_spyse(SpiderFootPlugin):
             "DNS_SPF",
             "GEOINFO",
             "WEB_ANALYTICS_ID",
-            "VULNERABILITY",
+            "VULNERABILITY_CVE_CRITICAL",
+            "VULNERABILITY_CVE_HIGH",
+            "VULNERABILITY_CVE_MEDIUM",
+            "VULNERABILITY_CVE_LOW",
+            "VULNERABILITY_GENERAL",
             "SSL_CERTIFICATE_ISSUED",
             "SSL_CERTIFICATE_ISSUER",
             "EMAILADDR",
@@ -448,7 +452,8 @@ class sfp_spyse(SpiderFootPlugin):
                 for cve in cve_list:
                     cve_id = cve.get('id')
                     if cve_id:
-                        evt = SpiderFootEvent('VULNERABILITY', cve_id, self.__name__, event)
+                        etype, cvetext = self.sf.cveInfo(cve_id)
+                        evt = SpiderFootEvent(etype, cvetext, self.__name__, event)
                         self.notifyListeners(evt)
 
             technologies = record.get("technologies")
@@ -597,7 +602,8 @@ class sfp_spyse(SpiderFootPlugin):
             for cve in domain_cves:
                 cve_id = cve.get('id')
                 if cve_id:
-                    evt = SpiderFootEvent('VULNERABILITY', cve_id, self.__name__, event)
+                    etype, cvetext = self.sf.cveInfo(cve_id)
+                    evt = SpiderFootEvent(etype, cvetext, self.__name__, event)
                     self.notifyListeners(evt)
 
         domain_whois = domain_item.get("whois_parsed")
