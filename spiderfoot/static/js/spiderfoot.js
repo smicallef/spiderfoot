@@ -17,10 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let link = document.createElement("link");
 
   if (localStorage.getItem("mode") === "Light Mode") {
-    togglerText.innerText = "Light Mode";
+    togglerText.innerText = "Dark Mode";
     document.getElementById("theme-toggler").checked = true; // ensure theme toggle is set to dark
   } else { // initial mode ist null
-    togglerText.innerText = "Dark Mode";
+    togglerText.innerText = "Light Mode";
     document.getElementById("theme-toggler").checked = false; // ensure theme toggle is set to light
   }
 
