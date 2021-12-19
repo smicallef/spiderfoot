@@ -88,7 +88,7 @@ class sfp_instagram(SpiderFootPlugin):
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            self.debug(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
         if network != 'Instagram':
