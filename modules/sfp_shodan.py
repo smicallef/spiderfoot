@@ -83,7 +83,10 @@ class sfp_shodan(SpiderFootPlugin):
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
+                'RAW_RIR_DATA', 'GEOINFO',
+                'VULNERABILITY_CVE_CRITICAL',
+                'VULNERABILITY_CVE_HIGH', 'VULNERABILITY_CVE_MEDIUM',
+                'VULNERABILITY_CVE_LOW', 'VULNERABILITY_GENERAL']
 
     def queryHost(self, qry):
         res = self.sf.fetchUrl(
@@ -312,7 +315,8 @@ class sfp_shodan(SpiderFootPlugin):
                     for vuln in vulns.keys():
                         if vuln not in vulnlist:
                             vulnlist.append(vuln)
-                            evt = SpiderFootEvent('VULNERABILITY', vuln, self.__name__, pevent)
+                            etype, cvetext = self.sf.cveInfo(vuln)
+                            evt = SpiderFootEvent(etype, cvetext, self.__name__, pevent)
                             self.notifyListeners(evt)
 
 # End of sfp_shodan class
