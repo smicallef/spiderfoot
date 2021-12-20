@@ -49,15 +49,15 @@ class sfp_stackoverflow(SpiderFootPlugin):
         'api_key': '',
     }
 
-    # Option descriptions.
+    # Option descriptions
     optdescs = {
         "api_key": "StackApps Optional API Key."
     }
 
-    # Results Tracking 
+    # Results Tracking
     results = None
 
-    # Tracking the error state of the module 
+    # Tracking the error state of the module
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
@@ -69,22 +69,20 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [
-                "DOMAIN_NAME", 
-                ]
+        return ["DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME"]
+        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME", "IP_ADDRESS"]
 
     def query(self, qry, qryType):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
         if qryType == "excerpts":
             res = self.sf.fetchUrl(
-                    f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
-                    timeout=self.opts['_fetchtimeout'],
-                    useragent="SpiderFoot"
-                )
+                f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
+                timeout=self.opts['_fetchtimeout'],
+                useragent="SpiderFoot"
+            )
 
         # User profile endpoint
         if qryType == "questions":
@@ -107,8 +105,8 @@ class sfp_stackoverflow(SpiderFootPlugin):
     def extractEmails(self, text):
         emails = set()
 
-        #remove span class highlight, automatically added by stackoverflow to highlight search text
-        newText = text.replace("<span class=\"highlight\">","")
+        # Remove span class highlight, automatically added by stackoverflow to highlight search text
+        newText = text.replace("<span class=\"highlight\">", "")
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', newText)
 
         if matches:
@@ -117,27 +115,27 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     emails.add(match)
             return list(emails)
         else:
-            return 
-    
+            return
+
     def extractUsername(self, questionId):
-        #need to query the questions endpoint with the question_id to find the username
+        # Need to query the questions endpoint with the question_id to find the username
         query_results = self.query(questionId, "questions")
         items = query_results.get('items')
 
         if query_results is None:
-            return 
+            return
 
         for item in items:
             owner = item['owner']
             username = owner.get('display_name')
-        
+
         return str(username)
-    
+
     def extractIPs(self, text):
         ips = set()
 
         matches = re.findall(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$', text)
-        
+
         if matches:
             for match in matches:
                 if self.sf.validIP(match) and not(netaddr.IPAddress(match).is_loopback()):
@@ -147,7 +145,6 @@ class sfp_stackoverflow(SpiderFootPlugin):
             return
 
     def handleEvent(self, event):
-        eventName = event.eventType
         eventData = event.data
 
         if self.errorState:
@@ -165,22 +162,21 @@ class sfp_stackoverflow(SpiderFootPlugin):
         allUsernames = []
         allIPs = []
 
-        #iterate through all results from query, creating raw_rir_data events and extracting emails      
+        # Iterate through all results from query, creating raw_rir_data events and extracting emails
         for item in items:
             if self.checkForStop():
                 return
-            
+
             # create raw_rir_data event
             body = item["body"]
             excerpt = item["excerpt"]
             question = item["question_id"]
             e = SpiderFootEvent('RAW_RIR_DATA',
-                                str("<SFURL>https://stackoverflow.com/questions/")+str(question)+str("</SFURL>")+str("\n")+str(body)+str(excerpt), 
-                                self.__name__, event)
+                                str("<SFURL>https://stackoverflow.com/questions/") + str(question) + str("</SFURL>") + str("\n") + str(body) + str(excerpt), self.__name__, event)
             self.notifyListeners(e)
-            
-            text = body+excerpt
-            #Extract other interesting events
+
+            text = body + excerpt
+            # Extract other interesting events
             emails = self.extractEmails(text)
             if emails is not None:
                 allEmails.append(emails)
