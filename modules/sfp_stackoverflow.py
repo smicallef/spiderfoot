@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_stackoverflow
-# Purpose:      Example module to use for new modules.
+# Purpose:      Search StackOverflow for any mentions of a target domain name
 #
 # Author:      Jess Williams <jesscia_williams0@protonmail.com>
 #
@@ -12,7 +12,6 @@
 
 import json
 import re
-import netaddr
 
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -37,10 +36,8 @@ class sfp_stackoverflow(SpiderFootPlugin):
             ],
             'favIcon': "https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196",
             'logo': "https://cdn.sstatic.net/Sites/stackoverflow/Img/apple-touch-icon.png",
-            'description': "A paragraph of text with details about the data source / services. "
-            "Keep things neat by breaking the text up across multiple lines as "
-            "has been done here. If line breaks are needed for breaking up "
-            "multiple paragraphs, use \n.",
+            'description': "StackOverflow is a knowledge sharing public platform for IT professionals"
+            "and students where users can post questions and get answers from other users."
         }
     }
 
@@ -51,7 +48,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "StackApps Optional API Key."
+        "api_key": "StackApps has an optional API key. Using an API key will increase the amount of requests allowed."
     }
 
     # Results Tracking
@@ -73,24 +70,34 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME", "IP_ADDRESS"]
+        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME", "IP_ADDRESS", "IPV6_ADDRESS"]
 
     def query(self, qry, qryType):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
         if qryType == "excerpts":
-            res = self.sf.fetchUrl(
-                f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
-                timeout=self.opts['_fetchtimeout'],
-                useragent="SpiderFoot"
-            )
+            try:
+                res = self.sf.fetchUrl(
+                    f"https://api.stackexchange.com/2.3/search/excerpts?order=desc&q={qry}&site=stackoverflow",
+                    timeout=self.opts['_fetchtimeout'],
+                    useragent="SpiderFoot"
+                )
+            except Exception as e:
+                self.error(f"Error querying StackExchange API: {e}")
+                self.errorState = True
+                return None
 
-        # User profile endpoint
+        # Questions profile endpoint, used to return displayname
         if qryType == "questions":
-            res = self.sf.fetchUrl(
-                f"https://api.stackexchange.com/2.3/questions/{qry}?order=desc&sort=activity&site=stackoverflow",
-                timeout=self.opts['_fetchtimeout'],
-                useragent="SpiderFoot"
-            )
+            try:
+                res = self.sf.fetchUrl(
+                    f"https://api.stackexchange.com/2.3/questions/{qry}?order=desc&sort=activity&site=stackoverflow",
+                    timeout=self.opts['_fetchtimeout'],
+                    useragent="SpiderFoot"
+                )
+            except Exception as e:
+                self.error(f"Error querying StackExchange API: {e}")
+                self.errorState = True
+                return None
 
         if res['content'] is None:
             self.info(f"No Stackoverflow info found for {qry}")
@@ -100,22 +107,8 @@ class sfp_stackoverflow(SpiderFootPlugin):
             return json.loads(res['content'])
         except Exception as e:
             self.error(f"Error processing JSON response from Stackoverflow: {e}")
-        return None
-
-    def extractEmails(self, text):
-        emails = set()
-
-        # Remove span class highlight, automatically added by stackoverflow to highlight search text
-        newText = text.replace("<span class=\"highlight\">", "")
-        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', newText)
-
-        if matches:
-            for match in matches:
-                if self.sf.validEmail(match):
-                    emails.add(match)
-            return list(emails)
-        else:
-            return
+            self.errorState = True
+            return None
 
     def extractUsername(self, questionId):
         # Need to query the questions endpoint with the question_id to find the username
@@ -131,14 +124,27 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         return str(username)
 
-    def extractIPs(self, text):
+    def extractIP4s(self, text):
         ips = set()
 
         matches = re.findall(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$', text)
 
         if matches:
             for match in matches:
-                if self.sf.validIP(match) and not(netaddr.IPAddress(match).is_loopback()):
+                if self.sf.validIP(match) and not(self.sf.isValidLocalOrLoopbackIP(match)):
+                    ips.add(match)
+            return list(ips)
+        else:
+            return
+
+    def extractIP6s(self, text):
+        ips = set()
+
+        matches = re.findall(r'(?:^|(?<=\s))(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(?=\s|$)', text)
+
+        if matches:
+            for match in matches:
+                if self.sf.validIP6(match) and not(self.sf.isValidLocalOrLoopbackIP(match)):
                     ips.add(match)
             return list(ips)
         else:
@@ -160,24 +166,26 @@ class sfp_stackoverflow(SpiderFootPlugin):
         items = query_results.get('items')
         allEmails = []
         allUsernames = []
-        allIPs = []
+        allIP4s = []
+        allIP6s = []
 
         # Iterate through all results from query, creating raw_rir_data events and extracting emails
         for item in items:
             if self.checkForStop():
                 return
 
-            # create raw_rir_data event
             body = item["body"]
             excerpt = item["excerpt"]
             question = item["question_id"]
+            text = body + excerpt
+
+            # create raw_rir_data event
             e = SpiderFootEvent('RAW_RIR_DATA',
-                                str("<SFURL>https://stackoverflow.com/questions/") + str(question) + str("</SFURL>") + str("\n") + str(body) + str(excerpt), self.__name__, event)
+                                str("<SFURL>https://stackoverflow.com/questions/") + str(question) + str("</SFURL>") + str("\n") + str(item), self.__name__, event)
             self.notifyListeners(e)
 
-            text = body + excerpt
             # Extract other interesting events
-            emails = self.extractEmails(text)
+            emails = self.sf.parseEmails(text)
             if emails is not None:
                 allEmails.append(emails)
 
@@ -186,11 +194,15 @@ class sfp_stackoverflow(SpiderFootPlugin):
             if username is not None:
                 allUsernames.append(username)
 
-            ips = self.extractIPs(text)
-            if ips is not None:
-                allIPs.append(ips)
+            ip4s = self.extractIP4s(text)
+            if ip4s is not None:
+                allIP4s.append(ip4s)
 
-        # create events for all other events
+            ip6s = self.extractIP6s(text)
+            if ip6s is not None:
+                allIP6s.append(ip6s)
+
+        # create events for emails, username and IPs
         for email in allEmails:
             email = str(email)
             e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
@@ -200,9 +212,13 @@ class sfp_stackoverflow(SpiderFootPlugin):
             e = SpiderFootEvent('USERNAME', username, self.__name__, event)
             self.notifyListeners(e)
 
-        for ip in allIPs:
+        for ip in allIP4s:
             ip = str(ip)
             e = SpiderFootEvent('IP_ADDRESS', ip, self.__name__, event)
             self.notifyListeners(e)
 
+        for ip in allIP6s:
+            ip = str(ip)
+            e = SpiderFootEvent('IPV6_ADDRESS', ip, self.__name__, event)
+            self.notifyListeners(e)
 # End of sfp_stackoverflow class
