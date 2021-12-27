@@ -108,11 +108,15 @@ def main():
     p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
     p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
     p.add_argument("-V", "--version", action='store_true', help="Display the version of SpiderFoot and exit.")
+    p.add_argument("-max-threads", type=int, help="Max number of modules to run concurrently.")
     args = p.parse_args()
 
     if args.version:
         print(f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
         sys.exit(0)
+    
+    if args.max_threads:
+        sfConfig['_maxthreads'] = args.max_threads
 
     if args.debug:
         sfConfig['_debug'] = True
