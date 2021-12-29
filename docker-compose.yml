@@ -4,7 +4,7 @@ services:
   spiderfoot:
     build:
        context: ./
-    image: my_spiderfoot
+    image: spiderfoot
     container_name: spiderfoot
     ports:
       - "5001:5001"
