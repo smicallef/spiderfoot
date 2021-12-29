@@ -4,8 +4,11 @@ services:
   spiderfoot:
     build:
        context: ./
-    image: spiderfoot
+    image: my_spiderfoot
     container_name: spiderfoot
     ports:
       - "5001:5001"
+    environment:
+      - SF_USERNAME=admin
+      - SF_PASSWORD=admin
     restart: unless-stopped

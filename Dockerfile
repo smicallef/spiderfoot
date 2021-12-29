@@ -40,6 +40,7 @@ ENV PATH="/opt/venv/bin":$PATH
 COPY $REQUIREMENTS requirements.txt ./
 RUN ls
 RUN echo "$REQUIREMENTS"
+RUN pip3 install --upgrade pip
 RUN pip3 install -r "$REQUIREMENTS"
 
 

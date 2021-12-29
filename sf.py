@@ -483,6 +483,26 @@ def start_web_server(sfWebUiConfig, sfConfig):
     }
 
     secrets = dict()
+
+    log.info("Check for username and password environment variables")
+    if 'SF_USERNAME' in os.environ.keys():
+        username = os.environ.get("SF_USERNAME")
+        log.info("found username")
+    else:
+        username = None
+    if 'SF_PASSWORD' in os.environ.keys():
+        password = os.environ.get("SF_PASSWORD")
+        log.info("found password")
+    else:
+        password = None
+    
+    # add the username and password to the secrets dictionary. 
+    if username == None or password == None:
+        log.info("No username/password environment variables defined.") 
+    else:
+        secrets[username] = password
+
+
     passwd_file = sf.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
@@ -506,7 +526,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
             secrets[u] = p
 
     if secrets:
-        log.info("Enabling authentication based on supplied passwd file.")
+        log.info("Enabling authentication based on supplied passwd file or environment variables.")
         conf['/'] = {
             'tools.auth_digest.on': True,
             'tools.auth_digest.realm': web_host,
