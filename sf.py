@@ -96,6 +96,7 @@ def main():
     p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
+    p.add_argument("-u", metavar="all|footprint|investigate|passive", type=str, help="modules selected automatically by use case")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
     p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
     p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
@@ -264,8 +265,8 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     target = target.strip('"')
 
     modlist = list()
-    if not args.t and not args.m:
-        log.warning("You didn't specify any modules or types, so all will be enabled.")
+    if not args.t and not args.m and not args.u:
+        log.warning("You didn't specify any modules, types or user case, so all modules will be enabled.")
         for m in list(sfModules.keys()):
             if "__" in m:
                 continue
@@ -294,6 +295,13 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     # Easier if scanning by module
     if args.m:
         modlist = list(filter(None, args.m.split(",")))
+
+    # Select modules if the user selected usercase
+    if args.u:
+        usecase = args.u[0].upper() + args.u[1:]  # Make the first Letter Uppercase
+        for mod in sfConfig['__modules__']:
+            if usecase == 'All' or usecase in sfConfig['__modules__'][mod]['group']:
+                modlist.append(mod)
 
     # Add sfp__stor_stdout to the module list
     typedata = dbh.eventTypes()
