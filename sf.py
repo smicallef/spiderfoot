@@ -114,7 +114,7 @@ def main():
     if args.version:
         print(f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
         sys.exit(0)
-    
+
     if args.max_threads:
         sfConfig['_maxthreads'] = args.max_threads
 
