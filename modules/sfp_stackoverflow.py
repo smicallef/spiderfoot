@@ -116,7 +116,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
         items = query_results.get('items')
 
         if query_results is None:
-            return
+            return None
 
         for item in items:
             owner = item['owner']
@@ -135,7 +135,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     ips.add(match)
             return list(ips)
         else:
-            return
+            return None
 
     def extractIP6s(self, text):
         ips = set()
@@ -148,7 +148,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     ips.add(match)
             return list(ips)
         else:
-            return
+            return None
 
     def handleEvent(self, event):
         eventData = event.data
