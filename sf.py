@@ -96,8 +96,9 @@ def main():
     p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
+    p.add_argument("-u", choices=["all", "footprint", "investigate", "passive"], type=str, help="Select modules automatically by use case")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
+    p.add_argument("-o", choices=["tab", "csv", "json"], type=str, help="Output format. Tab is default.")
     p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
     p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
@@ -108,11 +109,15 @@ def main():
     p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
     p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
     p.add_argument("-V", "--version", action='store_true', help="Display the version of SpiderFoot and exit.")
+    p.add_argument("-max-threads", type=int, help="Max number of modules to run concurrently.")
     args = p.parse_args()
 
     if args.version:
         print(f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
         sys.exit(0)
+
+    if args.max_threads:
+        sfConfig['_maxthreads'] = args.max_threads
 
     if args.debug:
         sfConfig['_debug'] = True
@@ -260,8 +265,8 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     target = target.strip('"')
 
     modlist = list()
-    if not args.t and not args.m:
-        log.warning("You didn't specify any modules or types, so all will be enabled.")
+    if not args.t and not args.m and not args.u:
+        log.warning("You didn't specify any modules, types or use case, so all modules will be enabled.")
         for m in list(sfModules.keys()):
             if "__" in m:
                 continue
@@ -290,6 +295,13 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     # Easier if scanning by module
     if args.m:
         modlist = list(filter(None, args.m.split(",")))
+
+    # Select modules if the user selected usercase
+    if args.u:
+        usecase = args.u[0].upper() + args.u[1:]  # Make the first Letter Uppercase
+        for mod in sfConfig['__modules__']:
+            if usecase == 'All' or usecase in sfConfig['__modules__'][mod]['group']:
+                modlist.append(mod)
 
     # Add sfp__stor_stdout to the module list
     typedata = dbh.eventTypes()
