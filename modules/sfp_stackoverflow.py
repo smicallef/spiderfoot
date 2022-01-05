@@ -12,6 +12,7 @@
 
 import json
 import re
+from modules.sfp_names import sfp_names
 
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -74,7 +75,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "EMAILADDR", "USERNAME", "IP_ADDRESS", "IPV6_ADDRESS"]
+        return ["RAW_RIR_DATA", "EMAILADDR", "AFFILIATE_EMAILADDR", "USERNAME", "IP_ADDRESS", "IPV6_ADDRESS", "HUMAN_NAME"]
 
     def query(self, qry, qryType):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
@@ -119,7 +120,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
         query_results = self.query(questionId, "questions")
         items = query_results.get('items')
 
-        if query_results is None:
+        if items is None:
             return None
 
         for item in items:
@@ -173,6 +174,8 @@ class sfp_stackoverflow(SpiderFootPlugin):
         allIP4s = []
         allIP6s = []
 
+        if items is None:
+            return
         # Iterate through all results from query, creating raw_rir_data events and extracting emails
         for item in items:
             if self.checkForStop():
@@ -189,9 +192,18 @@ class sfp_stackoverflow(SpiderFootPlugin):
             self.notifyListeners(e)
 
             # Extract other interesting events
+            opts = {
+                'algolimit': 75,
+                'emailtoname': False,
+                'filterjscss': False
+            }
+            sfp_names.setup(self, self.sf, opts)
+            sfp_names.handleEvent(self, e)
+
             emails = self.sf.parseEmails(text)
             if emails is not None:
-                allEmails.append(emails)
+                for email in emails:
+                    allEmails.append(str(email))
 
             questionId = item["question_id"]
             username = self.extractUsername(questionId)
@@ -209,8 +221,12 @@ class sfp_stackoverflow(SpiderFootPlugin):
         # create events for emails, username and IPs
         for email in allEmails:
             email = str(email)
-            e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
-            self.notifyListeners(e)
+            if eventData in email:
+                e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
+                self.notifyListeners(e)
+            else:
+                e = SpiderFootEvent('AFFILIATE_EMAILADDR', email, self.__name__, event)
+                self.notifyListeners(e)
 
         for username in allUsernames:
             e = SpiderFootEvent('USERNAME', username, self.__name__, event)
