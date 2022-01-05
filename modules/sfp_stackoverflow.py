@@ -75,7 +75,14 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "EMAILADDR", "AFFILIATE_EMAILADDR", "USERNAME", "IP_ADDRESS", "IPV6_ADDRESS", "HUMAN_NAME"]
+        return ["RAW_RIR_DATA",
+                "EMAILADDR"
+                "AFFILIATE_EMAILADDR",
+                "USERNAME",
+                "IP_ADDRESS",
+                "IPV6_ADDRESS",
+                "HUMAN_NAME"
+                ]
 
     def query(self, qry, qryType):
         # The Stackoverflow excerpts endpoint will search the site for mentions of a keyword and returns a snippet of relevant results
@@ -115,9 +122,10 @@ class sfp_stackoverflow(SpiderFootPlugin):
             self.errorState = True
             return None
 
-    def extractUsername(self, questionId):
+    def extractUsername(self, questionId, event):
         # Need to query the questions endpoint with the question_id to find the username
         query_results = self.query(questionId, "questions")
+
         items = query_results.get('items')
 
         if items is None:
@@ -126,6 +134,18 @@ class sfp_stackoverflow(SpiderFootPlugin):
         for item in items:
             owner = item['owner']
             username = owner.get('display_name')
+
+            e = SpiderFootEvent('RAW_RIR_DATA', str("<SFURL>https://stackoverflow.com/questions/") + str(questionId) + str("</SFURL>") + str("\n") + str(query_results), self.__name__, event)
+            self.notifyListeners(e)
+
+            # Extract Human Names from username
+            opts = {
+                'algolimit': 70,
+                'emailtoname': False,
+                'filterjscss': False
+            }
+            sfp_names.setup(self, self.sf, opts)
+            sfp_names.handleEvent(self, e)
 
         return str(username)
 
@@ -191,22 +211,13 @@ class sfp_stackoverflow(SpiderFootPlugin):
                                 str("<SFURL>https://stackoverflow.com/questions/") + str(question) + str("</SFURL>") + str("\n") + str(item), self.__name__, event)
             self.notifyListeners(e)
 
-            # Extract other interesting events
-            opts = {
-                'algolimit': 75,
-                'emailtoname': False,
-                'filterjscss': False
-            }
-            sfp_names.setup(self, self.sf, opts)
-            sfp_names.handleEvent(self, e)
-
             emails = self.sf.parseEmails(text)
             if emails is not None:
                 for email in emails:
                     allEmails.append(str(email))
 
             questionId = item["question_id"]
-            username = self.extractUsername(questionId)
+            username = self.extractUsername(questionId, event)
             if username is not None:
                 allUsernames.append(username)
 
