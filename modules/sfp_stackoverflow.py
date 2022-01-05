@@ -33,6 +33,10 @@ class sfp_stackoverflow(SpiderFootPlugin):
             ],
             'apiKeyInstructions': [
                 "Visit https://stackapps.com/apps/oauth/register",
+                "Fill out the details in the form with as much details as you're comfortable with.",
+                "The OAuth Domain can either be a valid domain you own or control, or stackexchange.com."
+                "Select 'Register Your Application'."
+                "Under the Title 'Key' is your API key, use this for an increased request quota."
             ],
             'favIcon': "https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196",
             'logo': "https://cdn.sstatic.net/Sites/stackoverflow/Img/apple-touch-icon.png",
