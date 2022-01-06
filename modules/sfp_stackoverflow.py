@@ -23,7 +23,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
     meta = {
         'name': "Stackoverflow",
         'summary': "Search StackOverflow for any mentions of a target domain. Returns potentially related information.",
-        'flags': ["errorprone"],
+        'flags': ["errorprone","apikey"],
         'useCases': ["Passive"],
         'categories': ["Content Analysis"],
         'dataSource': {
