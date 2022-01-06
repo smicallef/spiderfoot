@@ -232,7 +232,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
         # create events for emails, username and IPs
         for email in allEmails:
             email = str(email)
-            if eventData in email:
+            if email.endsWith(self.getTarget()):
                 e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                 self.notifyListeners(e)
             else:
