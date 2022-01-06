@@ -36,7 +36,8 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": True,
         "musthavename": True,
         "userfromemail": True,
-        "_maxthreads": 50
+        "permutate": False,
+        "_maxthreads": 20
     }
 
     # Option descriptions
@@ -45,6 +46,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
+        "permutate": "Look for the existence of account name permutations. Useful to identify fraudulent social media accounts or account squatting.",
         "_maxthreads": "Maximum threads"
     }
 
@@ -78,7 +80,7 @@ class sfp_accounts(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if data['content'] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return
 
@@ -88,7 +90,7 @@ class sfp_accounts(SpiderFootPlugin):
         try:
             self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
         except Exception as e:
-            self.sf.error(f"Unable to parse social media accounts list: {e}")
+            self.error(f"Unable to parse social media accounts list: {e}")
             self.errorState = True
             return
 
@@ -96,14 +98,19 @@ class sfp_accounts(SpiderFootPlugin):
         return ["EMAILADDR", "DOMAIN_NAME", "HUMAN_NAME", "USERNAME"]
 
     def producedEvents(self):
-        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED"]
+        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED",
+                "SIMILAR_ACCOUNT_EXTERNAL"]
 
     def checkSite(self, name, site):
         if 'check_uri' not in site:
             return
 
         url = site['check_uri'].format(account=name)
-        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{url}</SFURL>"
+        if 'pretty_uri' in site:
+            ret_url = site['pretty_uri'].format(account=name)
+        else:
+            ret_url = url
+        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{ret_url}</SFURL>"
 
         res = self.sf.fetchUrl(
             url,
@@ -130,7 +137,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         if self.opts['musthavename']:
             if name.lower() not in res['content'].lower():
-                self.sf.debug(f"Skipping {site['name']} as username not mentioned.")
+                self.debug(f"Skipping {site['name']} as username not mentioned.")
                 with self.lock:
                     self.siteResults[retname] = False
                 return
@@ -155,7 +162,7 @@ class sfp_accounts(SpiderFootPlugin):
                     try:
                         self.checkSite(username, site)
                     except Exception as e:
-                        self.sf.debug(f'Thread {threading.current_thread().name} exception: {e}')
+                        self.debug(f'Thread {threading.current_thread().name} exception: {e}')
             except QueueEmpty:
                 return
 
@@ -187,9 +194,89 @@ class sfp_accounts(SpiderFootPlugin):
 
         duration = time.monotonic() - startTime
         scanRate = len(sites) / duration
-        self.sf.debug(f'Scan statistics: name={username}, count={len(self.siteResults)}, duration={duration:.2f}, rate={scanRate:.0f}')
+        self.debug(f'Scan statistics: name={username}, count={len(self.siteResults)}, duration={duration:.2f}, rate={scanRate:.0f}')
 
         return [site for site, found in self.siteResults.items() if found]
+
+    def generatePermutations(self, username):
+        permutations = list()
+        prefixsuffix = ['_', '-']
+        replacements = {
+            'a': ['4', 's'],
+            'b': ['v', 'n'],
+            'c': ['x', 'v'],
+            'd': ['s', 'f'],
+            'e': ['w', 'r'],
+            'f': ['d', 'g'],
+            'g': ['f', 'h'],
+            'h': ['g', 'j', 'n'],
+            'i': ['o', 'u', '1'],
+            'j': ['k', 'h', 'i'],
+            'k': ['l', 'j'],
+            'l': ['i', '1', 'k'],
+            'm': ['n'],
+            'n': ['m'],
+            'o': ['p', 'i', '0'],
+            'p': ['o', 'q'],
+            'r': ['t', 'e'],
+            's': ['a', 'd', '5'],
+            't': ['7', 'y', 'z', 'r'],
+            'u': ['v', 'i', 'y', 'z'],
+            'v': ['u', 'c', 'b'],
+            'w': ['v', 'vv', 'q', 'e'],
+            'x': ['z', 'y', 'c'],
+            'y': ['z', 'x'],
+            'z': ['y', 'x'],
+            '0': ['o'],
+            '1': ['l'],
+            '2': ['5'],
+            '3': ['e'],
+            '4': ['a'],
+            '5': ['s'],
+            '6': ['b'],
+            '7': ['t'],
+            '8': ['b'],
+            '9': []
+        }
+        pairs = {
+            'oo': ['00'],
+            'll': ['l1l', 'l1l', '111', '11'],
+            '11': ['ll', 'lll', 'l1l', '1l1']
+        }
+
+        # Generate a set with replacements, then
+        # add suffixes and prefixes.
+        pos = 0
+        for c in username:
+            if c not in replacements:
+                continue
+            if len(replacements[c]) == 0:
+                continue
+            npos = pos + 1
+            for xc in replacements[c]:
+                newuser = username[0:pos] + xc + username[npos:len(username)]
+                permutations.append(newuser)
+
+            pos += 1
+
+        # Search for common double-letter replacements
+        for p in pairs:
+            if p in username:
+                for r in pairs[p]:
+                    permutations.append(username.replace(p, r))
+
+        # Search for prefixed and suffixed usernames
+        for c in prefixsuffix:
+            permutations.append(username + c)
+            permutations.append(c + username)
+
+        # Search for double character usernames
+        pos = 0
+        for c in username:
+            permutations.append(username[0:pos] + c + c + username[(pos + 1):len(username)])
+            pos += 1
+
+        return list(set(permutations))
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -200,11 +287,11 @@ class sfp_accounts(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Skip events coming from me unless they are USERNAME events
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
-            self.sf.debug(f"Ignoring {eventName}, from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in list(self.results.keys()):
@@ -233,7 +320,7 @@ class sfp_accounts(SpiderFootPlugin):
                     delsites = list()
                     for site in res:
                         sitename = site.split(" (Category:")[0]
-                        self.sf.debug(f"Distrusting {sitename}")
+                        self.debug(f"Distrusting {sitename}")
                         delsites.append(sitename)
                     self.sites = [d for d in self.sites if d['name'] not in delsites]
                 else:
@@ -264,15 +351,15 @@ class sfp_accounts(SpiderFootPlugin):
 
         for user in set(users):
             if user in self.opts['_genericusers'].split(","):
-                self.sf.debug(f"{user} is a generic account name, skipping.")
+                self.debug(f"{user} is a generic account name, skipping.")
                 continue
 
             if self.opts['ignorenamedict'] and user in self.commonNames:
-                self.sf.debug(f"{user} is found in our name dictionary, skipping.")
+                self.debug(f"{user} is found in our name dictionary, skipping.")
                 continue
 
             if self.opts['ignoreworddict'] and user in self.words:
-                self.sf.debug(f"{user} is found in our word dictionary, skipping.")
+                self.debug(f"{user} is found in our word dictionary, skipping.")
                 continue
 
             if user not in self.reportedUsers and eventData != user:
@@ -295,4 +382,16 @@ class sfp_accounts(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
+            if self.opts['permutate']:
+                permutations = self.generatePermutations(user)
+                for puser in permutations:
+                    res = self.checkSites(puser)
+                    for site in res:
+                        evt = SpiderFootEvent(
+                            "SIMILAR_ACCOUNT_EXTERNAL",
+                            site,
+                            self.__name__,
+                            event
+                        )
+                        self.notifyListeners(evt)
 # End of sfp_accounts class

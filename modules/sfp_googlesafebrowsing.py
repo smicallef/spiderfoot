@@ -130,24 +130,24 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         )
 
         if res["code"] == "400":
-            self.sf.error("Invalid request payload on Google Safe Browsing API")
+            self.error("Invalid request payload on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Google Safe Browsing API")
+            self.error("Reaching rate limit on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "403":
-            self.sf.error(
+            self.error(
                 "Permission denied, invalid API key on Google Safe Browsing API"
             )
             self.errorState = True
             return None
 
         if res["code"] in ["500", "503", "504"]:
-            self.sf.error(
+            self.error(
                 "Google Safe Browsing API is having some troubles or unavailable."
             )
             self.errorState = True
@@ -156,11 +156,11 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
             if info == {}:
-                self.sf.info("No Google Safe Browsing matches found for " + qry)
+                self.info("No Google Safe Browsing matches found for " + qry)
                 return None
 
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -173,17 +173,17 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 "You enabled sfp_googlesafebrowsing but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

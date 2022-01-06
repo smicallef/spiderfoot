@@ -24,7 +24,35 @@ class SpiderFootHelpers():
         if not path:
             path = f"{Path.home()}/.spiderfoot/"
         if not os.path.isdir(path):
-            os.mkdir(path)
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def cachePath() -> str:
+        """Returns the file system location of the cacha data files.
+
+        Returns:
+            str: SpiderFoot cache file system path
+        """
+        path = os.environ.get('SPIDERFOOT_CACHE')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/cache"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def logPath() -> str:
+        """Returns the file system location of SpiderFoot log files.
+
+        Returns:
+            str: SpiderFoot data file system path
+        """
+        path = os.environ.get('SPIDERFOOT_LOGS')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/logs"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
         return path
 
     @staticmethod
@@ -50,8 +78,9 @@ class SpiderFootHelpers():
             {r"^\".+\"$": "USERNAME"},
             {r"^[0-9]+$": "BGP_AS_OWNER"},
             {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {r"^[0-9a-f:]+::/[0-9]+$": "NETBLOCKV6_OWNER"},
             {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"},
-            {r"^([13][a-km-zA-HJ-NP-Z1-9]{25,34})$": "BITCOIN_ADDRESS"}
+            {r"^(bc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})|[13][a-km-zA-HJ-NP-Z1-9]{25,35})$": "BITCOIN_ADDRESS"},
         ]
 
         # Parse the target and set the target type
@@ -197,13 +226,16 @@ class SpiderFootHelpers():
 
         Returns:
             set: TBD
-        """
-        if not data:
-            return set()
 
-        mapping = set()
-        entities = dict()
-        parents = dict()
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
+        """
+        if not isinstance(data, list):
+            raise TypeError(f"data is {type(data)}; expected list()")
+
+        if not data:
+            raise ValueError("data is empty")
 
         def get_next_parent_entities(item: str, pids: list) -> list:
             ret = list()
@@ -219,10 +251,13 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
+        mapping = set()
+        entities = dict()
+        parents = dict()
+
         for row in data:
             if len(row) != 15:
-                # TODO: print error
-                continue
+                raise ValueError(f"data row length is {len(row)}; expected 15")
 
             if row[11] == "ENTITY" or row[11] == "INTERNAL":
                 # List of all valid entity values
@@ -262,10 +297,16 @@ class SpiderFootHelpers():
 
         Returns:
             dict: nested tree
+
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
         """
         if not isinstance(data, dict):
-            # TODO: print error
-            return {}
+            raise TypeError(f"data is {type(data)}; expected dict()")
+
+        if not data:
+            raise ValueError("data is empty")
 
         def get_children(needle: str, haystack: dict) -> list:
             ret = list()
@@ -361,3 +402,31 @@ class SpiderFootHelpers():
                     returnArr.append(m.group(1))
 
         return returnArr
+
+    @staticmethod
+    def sanitiseInput(cmd: str) -> bool:
+        """Verify input command is safe to execute
+
+        Args:
+            cmd (str): The command to check
+
+        Returns:
+            bool: command is "safe"
+        """
+        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
+        for c in cmd:
+            if c.lower() not in chars:
+                return False
+
+        if '..' in cmd:
+            return False
+
+        if cmd.startswith("-"):
+            return False
+
+        if len(cmd) < 3:
+            return False
+
+        return True

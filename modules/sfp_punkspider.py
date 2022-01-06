@@ -61,7 +61,7 @@ class sfp_punkspider(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["VULNERABILITY"]
+        return ["VULNERABILITY_GENERAL"]
 
     def query(self, qry):
         qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
@@ -69,13 +69,13 @@ class sfp_punkspider(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
         if res['content'] is None:
-            self.sf.debug("No content returned from PunkSpider")
+            self.debug("No content returned from PunkSpider")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing response from PunkSpider: {e}")
+            self.error(f"Error processing response from PunkSpider: {e}")
 
         return None
 
@@ -85,10 +85,10 @@ class sfp_punkspider(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -104,7 +104,7 @@ class sfp_punkspider(SpiderFootPlugin):
             for vuln in res[rec]['vulns']:
                 if res[rec]['vulns'][vuln] == 0:
                     continue
-                e = SpiderFootEvent("VULNERABILITY", f"{vuln}: {res[rec]['vulns'][vuln]}", self.__name__, event)
+                e = SpiderFootEvent("VULNERABILITY_GENERAL", f"{vuln}: {res[rec]['vulns'][vuln]}", self.__name__, event)
                 self.notifyListeners(e)
 
 # End of sfp_punkspider class

@@ -108,7 +108,11 @@ class sfp_binaryedge(SpiderFootPlugin):
         return [
             "INTERNET_NAME",
             "DOMAIN_NAME",
-            "VULNERABILITY",
+            "VULNERABILITY_CVE_CRITICAL",
+            "VULNERABILITY_CVE_HIGH",
+            "VULNERABILITY_CVE_MEDIUM",
+            "VULNERABILITY_CVE_LOW",
+            "VULNERABILITY_GENERAL",
             "TCP_PORT_OPEN",
             "TCP_PORT_OPEN_BANNER",
             "EMAILADDR_COMPROMISED",
@@ -137,7 +141,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         elif querytype == "passive":
             queryurl = "domains/ip"
         else:
-            self.sf.error(f"Invalid query type: {querytype}")
+            self.error(f"Invalid query type: {querytype}")
             return None
 
         headers = {
@@ -152,24 +156,24 @@ class sfp_binaryedge(SpiderFootPlugin):
         )
 
         if res['code'] in ["429", "500"]:
-            self.sf.error("BinaryEdge.io API key seems to have been rejected or you have exceeded usage limits for the month.")
+            self.error("BinaryEdge.io API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
         if not res['content']:
-            self.sf.info(f"No BinaryEdge.io info found for {qry}")
+            self.info(f"No BinaryEdge.io info found for {qry}")
             return None
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from BinaryEdge.io: {e}")
+            self.error(f"Error processing JSON response from BinaryEdge.io: {e}")
             return None
 
         if info.get('page') and info['total'] > info.get('pagesize', 100) * info.get('page', 0):
             page = info['page'] + 1
             if page > self.opts['maxpages']:
-                self.sf.error("Maximum number of pages reached.")
+                self.error("Maximum number of pages reached.")
                 return [info]
             retarr.append(info)
             e = self.query(qry, querytype, page)
@@ -188,17 +192,17 @@ class sfp_binaryedge(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["binaryedge_api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -206,7 +210,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         if eventName == "EMAILADDR":
             ret = self.query(eventData, "email")
             if ret is None:
-                self.sf.info(f"No leak info for {eventData}")
+                self.info(f"No leak info for {eventData}")
                 return
 
             for rec in ret:
@@ -214,7 +218,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not events:
                     continue
 
-                self.sf.debug("Found compromised account results in BinaryEdge.io")
+                self.debug("Found compromised account results in BinaryEdge.io")
 
                 for leak in events:
                     e = SpiderFootEvent('EMAILADDR_COMPROMISED', f"{eventData} [{leak}]", self.__name__, event)
@@ -230,7 +234,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             net_size = IPNetwork(eventData).prefixlen
             max_netblock = self.opts['maxnetblock']
             if net_size < max_netblock:
-                self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
+                self.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
                 return
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -240,7 +244,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             net_size = IPNetwork(eventData).prefixlen
             max_subnet = self.opts['maxsubnet']
             if net_size < max_subnet:
-                self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_subnet}")
+                self.debug(f"Network size bigger than permitted: {net_size} > {max_subnet}")
                 return
 
         # For IP Addresses, do the additional passive DNS lookup
@@ -248,7 +252,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             evtType = "CO_HOSTED_SITE"
             ret = self.query(eventData, "passive")
             if ret is None:
-                self.sf.info(f"No Passive DNS info for {eventData}")
+                self.info(f"No Passive DNS info for {eventData}")
                 return
 
             for rec in ret:
@@ -256,7 +260,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not events:
                     continue
 
-                self.sf.debug("Found passive DNS results in BinaryEdge.io")
+                self.debug("Found passive DNS results in BinaryEdge.io")
                 for rec in events:
                     host = rec['domain']
                     if host == eventData:
@@ -264,7 +268,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
                     if self.getTarget().matches(host, includeParents=True):
                         if self.opts['verify']:
-                            if not self.sf.resolveHost(host):
+                            if not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                                 continue
 
                         evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
@@ -284,7 +288,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         if eventName == "DOMAIN_NAME":
             ret = self.query(eventData, "subs")
             if ret is None:
-                self.sf.info(f"No hosts found for {eventData}")
+                self.info(f"No hosts found for {eventData}")
                 return
 
             for rec in ret:
@@ -292,7 +296,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not events:
                     continue
 
-                self.sf.debug("Found host results in BinaryEdge.io")
+                self.debug("Found host results in BinaryEdge.io")
                 for rec in events:
                     if rec in self.reportedhosts:
                         continue
@@ -300,8 +304,8 @@ class sfp_binaryedge(SpiderFootPlugin):
                     self.reportedhosts[rec] = True
 
                     if self.opts['verify']:
-                        if not self.sf.resolveHost(rec):
-                            self.sf.debug(f"Couldn't resolve {rec}, so skipping.")
+                        if not self.sf.resolveHost(rec) and not self.sf.resolveHost6(rec):
+                            self.debug(f"Couldn't resolve {rec}, so skipping.")
                             continue
 
                     e = SpiderFootEvent('INTERNET_NAME', rec, self.__name__, event)
@@ -328,7 +332,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
             ret = self.query(addr, "torrent")
             if ret is None:
-                self.sf.info(f"No torrent info for {addr}")
+                self.info(f"No torrent info for {addr}")
                 continue
 
             for rec in ret:
@@ -336,14 +340,14 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not events:
                     continue
 
-                self.sf.debug(f"Found torrent results for {addr} in BinaryEdge.io")
+                self.debug(f"Found torrent results for {addr} in BinaryEdge.io")
 
                 for rec in events:
                     created_ts = rec['origin'].get('ts') / 1000
                     age_limit_ts = int(time.time()) - (86400 * self.opts['torrent_age_limit_days'])
 
                     if self.opts['torrent_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.debug("Record found but too old, skipping.")
                         continue
 
                     dat = "Torrent: " + rec.get("torrent", "???").get("name") + " @ " + rec.get('torrent').get("source", "???")
@@ -362,7 +366,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
             ret = self.query(addr, "vuln")
             if ret is None:
-                self.sf.info(f"No vulnerability info for {addr}")
+                self.info(f"No vulnerability info for {addr}")
                 continue
 
             for rec in ret:
@@ -374,20 +378,20 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not results:
                     continue
 
-                self.sf.debug("Found vulnerability results in BinaryEdge.io")
+                self.debug("Found vulnerability results in BinaryEdge.io")
                 for rec in results:
                     created_ts = rec.get('ts') / 1000
                     age_limit_ts = int(time.time()) - (86400 * self.opts['cve_age_limit_days'])
 
                     if self.opts['cve_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.debug("Record found but too old, skipping.")
                         continue
 
                     cves = rec.get('cves')
                     if cves:
                         for c in cves:
-                            cve = c['cve']
-                            e = SpiderFootEvent('VULNERABILITY', cve, self.__name__, event)
+                            etype, cvetext = self.sf.cveInfo(c['cve'])
+                            e = SpiderFootEvent(etype, cvetext, self.__name__, event)
                             self.notifyListeners(e)
 
         for addr in qrylist:
@@ -402,7 +406,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
             ret = self.query(addr, "ip")
             if ret is None:
-                self.sf.info(f"No port/banner info for {addr}")
+                self.info(f"No port/banner info for {addr}")
                 return
 
             for rec in ret:
@@ -410,7 +414,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 if not events:
                     continue
 
-                self.sf.debug("Found port/banner results in BinaryEdge.io")
+                self.debug("Found port/banner results in BinaryEdge.io")
 
                 ports = list()
                 for res in events:
@@ -419,7 +423,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                         age_limit_ts = int(time.time()) - (86400 * self.opts['port_age_limit_days'])
 
                         if self.opts['port_age_limit_days'] > 0 and created_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
+                            self.debug("Record found but too old, skipping.")
                             continue
 
                         port = str(prec['target']['port'])
@@ -443,7 +447,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                                 banner = banner.split('\\r\\n\\r\\n')[0]
                                 banner = banner.replace("\\r\\n", "\n")
                         except Exception:
-                            self.sf.debug("No banner information found.")
+                            self.debug("No banner information found.")
                             continue
 
                         e = SpiderFootEvent(evtbtype, banner, self.__name__, ev)

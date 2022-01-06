@@ -63,7 +63,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["VULNERABILITY"]
+        return ["VULNERABILITY_DISCLOSURE"]
 
     # Query h1.nobbd.de
     def queryOBB(self, qry):
@@ -72,7 +72,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.debug("No content returned from h1.nobbd.de")
+            self.debug("No content returned from h1.nobbd.de")
             return None
 
         try:
@@ -82,7 +82,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error(f"Error processing response from h1.nobbd.de: {e}")
+            self.error(f"Error processing response from h1.nobbd.de: {e}")
             return None
 
         return ret
@@ -93,10 +93,10 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -106,7 +106,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
             data.extend(obb)
 
         for n in data:
-            e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
+            e = SpiderFootEvent("VULNERABILITY_DISCLOSURE", n, self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_h1nobbdde class

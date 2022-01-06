@@ -221,12 +221,12 @@ class sfp_networksdb(SpiderFootPlugin):
     def parseApiResponse(self, res):
         # Future proofing - NetworksDB does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by NetworksDB")
+            self.error("You are being rate-limited by NetworksDB")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Authentication failed")
+            self.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -236,14 +236,14 @@ class sfp_networksdb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from NetworksDB: {e}")
+            self.error(f"Error processing JSON response from NetworksDB: {e}")
             return None
 
         if data.get('warning'):
-            self.sf.debug("Received warning from NetworksDB: " + data.get('warning'))
+            self.debug("Received warning from NetworksDB: " + data.get('warning'))
 
         if data.get('error'):
-            self.sf.error("Received error from NetworksDB: " + data.get('error'))
+            self.error("Received error from NetworksDB: " + data.get('error'))
 
         return data
 
@@ -260,19 +260,19 @@ class sfp_networksdb(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == '':
-            self.sf.error("You enabled sfp_networksdb but did not set an API key!")
+            self.error("You enabled sfp_networksdb but did not set an API key!")
             self.errorState = True
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             data = self.queryIpInfo(eventData)
 
             if data is None:
-                self.sf.debug("No IP address information found for " + eventData)
+                self.debug("No IP address information found for " + eventData)
             else:
                 evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
@@ -281,13 +281,16 @@ class sfp_networksdb(SpiderFootPlugin):
                 if network:
                     cidr = network.get('cidr')
                     if cidr and cidr != 'N/A' and self.sf.validIpNetwork(cidr):
-                        evt = SpiderFootEvent('NETBLOCK_MEMBER', cidr, self.__name__, event)
+                        if ":" in cidr:
+                            evt = SpiderFootEvent('NETBLOCKV6_MEMBER', cidr, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent('NETBLOCK_MEMBER', cidr, self.__name__, event)
                         self.notifyListeners(evt)
 
             data = self.queryIpGeo(eventData)
 
             if data is None:
-                self.sf.debug("No IP geolocation information found for " + eventData)
+                self.debug("No IP geolocation information found for " + eventData)
             else:
                 evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
@@ -302,7 +305,7 @@ class sfp_networksdb(SpiderFootPlugin):
             cohosts = list()
 
             if data is None:
-                self.sf.debug("No reverse DNS results for " + eventData)
+                self.debug("No reverse DNS results for " + eventData)
             else:
                 evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
@@ -320,7 +323,7 @@ class sfp_networksdb(SpiderFootPlugin):
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                    self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                    self.debug("Host " + co + " no longer resolves to " + eventData)
                     continue
 
                 if not self.opts['cohostsamedomain']:
@@ -341,13 +344,13 @@ class sfp_networksdb(SpiderFootPlugin):
             data = self.queryForwardDns(eventData)
 
             if data is None:
-                self.sf.debug("No forward DNS results for " + eventData)
+                self.debug("No forward DNS results for " + eventData)
                 return
 
             res = data.get('results')
 
             if not res:
-                self.sf.debug("No forward DNS results for " + eventData)
+                self.debug("No forward DNS results for " + eventData)
                 return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)

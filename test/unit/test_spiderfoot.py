@@ -3,7 +3,6 @@ import pytest
 import unittest
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootTarget
 
 
 @pytest.mark.usefixtures
@@ -172,15 +171,6 @@ class TestSpiderFoot(unittest.TestCase):
         hash_string = sf.hashstring('example string')
         self.assertIsInstance(hash_string, str)
         self.assertEqual("aedfb92b3053a21a114f4f301a02a3c6ad5dff504d124dc2cee6117623eec706", hash_string)
-
-    def test_cache_path_should_return_a_string(self):
-        """
-        Test cachePath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        cache_path = sf.cachePath()
-        self.assertIsInstance(cache_path, str)
 
     def test_cache_get_should_return_a_string(self):
         """
@@ -388,6 +378,10 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(keyword, str)
         self.assertEqual('spiderfoot', keyword)
 
+        keyword = sf.domainKeyword('spiderfööt.example', sf.opts.get('_internettlds'))
+        self.assertIsInstance(keyword, str)
+        self.assertEqual('spiderfööt', keyword)
+
     def test_domain_keyword_invalid_domain_should_return_none(self):
         """
         Test domainKeyword(self, domain, tldList)
@@ -402,6 +396,10 @@ class TestSpiderFoot(unittest.TestCase):
         keyword = sf.domainKeyword(None, sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
         keyword = sf.domainKeyword("net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".", sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
 
     def test_domain_keywords_should_return_a_set(self):
@@ -724,36 +722,6 @@ class TestSpiderFoot(unittest.TestCase):
                 dns = sf.normalizeDNS(invalid_type)
                 self.assertIsInstance(dns, list)
 
-    def test_sanitise_input(self):
-        """
-        Test sanitiseInput(self, cmd)
-        """
-        sf = SpiderFoot(dict())
-
-        safe = sf.sanitiseInput("example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertTrue(safe)
-
-        safe = sf.sanitiseInput("example-string\n")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("example string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("-example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("..example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("12")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
     def test_dictwords_should_return_a_list(self):
         """
         Test dictwords(self)
@@ -846,33 +814,6 @@ class TestSpiderFoot(unittest.TestCase):
         validate_ip = sf.validateIP('one.one.one.one', '1.1.1.1')
         self.assertIsInstance(validate_ip, bool)
         self.assertTrue(validate_ip)
-
-    def test_resolve_targets_should_return_list(self):
-        """
-        Test resolveTargets(self, target, validateReverse)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                resolve_targets = sf.resolveTargets(invalid_type, False)
-                self.assertIsInstance(resolve_targets, list)
-
-        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('spiderfoot.net', resolve_targets)
-
-        target = SpiderFootTarget("1.1.1.1", "IP_ADDRESS")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('1.1.1.1', resolve_targets)
-
-        target = SpiderFootTarget("127.0.0.1/32", "NETBLOCK_OWNER")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('127.0.0.1', resolve_targets)
 
     @unittest.skip("todo")
     def test_safe_socket(self):
@@ -1269,6 +1210,24 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(self.default_options)
         new_url = sf.removeUrlCreds(url)
         self.assertNotIn("secret", new_url)
+
+    def test_isValidLocalOrLoopbackIp_argument_ip_should_return_a_bool(self):
+        """
+        Test isValidLocalOrLoopbackIp(self, ip: str) -> bool:
+        """
+        sf = SpiderFoot(self.default_options)
+
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('127.0.0.1'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('127.0.0.2'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('::1'))
+
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('10.1.1.1'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('fdd1:a677:c70c:b8c5:1234:1234:1234:1234'))
+
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('1.1.1.1'))
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('2606:4700:4700::1111'))
+
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('invalid ip address'))
 
     def test_useProxyForUrl_argument_url_should_return_a_bool(self):
         """

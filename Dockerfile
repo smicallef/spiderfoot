@@ -51,10 +51,11 @@ RUN pip3 install -r "$REQUIREMENTS"
 
 FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
-ENV SPIDERFOOT_LOGS /home/spiderfoot/log
 
-# Place database and configs outside installation directory
+# Place database and logs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
+ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
+ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
 
 # Run everything as one command so that only one layer is created
 RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg \
@@ -64,10 +65,12 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && rm -rf /var/cache/apk/* \
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
-    && mkdir $SPIDERFOOT_DATA \
-    && mkdir $SPIDERFOOT_LOGS \
+    && mkdir -p $SPIDERFOOT_DATA || true \
+    && mkdir -p $SPIDERFOOT_LOGS || true \
+    && mkdir -p $SPIDERFOOT_CACHE || true \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
-    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
 
 COPY . .
 COPY --from=build /opt/venv /opt/venv

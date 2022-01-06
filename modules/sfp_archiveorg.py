@@ -113,7 +113,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "INTERESTING_FILE" and not self.opts['intfiles']:
             return
@@ -143,7 +143,7 @@ class sfp_archiveorg(SpiderFootPlugin):
             try:
                 newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
             except Exception:
-                self.sf.error("Unable to parse option for number of days back to search.")
+                self.error("Unable to parse option for number of days back to search.")
                 self.errorState = True
                 return
 
@@ -155,32 +155,32 @@ class sfp_archiveorg(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                self.sf.error(f"Unable to fetch {url}")
+                self.error(f"Unable to fetch {url}")
                 continue
 
             try:
                 ret = json.loads(res['content'])
             except Exception as e:
-                self.sf.debug(f"Error processing JSON response from Archive.org: {e}")
+                self.debug(f"Error processing JSON response from Archive.org: {e}")
                 ret = None
 
             if not ret:
-                self.sf.debug("Empty response from archive.org for {eventData}")
+                self.debug(f"Empty response from archive.org for {eventData}")
                 continue
 
             if len(ret['archived_snapshots']) < 1:
-                self.sf.debug("No archived snapshots for " + eventData)
+                self.debug("No archived snapshots for " + eventData)
                 continue
 
             wbmlink = ret['archived_snapshots']['closest']['url']
             if wbmlink in self.foundDates:
-                self.sf.debug("Snapshot already fetched.")
+                self.debug("Snapshot already fetched.")
                 continue
 
             self.foundDates.append(wbmlink)
             name = eventName + "_HISTORIC"
 
-            self.sf.info("Found a historic file: " + wbmlink)
+            self.info("Found a historic file: " + wbmlink)
             evt = SpiderFootEvent(name, wbmlink, self.__name__, event)
             self.notifyListeners(evt)
 

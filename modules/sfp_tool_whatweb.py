@@ -15,7 +15,7 @@ import json
 import os.path
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_whatweb(SpiderFootPlugin):
@@ -75,19 +75,19 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already scanned.")
+            self.debug("Skipping " + eventData + " as already scanned.")
             return
 
         self.results[eventData] = True
 
         if not self.opts['whatweb_path']:
-            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!")
+            self.error("You enabled sfp_tool_whatweb but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -97,13 +97,13 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe)
+            self.error("File does not exist: " + exe)
             self.errorState = True
             return
 
         # Sanitize domain name.
-        if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.")
+        if not SpiderFootHelpers.sanitiseInput(eventData):
+            self.error("Invalid input, refusing to run.")
             return
 
         # Set aggression level
@@ -131,22 +131,22 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
-            self.sf.error(f"Unable to run WhatWeb: {e}")
+            self.error(f"Unable to run WhatWeb: {e}")
             return
 
         if p.returncode != 0:
-            self.sf.error("Unable to read WhatWeb output.")
-            self.sf.debug("Error running WhatWeb: " + stderr + ", " + stdout)
+            self.error("Unable to read WhatWeb output.")
+            self.debug("Error running WhatWeb: " + stderr + ", " + stdout)
             return
 
         if not stdout:
-            self.sf.debug(f"WhatWeb returned no output for {eventData}")
+            self.debug(f"WhatWeb returned no output for {eventData}")
             return
 
         try:
             result_json = json.loads(stdout)
         except Exception as e:
-            self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}")
+            self.error(f"Couldn't parse the JSON output of WhatWeb: {e}")
             return
 
         if len(result_json) == 0:

@@ -68,6 +68,7 @@ spiderfoot/static/node_modules/tablesorter/dist/js/extras/*
 !spiderfoot/static/node_modules/tablesorter/dist/css/theme.default.min.css
 !spiderfoot/static/node_modules/tablesorter/dist/js/
 !spiderfoot/static/node_modules/tablesorter/dist/js/jquery.tablesorter.min.js
+!spiderfoot/static/node_modules/tablesorter/dist/js/jquery.tablesorter.widgets.min.js
 !spiderfoot/static/node_modules/tablesorter/dist/js/extras/
 !spiderfoot/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js
 

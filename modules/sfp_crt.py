@@ -84,10 +84,10 @@ class sfp_crt(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         params = {
-            'q': '%.' + str(eventData),
+            'q': '%.' + eventData.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'output': 'json'
         }
 
@@ -96,13 +96,14 @@ class sfp_crt(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.info("No certificate transparency info found for " + eventData)
+            self.info("No certificate transparency info found for " + eventData)
             return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
+            return
 
         if data is None or len(data) == 0:
             return
@@ -126,16 +127,17 @@ class sfp_crt(SpiderFootPlugin):
                 fetch_certs.append(cert_id)
 
             domain = cert_info.get('name_value')
-            if '\n' in domain:
-                doms = domain.split("\n")
-                for d in doms:
-                    domains.append(d.replace("*.", ""))
-            else:
-                if domain and domain != eventData:
-                    domains.append(domain.replace("*.", ""))
+
+            if not domain:
+                continue
+
+            for d in domain.split("\n"):
+                if d.lower() == eventData.lower():
+                    continue
+                domains.append(d.lower().replace("*.", ""))
 
         if self.opts['verify'] and len(domains) > 0:
-            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+            self.info(f"Resolving {len(set(domains))} domains ...")
 
         for domain in set(domains):
             if domain in self.results:
@@ -149,8 +151,8 @@ class sfp_crt(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
@@ -177,13 +179,13 @@ class sfp_crt(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                self.sf.info("Error retrieving certificate with ID " + str(cert_id))
+                self.info("Error retrieving certificate with ID " + str(cert_id))
                 continue
 
             try:
                 cert = self.sf.parseCert(str(res['content']))
             except Exception as e:
-                self.sf.info('Error parsing certificate: ' + str(e))
+                self.info('Error parsing certificate: ' + str(e))
                 continue
 
             evt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)

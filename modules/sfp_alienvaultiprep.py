@@ -28,11 +28,8 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://cybersecurity.att.com/documentation/",
-                "https://cybersecurity.att.com/resource-center#content_solution-brief",
-                "https://cybersecurity.att.com/resource-center#content_data-sheet",
-                "https://cybersecurity.att.com/resource-center#content_case-studies",
-                "https://cybersecurity.att.com/training",
-                "https://cybersecurity.att.com/pricing/request-quote"
+                "https://cybersecurity.att.com/resource-center",
+                "https://success.alienvault.com/s/article/Can-I-use-the-OTX-IP-Reputation-List-as-a-blocklist",
             ],
             'favIcon': "https://cdn-cybersecurity.att.com/images/uploads/logos/att-globe.svg",
             'logo': "https://cdn-cybersecurity.att.com/images/uploads/logos/att-business-web.svg",
@@ -70,7 +67,6 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return [
             "IP_ADDRESS",
@@ -79,13 +75,16 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
             "NETBLOCK_OWNER"
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
             "MALICIOUS_SUBNET",
-            "MALICIOUS_NETBLOCK"
+            "MALICIOUS_NETBLOCK",
         ]
 
     def queryBlacklist(self, target, targetType):
@@ -96,13 +95,13 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
 
         if targetType == "ip":
             if target in blacklist:
-                self.sf.debug(f"IP address {target} found in AlienVault IP Reputation Database blacklist.")
+                self.debug(f"IP address {target} found in AlienVault IP Reputation Database blacklist.")
                 return True
         elif targetType == "netblock":
             netblock = IPNetwork(target)
             for ip in blacklist:
                 if IPAddress(ip) in netblock:
-                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in AlienVault IP Reputation Database blacklist.")
+                    self.debug(f"IP address {ip} found within netblock/subnet {target} in AlienVault IP Reputation Database blacklist.")
                     return True
 
         return False
@@ -120,12 +119,12 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from AlienVault IP Reputation Database.")
+            self.error(f"Unexpected HTTP response code {res['code']} from AlienVault IP Reputation Database.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AlienVault IP Reputation Database")
+            self.error("Received no content from AlienVault IP Reputation Database")
             self.errorState = True
             return None
 
@@ -160,13 +159,12 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -176,31 +174,42 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with AlienVault IP Reputation Database")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with AlienVault IP Reputation Database")
 
-        if self.queryBlacklist(eventData, targetType):
-            url = "https://reputation.alienvault.com/reputation.generic"
-            text = f"AlienVault IP Reputation Database [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryBlacklist(eventData, targetType):
+            return
+
+        url = "https://reputation.alienvault.com/reputation.generic"
+        text = f"AlienVault IP Reputation Database [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_alienvaultiprep class

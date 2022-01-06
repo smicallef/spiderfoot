@@ -63,7 +63,7 @@ class sfp_hosting(SpiderFootPlugin):
         if data['content'] is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.error("Unable to fetch " + url)
                 return None
             else:
                 self.sf.cachePut("sfipcat", data['content'])
@@ -80,7 +80,7 @@ class sfp_hosting(SpiderFootPlugin):
                 if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                     return [title, url]
             except Exception as e:
-                self.sf.debug("Encountered an issue processing an IP: " + str(e))
+                self.debug("Encountered an issue processing an IP: " + str(e))
                 continue
 
         return None
@@ -91,7 +91,7 @@ class sfp_hosting(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return

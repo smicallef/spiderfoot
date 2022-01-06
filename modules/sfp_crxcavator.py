@@ -39,9 +39,11 @@ class sfp_crxcavator(SpiderFootPlugin):
     }
 
     opts = {
+        "verify": True,
     }
 
     optdescs = {
+        "verify": "Verify identified hostnames resolve.",
     }
 
     results = None
@@ -63,8 +65,10 @@ class sfp_crxcavator(SpiderFootPlugin):
         return [
             'APPSTORE_ENTRY',
             'INTERNET_NAME',
+            'INTERNET_NAME_UNRESOLVED',
             'LINKED_URL_INTERNAL',
             'AFFILIATE_INTERNET_NAME',
+            'AFFILIATE_INTERNET_NAME_UNRESOLVED',
             'PHYSICAL_ADDRESS'
         ]
 
@@ -87,11 +91,11 @@ class sfp_crxcavator(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from CRXcavator: {e}")
+            self.debug(f"Error processing JSON response from CRXcavator: {e}")
             return None
 
         if not data:
-            self.sf.debug(f"No results found for {qry}")
+            self.debug(f"No results found for {qry}")
             return None
 
         return data
@@ -111,11 +115,11 @@ class sfp_crxcavator(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from CRXcavator: {e}")
+            self.debug(f"Error processing JSON response from CRXcavator: {e}")
             return None
 
         if not data:
-            self.sf.debug(f"No results found for extension {extension_id}")
+            self.debug(f"No results found for extension {extension_id}")
             return None
 
         return data
@@ -128,10 +132,10 @@ class sfp_crxcavator(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if eventName not in self.watchedEvents():
@@ -143,7 +147,7 @@ class sfp_crxcavator(SpiderFootPlugin):
         results = self.query(domain_keyword)
 
         if not results:
-            self.sf.info(f"No results found for {domain_keyword}")
+            self.info(f"No results found for {domain_keyword}")
             return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(results), self.__name__, event)
@@ -215,7 +219,7 @@ class sfp_crxcavator(SpiderFootPlugin):
                     and not self.getTarget().matches(self.sf.urlFQDN(offered_by), includeChildren=True, includeParents=True)
                     and not self.getTarget().matches(self.sf.urlFQDN(support_site), includeChildren=True, includeParents=True)
                 ):
-                    self.sf.debug(f"Extension {app_full_name} does not match {eventData}, skipping")
+                    self.debug(f"Extension {app_full_name} does not match {eventData}, skipping")
                     continue
 
                 app_data = f"{name} {version}\n<SFURL>https://chrome.google.com/webstore/detail/{extension_id}</SFURL>"
@@ -260,11 +264,16 @@ class sfp_crxcavator(SpiderFootPlugin):
                 continue
 
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
-                evt = SpiderFootEvent('INTERNET_NAME', host, self.__name__, event)
-                self.notifyListeners(evt)
+                evt_type = 'INTERNET_NAME'
             else:
-                evt = SpiderFootEvent('AFFILIATE_INTERNET_NAME', host, self.__name__, event)
-                self.notifyListeners(evt)
+                evt_type = 'AFFILIATE_INTERNET_NAME'
+
+            if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                self.debug(f"Host {host} could not be resolved")
+                evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, host, self.__name__, event)
+            self.notifyListeners(evt)
 
         for location in set(locations):
             evt = SpiderFootEvent("PHYSICAL_ADDRESS", location, self.__name__, event)

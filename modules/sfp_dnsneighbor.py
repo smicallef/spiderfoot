@@ -71,7 +71,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             return
@@ -83,14 +83,14 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             netmask = address.max_prefixlen - min(address.max_prefixlen, max(1, int(self.opts.get("lookasidebits"))))
             network = ipaddress.ip_network(f"{eventData}/{netmask}", strict=False)
         except ValueError:
-            self.sf.error(f"Invalid IP address received: {eventData}")
+            self.error(f"Invalid IP address received: {eventData}")
             return
 
-        self.sf.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
+        self.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
 
         for ip in network:
             sip = str(ip)
-            self.sf.debug("Attempting look-aside lookup of: " + sip)
+            self.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
                 return
 
@@ -99,7 +99,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
             addrs = self.sf.resolveIP(sip)
             if not addrs:
-                self.sf.debug("Look-aside resolve for " + sip + " failed.")
+                self.debug("Look-aside resolve for " + sip + " failed.")
                 continue
 
             # Report addresses that resolve to hostnames on the same
@@ -126,7 +126,8 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
                 if addr == sip:
                     continue
-                if self.sf.validIP(addr):
+
+                if self.sf.validIP(addr) or self.sf.validIP6(addr):
                     parent = parentEvent
                 else:
                     # Hostnames from the IP need to be linked to the IP
@@ -146,35 +147,43 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.hostresults[host] = [parentHash]
         else:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
-                self.sf.debug("Skipping host, " + host + ", already processed.")
+                self.debug("Skipping host, " + host + ", already processed.")
                 return None
             self.hostresults[host] = self.hostresults[host] + [parentHash]
 
-        self.sf.debug("Found host: " + host)
-        # If the returned hostname is aliaseed to our
+        self.debug("Found host: " + host)
+        # If the returned hostname is aliased to our
         # target in some way, flag it as an affiliate
         if affiliate is None:
             affil = True
             if self.getTarget().matches(host):
                 affil = False
-            # If the IP the host resolves to is in our
-            # list of aliases,
-            if not self.sf.validIP(host):
-                hostips = self.sf.resolveHost(host)
-                if hostips:
-                    for hostip in hostips:
-                        if self.getTarget().matches(hostip):
-                            affil = False
+            else:
+                # If the IP the host resolves to is in our
+                # list of aliases,
+                if not self.sf.validIP(host) and not self.sf.validIP6(host):
+                    hostips = self.sf.resolveHost(host)
+                    if hostips:
+                        for hostip in hostips:
+                            if self.getTarget().matches(hostip):
+                                affil = False
+                                break
+                    hostips6 = self.sf.resolveHost6(host)
+                    if hostips6:
+                        for hostip in hostips6:
+                            if self.getTarget().matches(hostip):
+                                affil = False
+                                break
         else:
             affil = affiliate
 
-        htype = None
+        if not self.sf.validIP(host):
+            return None
+
         if affil:
-            if self.sf.validIP(host):
-                htype = "AFFILIATE_IPADDR"
+            htype = "AFFILIATE_IPADDR"
         else:
-            if self.sf.validIP(host):
-                htype = "IP_ADDRESS"
+            htype = "IP_ADDRESS"
 
         # If names were found, leave them to sfp_dnsresolve to resolve
         if not htype:

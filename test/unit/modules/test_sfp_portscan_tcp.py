@@ -34,6 +34,7 @@ class TestModuleportscan_tcp(unittest.TestCase):
         module = sfp_portscan_tcp()
         self.assertIsInstance(module.producedEvents(), list)
 
+    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

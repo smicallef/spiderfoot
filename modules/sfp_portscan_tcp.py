@@ -79,7 +79,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             if file_ports:
                 portlist = file_ports.split("\n")
             else:
-                self.sf.error(f"Could not load ports from {self.opts['ports'][0]}")
+                self.error(f"Could not load ports from {self.opts['ports'][0]}")
         else:
             portlist = self.opts['ports']
 
@@ -88,7 +88,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             try:
                 self.portlist.append(int(port))
             except ValueError:
-                self.sf.debug(f"Skipping invalid port '{port}' specified in port list")
+                self.debug(f"Skipping invalid port '{port}' specified in port list")
 
         if self.opts['randomize']:
             random.SystemRandom().shuffle(self.portlist)
@@ -132,7 +132,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         # Spawn threads for scanning
         while i < len(portList):
             port = portList[i]
-            self.sf.info(f"Spawning thread to check port: {port} on {ip}")
+            self.info(f"Spawning thread to check port: {port} on {ip}")
             t.append(threading.Thread(name=f"sfp_portscan_tcp_{port}", target=self.tryPort, args=(ip, port)))
             t[i].start()
             i += 1
@@ -156,7 +156,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             if not resArray[cp]:
                 continue
 
-            self.sf.info(f"TCP port {cp} found to be OPEN.")
+            self.info(f"TCP port {cp} found to be OPEN.")
             evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
             self.notifyListeners(evt)
 
@@ -174,27 +174,27 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.portlist:
-            self.sf.error('No ports specified in port list')
+            self.error('No ports specified in port list')
             self.errorState = True
             return
 
         scanIps = list()
         if eventName == "NETBLOCK_OWNER":
             if not self.opts['netblockscan']:
-                self.sf.debug(f"Scanning of owned netblocks is disabled. Skipping netblock {eventData}.")
+                self.debug(f"Scanning of owned netblocks is disabled. Skipping netblock {eventData}.")
                 return
 
             try:
                 net = IPNetwork(eventData)
             except Exception as e:
-                self.sf.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
+                self.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
                 return
 
             if net.prefixlen < self.opts['netblockscanmax']:
-                self.sf.debug(f"Skipping port scanning of owned net block {eventData}, too big.")
+                self.debug(f"Skipping port scanning of owned net block {eventData}, too big.")
                 return
 
             for ip in net:
@@ -209,12 +209,12 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
         for ipAddr in set(scanIps):
             if ipAddr in self.results:
-                self.sf.debug(f"Skipping {ipAddr} as already scanned.")
+                self.debug(f"Skipping {ipAddr} as already scanned.")
                 return
 
             self.results[ipAddr] = True
 
-            self.sf.info(f"Scanning {len(set(self.portlist))} ports on {ipAddr}")
+            self.info(f"Scanning {len(set(self.portlist))} ports on {ipAddr}")
 
             i = 0
             portArr = []

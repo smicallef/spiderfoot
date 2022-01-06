@@ -1,20 +1,20 @@
-# test_sfp_apility.py
+# test_sfp_fullhunt.py
 import pytest
 import unittest
 
-from modules.sfp_apility import sfp_apility
+from modules.sfp_fullhunt import sfp_fullhunt
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuleapility(unittest.TestCase):
+class TestModuleFullhunt(unittest.TestCase):
     """
-    Test modules.sfp_apility
+    Test modules.sfp_fullhunt
     """
 
     def test_opts(self):
-        module = sfp_apility()
+        module = sfp_fullhunt()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -23,15 +23,15 @@ class TestModuleapility(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_apility()
+        module = sfp_fullhunt()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_apility()
+        module = sfp_fullhunt()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_apility()
+        module = sfp_fullhunt()
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent_no_api_key_should_set_errorState(self):
@@ -40,7 +40,7 @@ class TestModuleapility(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_apility()
+        module = sfp_fullhunt()
         module.setup(sf, dict())
 
         target_value = 'example target value'

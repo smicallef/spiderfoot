@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+from pathlib import Path
 import re
 import sqlite3
 import threading
@@ -99,6 +100,7 @@ class SpiderFootDb:
         ['AFFILIATE_INTERNET_NAME_HIJACKABLE', 'Affiliate - Internet Name Hijackable', 0, 'ENTITY'],
         ['AFFILIATE_INTERNET_NAME_UNRESOLVED', 'Affiliate - Internet Name - Unresolved', 0, 'ENTITY'],
         ['AFFILIATE_IPADDR', 'Affiliate - IP Address', 0, 'ENTITY'],
+        ['AFFILIATE_IPV6_ADDRESS', 'Affiliate - IPv6 Address', 0, 'ENTITY'],
         ['AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1, 'DATA'],
         ['AFFILIATE_DOMAIN_NAME', 'Affiliate - Domain Name', 0, 'ENTITY'],
         ['AFFILIATE_DOMAIN_UNREGISTERED', 'Affiliate - Domain Name Unregistered', 0, 'ENTITY'],
@@ -116,6 +118,9 @@ class SpiderFootDb:
         ['BITCOIN_BALANCE', 'Bitcoin Balance', 0, 'DESCRIPTOR'],
         ['BGP_AS_OWNER', 'BGP AS Ownership', 0, 'ENTITY'],
         ['BGP_AS_MEMBER', 'BGP AS Membership', 0, 'ENTITY'],
+        ['BLACKLISTED_COHOST', 'Blacklisted Co-Hosted Site', 0, 'DESCRIPTOR'],
+        ['BLACKLISTED_INTERNET_NAME', 'Blacklisted Internet Name', 0, 'DESCRIPTOR'],
+        ['BLACKLISTED_AFFILIATE_INTERNET_NAME', 'Blacklisted Affiliate Internet Name', 0, 'DESCRIPTOR'],
         ['BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0, 'DESCRIPTOR'],
         ['BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0, 'DESCRIPTOR'],
         ['BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0, 'DESCRIPTOR'],
@@ -160,6 +165,7 @@ class SpiderFootDb:
         ['INTERESTING_FILE', 'Interesting File', 0, 'DESCRIPTOR'],
         ['INTERESTING_FILE_HISTORIC', 'Historic Interesting File', 0, 'DESCRIPTOR'],
         ['JUNK_FILE', 'Junk File', 0, 'DESCRIPTOR'],
+        ['INTERNAL_IP_ADDRESS', 'IP Address - Internal Network', 0, 'ENTITY'],
         ['INTERNET_NAME', 'Internet Name', 0, 'ENTITY'],
         ['INTERNET_NAME_UNRESOLVED', 'Internet Name - Unresolved', 0, 'ENTITY'],
         ['IP_ADDRESS', 'IP Address', 0, 'ENTITY'],
@@ -180,7 +186,9 @@ class SpiderFootDb:
         ['MALICIOUS_PHONE_NUMBER', 'Malicious Phone Number', 0, 'DESCRIPTOR'],
         ['MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0, 'DESCRIPTOR'],
         ['NETBLOCK_OWNER', 'Netblock Ownership', 0, 'ENTITY'],
+        ['NETBLOCKV6_OWNER', 'Netblock IPv6 Ownership', 0, 'ENTITY'],
         ['NETBLOCK_MEMBER', 'Netblock Membership', 0, 'ENTITY'],
+        ['NETBLOCKV6_MEMBER', 'Netblock IPv6 Membership', 0, 'ENTITY'],
         ['NETBLOCK_WHOIS', 'Netblock Whois', 1, 'DATA'],
         ['OPERATING_SYSTEM', 'Operating System', 0, 'DESCRIPTOR'],
         ['LEAKSITE_URL', 'Leak Site URL', 0, 'ENTITY'],
@@ -192,6 +200,7 @@ class SpiderFootDb:
         ['PHYSICAL_ADDRESS', 'Physical Address', 0, 'ENTITY'],
         ['PHYSICAL_COORDINATES', 'Physical Coordinates', 0, 'ENTITY'],
         ['PGP_KEY', 'PGP Public Key', 0, 'DATA'],
+        ['PROXY_HOST', 'Proxy Host', 0, 'DESCRIPTOR'],
         ['PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0, 'ENTITY'],
         ['PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0, 'ENTITY'],
         ['PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0, 'ENTITY'],
@@ -203,6 +212,7 @@ class SpiderFootDb:
         ['RAW_FILE_META_DATA', 'Raw File Meta Data', 1, 'DATA'],
         ['SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1, 'DATA'],
         ['SOCIAL_MEDIA', 'Social Media Presence', 0, 'ENTITY'],
+        ['SIMILAR_ACCOUNT_EXTERNAL', 'Similar Account on External Site', 0, 'ENTITY'],
         ['SIMILARDOMAIN', 'Similar Domain', 0, 'ENTITY'],
         ['SIMILARDOMAIN_WHOIS', 'Similar Domain - Whois', 1, 'DATA'],
         ['SOFTWARE_USED', 'Software Used', 0, 'SUBENTITY'],
@@ -217,6 +227,7 @@ class SpiderFootDb:
         ['TARGET_WEB_COOKIE', 'Cookies', 0, 'DATA'],
         ['TCP_PORT_OPEN', 'Open TCP Port', 0, 'SUBENTITY'],
         ['TCP_PORT_OPEN_BANNER', 'Open TCP Port Banner', 0, 'DATA'],
+        ['TOR_EXIT_NODE', 'TOR Exit Node', 0, 'DESCRIPTOR'],
         ['UDP_PORT_OPEN', 'Open UDP Port', 0, 'SUBENTITY'],
         ['UDP_PORT_OPEN_INFO', 'Open UDP Port Information', 0, 'DATA'],
         ['URL_ADBLOCKED_EXTERNAL', 'URL (AdBlocked External)', 0, 'DESCRIPTOR'],
@@ -238,7 +249,13 @@ class SpiderFootDb:
         ['URL_PASSWORD_HISTORIC', 'Historic URL (Accepts Passwords)', 0, 'DESCRIPTOR'],
         ['URL_UPLOAD_HISTORIC', 'Historic URL (Accepts Uploads)', 0, 'DESCRIPTOR'],
         ['USERNAME', 'Username', 0, 'ENTITY'],
-        ['VULNERABILITY', 'Vulnerability in Public Domain', 0, 'DESCRIPTOR'],
+        ['VPN_HOST', 'VPN Host', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_DISCLOSURE', 'Vulnerability - Third Party Disclosure', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_CVE_CRITICAL', 'Vulnerability - CVE Critical', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_CVE_HIGH', 'Vulnerability - CVE High', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_CVE_MEDIUM', 'Vulnerability - CVE Medium', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_CVE_LOW', 'Vulnerability - CVE Low', 0, 'DESCRIPTOR'],
+        ['VULNERABILITY_GENERAL', 'Vulnerability - General', 0, 'DESCRIPTOR'],
         ['WEB_ANALYTICS_ID', 'Web Analytics', 0, 'ENTITY'],
         ['WEBSERVER_BANNER', 'Web Server', 0, 'DATA'],
         ['WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1, 'DATA'],
@@ -272,6 +289,9 @@ class SpiderFootDb:
             raise ValueError("opts['__database'] is empty")
 
         database_path = opts['__database']
+
+        # create database directory
+        Path(database_path).parent.mkdir(exist_ok=True, parents=True)
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
@@ -466,6 +486,52 @@ class SpiderFootDb:
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
                 raise IOError(f"SQL error encountered when retrieving event types: {e.args[0]}")
+
+    def scanLogEvents(self, batch):
+        """Logs a batch of events to the database.
+
+        Args:
+            batch (list): tuples containing: instanceId, classification, message, component, logTime
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+
+        Returns:
+            logResult: Whether the logging operation succeeded
+        """
+
+        inserts = []
+
+        for instanceId, classification, message, component, logTime in batch:
+            if not isinstance(instanceId, str):
+                raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+            if not isinstance(classification, str):
+                raise TypeError(f"classification is {type(classification)}; expected str()")
+
+            if not isinstance(message, str):
+                raise TypeError(f"message is {type(message)}; expected str()")
+
+            if not component:
+                component = "SpiderFoot"
+
+            inserts.append((instanceId, logTime * 1000, component, classification, message))
+
+        if inserts:
+            qry = "INSERT INTO tbl_scan_log \
+                (scan_instance_id, generated, component, type, message) \
+                VALUES (?, ?, ?, ?, ?)"
+
+            with self.dbhLock:
+                try:
+                    self.dbh.executemany(qry, inserts)
+                    self.conn.commit()
+                except sqlite3.Error as e:
+                    if "locked" not in e.args[0] and "thread" not in e.args[0]:
+                        raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
+                    return False
+        return True
 
     def scanLogEvent(self, instanceId, classification, message, component=None):
         """Log an event to the database.

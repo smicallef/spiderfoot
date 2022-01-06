@@ -108,14 +108,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             retry += 1
 
             if res['code'] == "401":
-                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.")
+                self.error("Failed to authenticate key with HaveIBeenPwned.com.")
                 self.errorState = True
                 return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
+            self.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
 
         return None
 
@@ -146,14 +146,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             retry += 1
 
             if res['code'] == "401":
-                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.")
+                self.error("Failed to authenticate key with HaveIBeenPwned.com.")
                 self.errorState = True
                 return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
+            self.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
 
         return None
 
@@ -167,14 +167,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             return
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_haveibeenpwned but did not set an API key!")
+            self.error("You enabled sfp_haveibeenpwned but did not set an API key!")
             self.errorState = True
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -185,7 +185,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 try:
                     site = n["Name"]
                 except Exception as e:
-                    self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                    self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                     continue
 
                 # Notify other modules of what you've found
@@ -221,12 +221,12 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                     links.add(site)
 
             except Exception as e:
-                self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 
         for link in links:
             try:
-                self.sf.debug("Found a link: " + link)
+                self.debug("Found a link: " + link)
 
                 if self.checkForStop():
                     return
@@ -234,7 +234,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.debug(f"Ignoring {link} as no data returned")
+                    self.debug(f"Ignoring {link} as no data returned")
                     continue
 
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
@@ -247,7 +247,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 self.notifyListeners(evt2)
 
             except Exception as e:
-                self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 
 # End of sfp_haveibeenpwned class

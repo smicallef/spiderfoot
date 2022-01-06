@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_webserver
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and identifying web servers used
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -45,8 +45,6 @@ class sfp_webserver(SpiderFootPlugin):
         return ["WEBSERVER_HTTPHEADERS"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY",
                 'LINKED_URL_INTERNAL', 'LINKED_URL_EXTERNAL']
@@ -58,14 +56,14 @@ class sfp_webserver(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
             return
 
         self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web server information for external sites.")
+            self.debug("Not collecting web server information for external sites.")
             return
 
         try:
@@ -73,7 +71,7 @@ class sfp_webserver(SpiderFootPlugin):
             if jdata is None:
                 return
         except Exception:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            self.error("Received HTTP headers from another module in an unexpected format.")
             return
 
         # Check location header for linked URLs
@@ -102,40 +100,43 @@ class sfp_webserver(SpiderFootPlugin):
         # banners and therefore classifying them further (type and version,
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
-        if 'server' in jdata:
-            evt = SpiderFootEvent("WEBSERVER_BANNER", jdata['server'],
-                                  self.__name__, event)
+        server = jdata.get('server')
+        if server:
+            self.info(f"Found web server: {server} ({eventSource})")
+            evt = SpiderFootEvent("WEBSERVER_BANNER", server, self.__name__, event)
             self.notifyListeners(evt)
 
-            self.sf.info("Found web server: " + jdata['server'] + " (" + eventSource + ")")
+        cookies = jdata.get('set-cookie')
 
-        if 'x-powered-by' in jdata:
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", jdata['x-powered-by'],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
-            return
+        tech = list()
 
-        tech = None
-        if 'set-cookie' in jdata and 'PHPSESS' in jdata['set-cookie']:
-            tech = "PHP"
-
-        if 'set-cookie' in jdata and 'JSESSIONID' in jdata['set-cookie']:
-            tech = "Java/JSP"
-
-        if 'set-cookie' in jdata and 'ASP.NET' in jdata['set-cookie']:
-            tech = "ASP.NET"
+        powered_by = jdata.get('x-powered-by')
+        if powered_by:
+            tech.append(powered_by)
 
         if 'x-aspnet-version' in jdata:
-            tech = "ASP.NET"
+            tech.append("ASP.NET")
 
-        if tech is not None and '.jsp' in eventSource:
-            tech = "Java/JSP"
+        if cookies and 'PHPSESS' in cookies:
+            tech.append("PHP")
 
-        if tech is not None and '.php' in eventSource:
-            tech = "PHP"
+        if cookies and 'JSESSIONID' in cookies:
+            tech.append("Java/JSP")
 
-        if tech is not None:
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, event)
+        if cookies and 'ASP.NET' in cookies:
+            tech.append("ASP.NET")
+
+        if '.asp' in eventSource:
+            tech.append("ASP")
+
+        if '.jsp' in eventSource:
+            tech.append("Java/JSP")
+
+        if '.php' in eventSource:
+            tech.append("PHP")
+
+        for t in set(tech):
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", t, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_webserver class

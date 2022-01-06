@@ -67,8 +67,10 @@ class sfp_vxvault(SpiderFootPlugin):
         return [
             "INTERNET_NAME",
             "IP_ADDRESS",
-            "AFFILIATE_INTERNET_NAME",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+            "AFFILIATE_INTERNET_NAME",
             "CO_HOSTED_SITE"
         ]
 
@@ -89,7 +91,7 @@ class sfp_vxvault(SpiderFootPlugin):
             return False
 
         if target.lower() in blacklist:
-            self.sf.debug(f"Host name {target} found in VXVault.net blacklist.")
+            self.debug(f"Host name {target} found in VXVault.net blacklist.")
             return True
 
         return False
@@ -107,12 +109,12 @@ class sfp_vxvault(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from VXVault.net.")
+            self.error(f"Unexpected HTTP response code {res['code']} from VXVault.net.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from VXVault.net")
+            self.error("Received no content from VXVault.net")
             self.errorState = True
             return None
 
@@ -147,7 +149,7 @@ class sfp_vxvault(SpiderFootPlugin):
             host = url.split("/")[2]
             if not host:
                 continue
-            if "." not in host:
+            if "." not in host and "::" not in host:
                 continue
             hosts.append(host)
 
@@ -159,10 +161,10 @@ class sfp_vxvault(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -170,26 +172,26 @@ class sfp_vxvault(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == "IP_ADDRESS":
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
+            return
+
+        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts'):
+            return
+
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == "AFFILIATE_IPADDR":
-            if not self.opts.get('checkaffiliates', False):
-                return
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         elif eventName == "INTERNET_NAME":
             evtType = "MALICIOUS_INTERNET_NAME"
         elif eventName == 'AFFILIATE_INTERNET_NAME':
-            if not self.opts.get('checkaffiliates', False):
-                return
             evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
         elif eventName == 'CO_HOSTED_SITE':
-            if not self.opts.get('checkcohosts', False):
-                return
             evtType = 'MALICIOUS_COHOST'
         else:
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with VXVault.net")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with VXVault.net")
 
         if self.queryBlacklist(eventData):
             url = "http://vxvault.net/URL_List.php"

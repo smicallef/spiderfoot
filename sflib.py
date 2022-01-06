@@ -29,7 +29,6 @@ import urllib.parse
 import urllib.request
 from copy import deepcopy
 from datetime import datetime
-from pathlib import Path
 
 import cryptography
 import dns.resolver
@@ -40,6 +39,7 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup, SoupStrainer
 from publicsuffixlist import PublicSuffixList
+from spiderfoot import SpiderFootHelpers
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # noqa: DUO131
@@ -226,23 +226,7 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return
 
-        frm = inspect.stack()[1]
-        mod = inspect.getmodule(frm[0])
-
-        if mod is None:
-            modName = "Unknown"
-        else:
-            if mod.__name__ == "sflib":
-                frm = inspect.stack()[2]
-                mod = inspect.getmodule(frm[0])
-                if mod is None:
-                    modName = "Unknown"
-                else:
-                    modName = mod.__name__
-            else:
-                modName = mod.__name__
-
-        self.log.info(f"{modName} : {message}", extra={'scanId': self._scanId, 'component': modName})
+        self.log.info(f"{message}", extra={'scanId': self._scanId})
 
     def debug(self, message: str) -> None:
         """Log and print a debug message.
@@ -254,23 +238,8 @@ class SpiderFoot:
             return
         if not self.opts['__logging']:
             return
-        frm = inspect.stack()[1]
-        mod = inspect.getmodule(frm[0])
 
-        if mod is None:
-            modName = "Unknown"
-        else:
-            if mod.__name__ == "sflib":
-                frm = inspect.stack()[2]
-                mod = inspect.getmodule(frm[0])
-                if mod is None:
-                    modName = "Unknown"
-                else:
-                    modName = mod.__name__
-            else:
-                modName = mod.__name__
-
-        self.log.debug(f"{modName} : {message}", extra={'scanId': self._scanId})
+        self.log.debug(f"{message}", extra={'scanId': self._scanId})
 
     @staticmethod
     def myPath() -> str:
@@ -299,19 +268,6 @@ class SpiderFoot:
             s = str(string)
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
-    def cachePath(self) -> str:
-        """Returns the file system location of the cacha data files.
-
-        Returns:
-            str: SpiderFoot cache file system path
-        """
-        path = os.environ.get('SPIDERFOOT_CACHE')
-        if not path:
-            path = f"{Path.home()}/.spiderfoot/cache"
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        return path
-
     def cachePut(self, label: str, data: str) -> None:
         """Store data to the cache
 
@@ -320,7 +276,7 @@ class SpiderFoot:
             data (str): Data to cache
         """
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
-        cacheFile = self.cachePath() + "/" + pathLabel
+        cacheFile = SpiderFootHelpers.cachePath() + "/" + pathLabel
         with io.open(cacheFile, "w", encoding="utf-8", errors="ignore") as fp:
             if isinstance(data, list):
                 for line in data:
@@ -349,7 +305,7 @@ class SpiderFoot:
             return None
 
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
-        cacheFile = self.cachePath() + "/" + pathLabel
+        cacheFile = SpiderFootHelpers.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
 
@@ -1022,33 +978,6 @@ class SpiderFoot:
         except Exception:
             return False
 
-    def sanitiseInput(self, cmd: str) -> bool:
-        """Verify input command is safe to execute
-
-        Args:
-            cmd (str): The command to check
-
-        Returns:
-            bool: command is "safe"
-        """
-        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
-        for c in cmd:
-            if c.lower() not in chars:
-                return False
-
-        if '..' in cmd:
-            return False
-
-        if cmd.startswith("-"):
-            return False
-
-        if len(cmd) < 3:
-            return False
-
-        return True
-
     def dictwords(self) -> list:
         """Return dictionary words and/or names from several language dictionaries.
 
@@ -1099,7 +1028,7 @@ class SpiderFoot:
         return list(wd.keys())
 
     def resolveHost(self, host: str) -> list:
-        """Return a normalised resolution of a hostname.
+        """Return a normalised IPv4 resolution of a hostname.
 
         Args:
             host (str): host to resolve
@@ -1111,22 +1040,23 @@ class SpiderFoot:
             self.error(f"Unable to resolve host: {host} (Invalid host)")
             return list()
 
+        addrs = list()
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
         except BaseException as e:
             self.debug(f"Unable to resolve host: {host} ({e})")
-            return list()
+            return addrs
 
         if not addrs:
             self.debug(f"Unable to resolve host: {host}")
-            return list()
+            return addrs
 
-        self.debug(f"Resolved {host} to: {addrs}")
+        self.debug(f"Resolved {host} to IPv4: {addrs}")
 
         return list(set(addrs))
 
     def resolveIP(self, ipaddr: str) -> list:
-        """Return a normalised resolution of an IPv4 address.
+        """Return a normalised resolution of an IPv4 or IPv6 address.
 
         Args:
             ipaddr (str): IP address to reverse resolve
@@ -1156,30 +1086,33 @@ class SpiderFoot:
         return list(set(addrs))
 
     def resolveHost6(self, hostname: str) -> list:
-        """Return a normalised resolution of an IPv6 address.
+        """Return a normalised IPv6 resolution of a hostname.
 
         Args:
-            hostname (str): hostname to reverse resolve
+            hostname (str): hostname to resolve
 
         Returns:
             list
         """
-        addrs = list()
-
         if not hostname:
-            self.error("Unable to resolve %s (Invalid hostname)" % hostname)
-            return addrs
+            self.error(f"Unable to resolve host: {hostname} (Invalid host)")
+            return list()
 
+        addrs = list()
         try:
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
                     addrs.append(addr[4][0])
         except BaseException as e:
-            self.debug("Unable to IPv6 resolve %s (%s)" % (hostname, e))
+            self.debug(f"Unable to resolve host: {hostname} ({e})")
+            return addrs
 
-        if len(addrs):
-            self.debug("Resolved %s to IPv6: %s" % (hostname, addrs))
+        if not addrs:
+            self.debug(f"Unable to resolve host: {hostname}")
+            return addrs
+
+        self.debug(f"Resolved {hostname} to IPv6: {addrs}")
 
         return list(set(addrs))
 
@@ -1193,7 +1126,17 @@ class SpiderFoot:
         Returns:
             bool: host resolves to the given IP address
         """
-        addrs = self.resolveHost(host)
+        if not host:
+            self.error(f"Unable to resolve host: {host} (Invalid host)")
+            return False
+
+        if self.validIP(ip):
+            addrs = self.resolveHost(host)
+        elif self.validIP6(ip):
+            addrs = self.resolveHost6(host)
+        else:
+            self.error(f"Unable to verify hostname {host} resolves to {ip} (Invalid IP address)")
+            return False
 
         if not addrs:
             return False
@@ -1203,54 +1146,6 @@ class SpiderFoot:
                 return True
 
         return False
-
-    def resolveTargets(self, target, validateReverse: bool) -> list:
-        """Resolve alternative names for a given target.
-
-        Args:
-            target (SpiderFootTarget): target object
-            validateReverse (bool): validate domain names resolve
-
-        Returns:
-            list: list of domain names and IP addresses
-        """
-        ret = list()
-
-        if not target:
-            return ret
-
-        t = target.targetType
-        v = target.targetValue
-
-        if t in ["IP_ADDRESS", "IPV6_ADDRESS"]:
-            r = self.resolveIP(v)
-            if r:
-                ret.extend(r)
-        if t == "INTERNET_NAME":
-            r = self.resolveHost(v)
-            if r:
-                ret.extend(r)
-        if t == "NETBLOCK_OWNER":
-            for addr in netaddr.IPNetwork(v):
-                ipaddr = str(addr)
-                if ipaddr.split(".")[3] in ['255', '0']:
-                    continue
-                if '255' in ipaddr.split("."):
-                    continue
-                ret.append(ipaddr)
-
-                # Add the reverse-resolved hostnames as aliases too..
-                names = self.resolveIP(ipaddr)
-                if names:
-                    if validateReverse:
-                        for host in names:
-                            chk = self.resolveHost(host)
-                            if chk:
-                                if ipaddr in chk:
-                                    ret.append(host)
-                    else:
-                        ret.extend(names)
-        return list(set(ret))
 
     def safeSocket(self, host: str, port: int, timeout: int) -> 'ssl.SSLSocket':
         """Create a safe socket that's using SOCKS/TOR if it was enabled.
@@ -2117,6 +2012,26 @@ class SpiderFoot:
 
         return ret
 
+    def isValidLocalOrLoopbackIp(self, ip: str) -> bool:
+        """Check if the specified IPv4 or IPv6 address is a loopback or local network IP address (IPv4 RFC1918 / IPv6 RFC4192 ULA).
+
+        Args:
+            ip (str): IPv4 or IPv6 address
+
+        Returns:
+            bool: IP address is local or loopback
+        """
+        if not self.validIP(ip) and not self.validIP6(ip):
+            return False
+
+        if netaddr.IPAddress(ip).is_private():
+            return True
+
+        if netaddr.IPAddress(ip).is_loopback():
+            return True
+
+        return False
+
     def useProxyForUrl(self, url: str) -> bool:
         """Check if the configured proxy should be used to connect to a specified URL.
 
@@ -2449,7 +2364,90 @@ class SpiderFoot:
 
         return True
 
-    def googleIterate(self, searchString: str, opts: dict = {}) -> dict:
+    def cveInfo(self, cveId: str, sources="circl,nist") -> (str, str):
+        """Look up a CVE ID for more information in the first available source.
+
+        Args:
+            cveId (str): CVE ID, e.g. CVE-2018-15473
+            sources (str): Comma-separated list of sources to query. Options available are circl and nist
+
+        Returns:
+            (str, str): Appropriate event type and descriptive text
+        """
+        sources = sources.split(",")
+        # VULNERABILITY_GENERAL is the generic type in case we don't have
+        # a real/mappable CVE.
+        eventType = "VULNERABILITY_GENERAL"
+
+        def cveRating(score):
+            if score == "Unknown":
+                return None
+            if score >= 0 and score <= 3.9:
+                return "LOW"
+            if score >= 4.0 and score <= 6.9:
+                return "MEDIUM"
+            if score >= 7.0 and score <= 8.9:
+                return "HIGH"
+            if score >= 9.0:
+                return "CRITICAL"
+            return None
+
+        for source in sources:
+            jsondata = self.cacheGet(f"{source}-{cveId}", 86400)
+
+            if not jsondata:
+                # Fetch data from source
+                if source == "nist":
+                    ret = self.fetchUrl(f"https://services.nvd.nist.gov/rest/json/cve/1.0/{cveId}", timeout=5)
+                if source == "circl":
+                    ret = self.fetchUrl(f"https://cve.circl.lu/api/cve/{cveId}", timeout=5)
+
+                if not ret:
+                    continue
+
+                if not ret['content']:
+                    continue
+
+                self.cachePut(f"{source}-{cveId}", ret['content'])
+                jsondata = ret['content']
+
+            try:
+                data = json.loads(jsondata)
+
+                if source == "circl":
+                    score = data.get('cvss', 'Unknown')
+                    rating = cveRating(score)
+                    if rating:
+                        eventType = f"VULNERABILITY_CVE_{rating}"
+                        return (eventType, f"{cveId}\n<SFURL>https://nvd.nist.gov/vuln/detail/{cveId}</SFURL>\n"
+                                f"Score: {score}\nDescription: {data.get('summary', 'Unknown')}")
+
+                if source == "nist":
+                    try:
+                        if data['CVE_Items'][0]['impact'].get('baseMetricV3'):
+                            score = data['CVE_Items'][0]['impact']['baseMetricV3']['cvssV3']['baseScore']
+                        else:
+                            score = data['CVE_Items'][0]['impact']['baseMetricV2']['cvssV2']['baseScore']
+                        rating = cveRating(score)
+                        if rating:
+                            eventType = f"VULNERABILITY_CVE_{rating}"
+                    except Exception:
+                        score = "Unknown"
+
+                    try:
+                        descr = data['CVE_Items'][0]['cve']['description']['description_data'][0]['value']
+                    except Exception:
+                        descr = "Unknown"
+
+                    return (eventType, f"{cveId}\n<SFURL>https://nvd.nist.gov/vuln/detail/{cveId}</SFURL>\n"
+                            f"Score: {score}\nDescription: {descr}")
+            except BaseException as e:
+                self.debug(f"Unable to parse CVE response from {source.upper()}: {e}")
+                continue
+
+        return (eventType, f"{cveId}\nScore: Unknown\nDescription: Unknown")
+
+    def googleIterate(self, searchString: str, opts: dict = None) -> dict:
         """Request search results from the Google API.
 
         Will return a dict:
@@ -2469,7 +2467,8 @@ class SpiderFoot:
         Returns:
             dict: Search results as {"webSearchUrl": "URL", "urls": [results]}
         """
-
+        if opts is None:
+            opts = {}
         search_string = searchString.replace(" ", "%20")
         params = urllib.parse.urlencode({
             "cx": opts["cse_id"],

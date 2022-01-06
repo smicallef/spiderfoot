@@ -74,7 +74,7 @@ class sfp_pgp(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
@@ -99,7 +99,7 @@ class sfp_pgp(SpiderFootPlugin):
                     if not self.getTarget().matches(mailDom):
                         evttype = "AFFILIATE_EMAILADDR"
 
-                    self.sf.info("Found e-mail address: " + email)
+                    self.info("Found e-mail address: " + email)
                     evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -117,9 +117,9 @@ class sfp_pgp(SpiderFootPlugin):
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, str(res['content']))
                 for match in matches:
-                    self.sf.debug("Found public key: " + match)
+                    self.debug("Found public key: " + match)
                     if len(match) < 300:
-                        self.sf.debug("Likely invalid public key.")
+                        self.debug("Likely invalid public key.")
                         continue
 
                     evt = SpiderFootEvent("PGP_KEY", match, self.__name__, event)

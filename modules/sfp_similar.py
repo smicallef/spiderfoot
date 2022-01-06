@@ -106,7 +106,7 @@ class sfp_similar(SpiderFootPlugin):
             return
 
         tld = "." + eventData.split(dom + ".")[-1]
-        self.sf.debug(f"Keyword extracted from {eventData}: {dom}")
+        self.debug(f"Keyword extracted from {eventData}: {dom}")
 
         if dom in self.results:
             return
@@ -147,13 +147,13 @@ class sfp_similar(SpiderFootPlugin):
             pos += 1
 
         for d in domlist:
-            d_tld = f"{d}{tld}"
-
             try:
-                if self.sf.resolveHost(d_tld) or self.sf.resolveHost(f"www.{d_tld}"):
-                    self.sf.debug(f"Resolved {d_tld}")
-                    evt = SpiderFootEvent("SIMILARDOMAIN", d_tld, self.__name__, event)
-                    self.notifyListeners(evt)
+                for domain in [f"{d}{tld}", f"www.{d}{tld}"]:
+                    if self.sf.resolveHost(domain) or self.sf.resolveHost6(domain):
+                        self.debug(f"Resolved {domain}")
+                        evt = SpiderFootEvent("SIMILARDOMAIN", f"{d}{tld}", self.__name__, event)
+                        self.notifyListeners(evt)
+                        break
             except Exception:
                 continue
 

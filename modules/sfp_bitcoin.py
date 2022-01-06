@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_bitcoin
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and identifying bitcoin numbers.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -28,7 +28,6 @@ class sfp_bitcoin(SpiderFootPlugin):
         'categories': ["Content Analysis"]
     }
 
-    # Default options
     opts = {}
     optdescs = {}
 
@@ -41,13 +40,9 @@ class sfp_bitcoin(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT"]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["BITCOIN_ADDRESS"]
 
@@ -66,7 +61,6 @@ class sfp_bitcoin(SpiderFootPlugin):
         bcbytes = self.decode_base58(bc, 25)
         return bcbytes[-4:] == sha256(sha256(bcbytes[:-4]).digest()).digest()[:4]
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -78,14 +72,25 @@ class sfp_bitcoin(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+
+        addrs = list()
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-bitcoin-addresses
-        matches = re.findall(r"[\s:=\>]([13][a-km-zA-HJ-NP-Z1-9]{25,34})", eventData)
+        # Does not support keys or testnet addresses
+        matches = re.findall(r"[\s:=\>](bc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})|[13][a-km-zA-HJ-NP-Z1-9]{25,35})", eventData)
         for m in matches:
-            self.sf.debug(f"Bitcoin potential match: {m}")
-            if self.check_bc(m):
-                evt = SpiderFootEvent("BITCOIN_ADDRESS", m, self.__name__, event)
-                self.notifyListeners(evt)
+            address = m[0]
+            self.debug(f"Potential Bitcoin address match: {address}")
+
+            if address.startswith('1') or address.startswith('3'):
+                if self.check_bc(address):
+                    addrs.append(address)
+            else:
+                addrs.append(address)
+
+        for address in set(addrs):
+            evt = SpiderFootEvent("BITCOIN_ADDRESS", address, self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_bitcoin class

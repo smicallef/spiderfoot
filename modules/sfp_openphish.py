@@ -37,14 +37,12 @@ class sfp_openphish(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
@@ -62,20 +60,21 @@ class sfp_openphish(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return [
             "INTERNET_NAME",
             "AFFILIATE_INTERNET_NAME",
-            "CO_HOSTED_SITE"
+            "CO_HOSTED_SITE",
         ]
 
-    # What events this module produces
     def producedEvents(self):
         return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"
+            "MALICIOUS_COHOST",
         ]
 
     def queryBlacklist(self, target):
@@ -85,7 +84,7 @@ class sfp_openphish(SpiderFootPlugin):
             return False
 
         if target.lower() in blacklist:
-            self.sf.debug(f"Host name {target} found in OpenPhish blacklist.")
+            self.debug(f"Host name {target} found in OpenPhish blacklist.")
             return True
 
         return False
@@ -103,12 +102,12 @@ class sfp_openphish(SpiderFootPlugin):
         )
 
         if res['code'] != "200":
-            self.sf.error(f"Unexpected HTTP response code {res['code']} from OpenPhish.")
+            self.error(f"Unexpected HTTP response code {res['code']} from OpenPhish.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from OpenPhish")
+            self.error("Received no content from OpenPhish")
             self.errorState = True
             return None
 
@@ -149,16 +148,14 @@ class sfp_openphish(SpiderFootPlugin):
 
         return hosts
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         if self.errorState:
@@ -167,24 +164,34 @@ class sfp_openphish(SpiderFootPlugin):
         self.results[eventData] = True
 
         if eventName == "INTERNET_NAME":
-            evtType = "MALICIOUS_INTERNET_NAME"
-        elif eventName == 'AFFILIATE_INTERNET_NAME':
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
             if not self.opts.get('checkaffiliates', False):
                 return
-            evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-        elif eventName == 'CO_HOSTED_SITE':
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
             if not self.opts.get('checkcohosts', False):
                 return
-            evtType = 'MALICIOUS_COHOST'
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
-        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with OpenPhish")
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with OpenPhish")
 
-        if self.queryBlacklist(eventData):
-            url = "https://www.openphish.com/feed.txt"
-            text = f"OpenPhish [{eventData}]\n<SFURL>{url}</SFURL>"
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
-            self.notifyListeners(evt)
+        if not self.queryBlacklist(eventData):
+            return
+
+        url = "https://www.openphish.com/feed.txt"
+        text = f"OpenPhish [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_openphish class

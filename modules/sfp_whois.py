@@ -12,12 +12,10 @@
 # -------------------------------------------------------------------------------
 
 import ipwhois
-
-from netaddr import IPAddress
+import netaddr
+import whois
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-
-import whois
 
 
 class sfp_whois(SpiderFootPlugin):
@@ -49,7 +47,7 @@ class sfp_whois(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "DOMAIN_NAME_PARENT", "NETBLOCK_OWNER",
+        return ["DOMAIN_NAME", "DOMAIN_NAME_PARENT", "NETBLOCK_OWNER", "NETBLOCKV6_OWNER",
                 "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME", "SIMILARDOMAIN"]
 
     # What events this module produces
@@ -71,7 +69,7 @@ class sfp_whois(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"
@@ -84,34 +82,42 @@ class sfp_whois(SpiderFootPlugin):
         elif eventName == "SIMILARDOMAIN":
             typ = "SIMILARDOMAIN_WHOIS"
         else:
-            self.sf.error(f"Invalid event type: {eventName}")
+            self.error(f"Invalid event type: {eventName}")
             return
 
-        if eventName == "NETBLOCK_OWNER":
-            qry = eventData.split("/")[0]
-            ip = IPAddress(qry) + 1
-            self.sf.debug(f"Sending RDAP query for IP address: {ip}")
+        data = None
+
+        if eventName in ["NETBLOCK_OWNER", "NETBLOCKV6_OWNER"]:
+            try:
+                netblock = netaddr.IPNetwork(eventData)
+            except Exception as e:
+                self.error(f"Invalid netblock {eventData}: {e}")
+                return
+
+            ip = netblock[0]
+            self.debug(f"Sending RDAP query for IP address: {ip}")
+
             try:
                 # TODO: this should use the configured proxy
-                r = ipwhois.IPWhois(qry)
-                data = r.lookup_rdap(depth=1)
+                r = ipwhois.IPWhois(ip)
+                data = str(r.lookup_rdap(depth=1))
             except Exception as e:
-                self.sf.error(f"Unable to perform WHOIS query on {qry}: {e}")
+                self.error(f"Unable to perform WHOIS query on {ip}: {e}")
         else:
-            self.sf.debug("Sending WHOIS query for domain: {eventData}")
+            self.debug(f"Sending WHOIS query for domain: {eventData}")
             try:
                 whoisdata = whois.whois(eventData)
                 data = str(whoisdata.text)
             except Exception as e:
-                self.sf.error(f"Unable to perform WHOIS query on {qry}: {e}")
+                self.error(f"Unable to perform WHOIS query on {eventData}: {e}")
 
         if not data:
-            self.sf.error(f"No WHOIS record for {eventData}")
+            self.error(f"No WHOIS record for {eventData}")
             return
 
         # This is likely to be an error about being throttled rather than real data
-        if len(data) < 250:
-            self.sf.error(f"WHOIS data ({len(data)} bytes) is smaller than 250 bytes. Throttling from WHOIS server is probably happening. Ignoring response.")
+        if len(str(data)) < 250:
+            self.error(f"WHOIS data ({len(data)} bytes) is smaller than 250 bytes. Throttling from WHOIS server is probably happening. Ignoring response.")
             return
 
         rawevt = SpiderFootEvent(typ, data, self.__name__, event)

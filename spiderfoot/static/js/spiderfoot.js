@@ -16,10 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglerText = document.getElementById("toggler-text");
   let link = document.createElement("link");
 
-  if (localStorage.getItem("mode") === "Dark Mode") {
+  if (localStorage.getItem("mode") === "Light Mode") {
     togglerText.innerText = "Dark Mode";
-  } else {
+    document.getElementById("theme-toggler").checked = true; // ensure theme toggle is set to dark
+  } else { // initial mode ist null
     togglerText.innerText = "Light Mode";
+    document.getElementById("theme-toggler").checked = false; // ensure theme toggle is set to light
   }
 
 
@@ -29,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (localStorage.getItem("theme") === "dark-theme") {
       localStorage.removeItem("theme");
       localStorage.setItem("mode", "Dark Mode");
-
       link.rel = "stylesheet";
       link.type = "text/css";
       link.href = "${docroot}/static/css/spiderfoot.css";
@@ -39,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       localStorage.setItem("theme", "dark-theme");
       localStorage.setItem("mode", "Light Mode");
-
       link.rel = "stylesheet";
       link.type = "text/css";
       link.href = "${docroot}/static/css/dark.css";
@@ -95,11 +95,13 @@ sf.deleteScan = function(scan_id, callback) {
       url: "/scandelete?id=" + scan_id
     });
     req.done(function() {
-        alertify.success('Scan ' + scan_id + ' deleted')
+        alertify.success('<i class="glyphicon glyphicon-ok-circle"></i> <b>Scans Deleted</b><br/><br/>' + scan_id.replace(/,/g, "<br/>"));
+        sf.log("Deleted scans: " + scan_id);
         callback();
     });
     req.fail(function (hr, textStatus, errorThrown) {
-      alertify.error("Error: " + hr.responseText);
+        alertify.error('<i class="glyphicon glyphicon-minus-sign"></i> <b>Error</b><br/></br>' + hr.responseText);
+        sf.log("Error deleting scans: " + scan_id + ": " + hr.responseText);
     });
 };
 
@@ -109,11 +111,13 @@ sf.stopScan = function(scan_id, callback) {
       url: "/stopscan?id=" + scan_id
     });
     req.done(function() {
-        alertify.success('Scan ' + scan_id + ' aborted');
+        alertify.success('<i class="glyphicon glyphicon-ok-circle"></i> <b>Scans Aborted</b><br/><br/>' + scan_id.replace(/,/g, "<br/>"));
+        sf.log("Aborted scans: " + scan_id);
         callback();
     });
     req.fail(function (hr, textStatus, errorThrown) {
-      alertify.error("Error: " + hr.responseText);
+        alertify.error('<i class="glyphicon glyphicon-minus-sign"></i> <b>Error</b><br/><br/>' + hr.responseText);
+        sf.log("Error stopping scans: " + scan_id + ": " + hr.responseText);
     });
 };
 
@@ -128,7 +132,7 @@ sf.fetchData = function (url, postData, postFunc) {
 
   req.done(postFunc);
   req.fail(function (hr, status) {
-    alertify.error("AJAX Error: " + status);
+      alertify.error('<i class="glyphicon glyphicon-minus-sign"></i> <b>Error</b><br/>' + status);
   });
 };
 
