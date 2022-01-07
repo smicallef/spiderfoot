@@ -122,7 +122,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
             self.errorState = True
             return None
 
-    def extractUsername(self, questionId, event):
+    def extractUsername(self, questionId):
         # Need to query the questions endpoint with the question_id to find the username
         query_results = self.query(questionId, "questions")
 
@@ -134,18 +134,6 @@ class sfp_stackoverflow(SpiderFootPlugin):
         for item in items:
             owner = item['owner']
             username = owner.get('display_name')
-
-            e = SpiderFootEvent('RAW_RIR_DATA', str("<SFURL>https://stackoverflow.com/questions/") + str(questionId) + str("</SFURL>") + str("\n") + str(query_results), self.__name__, event)
-            self.notifyListeners(e)
-
-            # Extract Human Names from username
-            opts = {
-                'algolimit': 70,
-                'emailtoname': False,
-                'filterjscss': False
-            }
-            sfp_names.setup(self, self.sf, opts)
-            sfp_names.handleEvent(self, e)
 
         return str(username)
 
@@ -217,7 +205,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     allEmails.append(str(email))
 
             questionId = item["question_id"]
-            username = self.extractUsername(questionId, event)
+            username = self.extractUsername(questionId)
             if username is not None:
                 allUsernames.append(username)
 
@@ -232,7 +220,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
         # create events for emails, username and IPs
         for email in allEmails:
             email = str(email)
-            if email.endsWith(self.getTarget()):
+            if self.getTarget().matches(email):
                 e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                 self.notifyListeners(e)
             else:
@@ -240,8 +228,22 @@ class sfp_stackoverflow(SpiderFootPlugin):
                 self.notifyListeners(e)
 
         for username in allUsernames:
-            e = SpiderFootEvent('USERNAME', username, self.__name__, event)
-            self.notifyListeners(e)
+            if " " in username:
+                # Send to sfp_names to identify if username is actually a human name
+                e = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + username, self.__name__, event)
+                self.notifyListeners(e)
+
+                opts = {
+                    'algolimit': 70,
+                    'emailtoname': False,
+                    'filterjscss': False
+                }
+
+                sfp_names.setup(self, self.sf, opts)
+                sfp_names.handleEvent(self, e)
+            else:
+                e = SpiderFootEvent('USERNAME', username, self.__name__, event)
+                self.notifyListeners(e)
 
         for ip in allIP4s:
             ip = str(ip)
