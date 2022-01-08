@@ -76,7 +76,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["RAW_RIR_DATA",
-                "EMAILADDR"
+                "EMAILADDR",
                 "AFFILIATE_EMAILADDR",
                 "USERNAME",
                 "IP_ADDRESS",
