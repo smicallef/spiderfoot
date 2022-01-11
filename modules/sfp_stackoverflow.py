@@ -12,6 +12,7 @@
 
 import json
 import re
+import time
 from modules.sfp_names import sfp_names
 
 
@@ -21,7 +22,7 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_stackoverflow(SpiderFootPlugin):
 
     meta = {
-        'name': "Stackoverflow",
+        'name': "StackOverflow",
         'summary': "Search StackOverflow for any mentions of a target domain. Returns potentially related information.",
         'flags': ["errorprone", "apikey"],
         'useCases': ["Passive"],
@@ -93,6 +94,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     timeout=self.opts['_fetchtimeout'],
                     useragent="SpiderFoot"
                 )
+                time.sleep(1)
             except Exception as e:
                 self.error(f"Error querying StackExchange API: {e}")
                 self.errorState = True
@@ -106,6 +108,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
                     timeout=self.opts['_fetchtimeout'],
                     useragent="SpiderFoot"
                 )
+                time.sleep(1)
             except Exception as e:
                 self.error(f"Error querying StackExchange API: {e}")
                 self.errorState = True
@@ -113,6 +116,10 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         if res['content'] is None:
             self.info(f"No Stackoverflow info found for {qry}")
+            return None
+
+        if res['code'] == '502':
+            self.error("Throttling Error. To increase requests, use an API key.")
             return None
 
         try:
@@ -219,7 +226,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
 
         # create events for emails, username and IPs
         for email in allEmails:
-            email = str(email)
+            email = str(email).lower()
             if self.getTarget().matches(email):
                 e = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                 self.notifyListeners(e)
