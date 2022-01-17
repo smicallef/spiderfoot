@@ -109,7 +109,8 @@ class sfp_names(SpiderFootPlugin):
             if srcModuleName not in ["sfp_arin", "sfp_builtwith", "sfp_clearbit",
                                      "sfp_fullcontact", "sfp_github", "sfp_hunter",
                                      "sfp_opencorporates", "sfp_slideshare",
-                                     "sfp_twitter", "sfp_venmo", "sfp_instagram"]:
+                                     "sfp_twitter", "sfp_venmo", "sfp_instagram",
+                                     "sfp_stackoverflow"]:
                 self.debug("Ignoring RAW_RIR_DATA from untrusted module.")
                 return
 
