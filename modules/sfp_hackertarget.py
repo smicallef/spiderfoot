@@ -67,12 +67,14 @@ class sfp_hackertarget(SpiderFootPlugin):
     }
 
     results = None
+    errorState = False
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -121,6 +123,11 @@ class sfp_hackertarget(SpiderFootPlugin):
             self.error(f"Unable to fetch HTTP headers for {ip} from HackerTarget.com.")
             return None
 
+        if res['code'] == '429':
+            self.error("You are being rate-limited by HackerTarget")
+            self.errorState = True
+            return None
+
         if not res['content'].startswith('HTTP/'):
             self.debug(f"Found no HTTP headers for {ip}")
             return None
@@ -159,6 +166,11 @@ class sfp_hackertarget(SpiderFootPlugin):
             self.error(f"Unable to fetch DNS zone for {ip} from HackerTarget.com.")
             return None
 
+        if res['code'] == '429':
+            self.error("You are being rate-limited by HackerTarget")
+            self.errorState = True
+            return None
+
         records = list()
 
         for record in res['content'].splitlines():
@@ -193,6 +205,11 @@ class sfp_hackertarget(SpiderFootPlugin):
             self.error("Unable to fetch hackertarget.com content.")
             return None
 
+        if res['code'] == '429':
+            self.error("You are being rate-limited by HackerTarget")
+            self.errorState = True
+            return None
+
         if "No records" in res['content']:
             return None
 
@@ -207,6 +224,9 @@ class sfp_hackertarget(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         self.currentEventSrc = event
+
+        if self.errorState:
+            return
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
