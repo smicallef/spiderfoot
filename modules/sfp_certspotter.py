@@ -79,9 +79,8 @@ class sfp_certspotter(SpiderFootPlugin):
             'INTERNET_NAME',
             'INTERNET_NAME_UNRESOLVED',
             'DOMAIN_NAME',
-            'AFFILIATE_INTERNET_NAME',
-            'AFFILIATE_INTERNET_NAME_UNRESOLVED',
-            'AFFILIATE_DOMAIN_NAME',
+            'CO_HOSTED_SITE',
+            'CO_HOSTED_SITE_DOMAIN',
             'SSL_CERTIFICATE_ISSUED',
             'SSL_CERTIFICATE_ISSUER',
             'SSL_CERTIFICATE_MISMATCH',
@@ -250,19 +249,18 @@ class sfp_certspotter(SpiderFootPlugin):
 
             if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
+                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                    self.debug(f"Host {domain} could not be resolved")
+                    evt_type += '_UNRESOLVED'
             else:
-                evt_type = 'AFFILIATE_INTERNET_NAME'
-
-            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.debug(f"Host {domain} could not be resolved")
-                evt_type += '_UNRESOLVED'
+                evt_type = 'CO_HOSTED_SITE'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)
 
             if self.sf.isDomain(domain, self.opts['_internettlds']):
-                if evt_type.startswith('AFFILIATE'):
-                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                if evt_type == 'CO_HOSTED_SITE':
+                    evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
