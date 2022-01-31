@@ -1206,6 +1206,11 @@ class SpiderFootCli(cmd.Cmd):
             for k in serverconfig:
                 if k == cfg:
                     serverconfig[k] = val
+                    if type(val) == str:
+                        if val.lower() == "true":
+                            serverconfig[k] = "1"
+                        if val.lower() == "false":
+                            serverconfig[k] = "0"
                     found = True
 
             if not found:
