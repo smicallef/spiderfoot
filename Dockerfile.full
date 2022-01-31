@@ -16,19 +16,14 @@ RUN git clone https://github.com/EnableSecurity/wafw00f \
     && cd wafw00f && python setup.py install
 
 # Compile other tools from source
-# MassDNS
 RUN mkdir /tools || true
 WORKDIR /tools
-RUN git clone --depth=1 https://github.com/blechschmidt/massdns.git \
-    && cd massdns && make && make install && cd /tools && rm -r massdns
 
 # Install Golang tools
 RUN apt-get -y update && apt-get -y install golang
 ENV GOPATH="/go"
 ENV PATH="$GOPATH/bin:$PATH"
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin"
-# ShuffleDNS
-RUN GO111MODULE=on go get -v github.com/projectdiscovery/shuffledns/cmd/shuffledns
 
 # Install Ruby tools
 RUN apt-get -y update && apt-get -y install ruby ruby-dev bundler
