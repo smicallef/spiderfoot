@@ -70,8 +70,7 @@ class sfp_crt(SpiderFootPlugin):
     def producedEvents(self):
         return ["SSL_CERTIFICATE_RAW", "RAW_RIR_DATA",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
-                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
-                'AFFILIATE_DOMAIN_NAME']
+                'CO_HOSTED_SITE', 'CO_HOSTED_SITE_DOMAIN']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -148,19 +147,18 @@ class sfp_crt(SpiderFootPlugin):
 
             if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
+                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                    self.debug(f"Host {domain} could not be resolved")
+                    evt_type += '_UNRESOLVED'
             else:
-                evt_type = 'AFFILIATE_INTERNET_NAME'
-
-            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                self.debug(f"Host {domain} could not be resolved")
-                evt_type += '_UNRESOLVED'
+                evt_type = 'CO_HOSTED_SITE'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)
 
             if self.sf.isDomain(domain, self.opts['_internettlds']):
-                if evt_type.startswith('AFFILIATE'):
-                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                if evt_type == 'CO_HOSTED_SITE':
+                    evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
@@ -190,5 +188,27 @@ class sfp_crt(SpiderFootPlugin):
 
             evt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
             self.notifyListeners(evt)
+
+            for san in set(cert.get('altnames', list())):
+                domain = san.replace("*.", "")
+
+                if self.getTarget().matches(domain, includeChildren=True):
+                    evt_type = 'INTERNET_NAME'
+                    if self.opts['verify'] and not self.sf.resolveHost(domain):
+                        self.sf.debug("Host " + domain + " could not be resolved")
+                        evt_type += '_UNRESOLVED'
+                else:
+                    evt_type = 'CO_HOSTED_SITE'
+
+                evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+                self.notifyListeners(evt)
+
+                if self.sf.isDomain(domain, self.opts['_internettlds']):
+                    if evt_type == 'CO_HOSTED_SITE':
+                        evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+                        self.notifyListeners(evt)
 
 # End of sfp_crt class
