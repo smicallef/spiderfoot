@@ -64,12 +64,12 @@ class sfp_company(SpiderFootPlugin):
             'LLC', r'L\.L\.C\.?', 'AG', r'A\.G\.?', 'GmbH', r'Pty\.?\s+Ltd\.?',
             r'Ltd\.?', r'Pte\.?', r'Inc\.?', r'INC\.?', 'Incorporated', 'Foundation',
             r'Corp\.?', 'Corporation', 'SA', r'S\.A\.?', 'SIA', 'BV', r'B\.V\.?',
-            'NV', r'N\.V\.?' 'PLC', 'Limited', r'Pvt\.?\s+Ltd\.?', 'SARL']
+            'NV', r'N\.V\.?', 'PLC', 'Limited', r'Pvt\.?\s+Ltd\.?', 'SARL']
         pattern_match = [
             'LLC', 'L.L.C', 'AG', 'A.G', 'GmbH', 'Pty',
             'Ltd', 'Pte', 'Inc', 'INC', 'Foundation',
             'Corp', 'SA', 'S.A', 'SIA', 'BV', 'B.V',
-            'NV', 'N.V' 'PLC', 'Limited', 'Pvt.', 'SARL']
+            'NV', 'N.V', 'PLC', 'Limited', 'Pvt.', 'SARL']
 
         pattern_suffix = r"(?=[ \.,:<\)\'\"]|[$\n\r])"
 
