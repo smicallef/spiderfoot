@@ -210,7 +210,7 @@ class SpiderFootDb:
         ['RAW_RIR_DATA', 'Raw Data from RIRs/APIs', 1, 'DATA'],
         ['RAW_DNS_RECORDS', 'Raw DNS Records', 1, 'DATA'],
         ['RAW_FILE_META_DATA', 'Raw File Meta Data', 1, 'DATA'],
-        ['SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1, 'DATA'],
+        ['SEARCH_ENGINE_WEB_CONTENT', 'Search Engine Web Content', 1, 'DATA'],
         ['SOCIAL_MEDIA', 'Social Media Presence', 0, 'ENTITY'],
         ['SIMILAR_ACCOUNT_EXTERNAL', 'Similar Account on External Site', 0, 'ENTITY'],
         ['SIMILARDOMAIN', 'Similar Domain', 0, 'ENTITY'],
