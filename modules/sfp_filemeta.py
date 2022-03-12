@@ -154,9 +154,9 @@ class sfp_filemeta(SpiderFootPlugin):
                         return
 
                 if meta is not None and data is not None:
-                    evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
+                    rawevt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
                                           self.__name__, event)
-                    self.notifyListeners(evt)
+                    self.notifyListeners(rawevt)
 
                     val = list()
                     try:
@@ -180,5 +180,5 @@ class sfp_filemeta(SpiderFootPlugin):
                             self.debug("VAL: " + str(val))
                             # Strip non-ASCII
                             v = ''.join([i if ord(i) < 128 else ' ' for i in v])
-                            evt = SpiderFootEvent("SOFTWARE_USED", v, self.__name__, event)
+                            evt = SpiderFootEvent("SOFTWARE_USED", v, self.__name__, rawevt)
                             self.notifyListeners(evt)
