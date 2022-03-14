@@ -155,7 +155,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if meta is not None and data is not None:
                     rawevt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
-                                          self.__name__, event)
+                                             self.__name__, event)
                     self.notifyListeners(rawevt)
 
                     val = list()
