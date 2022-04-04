@@ -9,6 +9,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import base64
 import datetime
 import json
 import urllib.error
@@ -38,7 +39,7 @@ class sfp_wigle(SpiderFootPlugin):
                 "Register a free account",
                 "Navigate to https://wigle.net/account",
                 "Click on 'Show my token'",
-                "The API key is listed under 'API Token'"
+                "The encoded API key is adjacent to 'Encoded for use'"
             ],
             'favIcon': "https://wigle.net/favicon.ico?v=A0Ra9gElOR",
             'logo': "https://wigle.net/images/planet-bubble.png",
@@ -172,6 +173,18 @@ class sfp_wigle(SpiderFootPlugin):
             self.error(f"Error processing JSON response from WiGLE: {e}")
             return None
 
+    def validApiKey(self, api_key):
+        if not api_key:
+            return False
+
+        try:
+            if base64.b64encode(base64.b64decode(api_key)).decode('utf-8') != api_key:
+                return False
+        except Exception:
+            return False
+
+        return True
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -181,8 +194,8 @@ class sfp_wigle(SpiderFootPlugin):
         if self.errorState:
             return
 
-        if self.opts['api_key_encoded'] == "":
-            self.error("You enabled sfp_wigle but did not set an API key!")
+        if not self.validApiKey(self.opts['api_key_encoded']):
+            self.error(f"Invalid API key for {self.__class__.__name__} module")
             self.errorState = True
             return
 
