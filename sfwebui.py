@@ -1234,6 +1234,28 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    def correlationrules(self: 'SpiderFootWebUi') -> str:
+        """List all correlation rules.
+
+        Returns:
+            str: list of correlation rules
+        """
+        cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
+
+        rules = self.config['__correlationrules__']
+        ret = list()
+        for r in rules:
+            ret.append({
+                'id': r['id'],
+                'name': r['meta']['name'],
+                'descr': r['meta']['description'],
+                'risk': r['meta']['risk'],
+            })
+
+        return ret
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def ping(self: 'SpiderFootWebUi') -> list:
         """For the CLI to test connectivity to this server.
 
@@ -1511,6 +1533,16 @@ class SpiderFootWebUi:
 
         for row in data:
             created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[3]))
+            riskmatrix = {
+                "HIGH": 0,
+                "MEDIUM": 0,
+                "LOW": 0,
+                "INFO": 0
+            }
+            correlations = dbh.scanCorrelationSummary(row[0], by="risk")
+            if correlations:
+                for c in correlations:
+                    riskmatrix[c[0]] = c[1]
 
             if row[4] == 0:
                 started = "Not yet"
@@ -1522,7 +1554,7 @@ class SpiderFootWebUi:
             else:
                 finished = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[5]))
 
-            retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7]])
+            retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7], riskmatrix])
 
         return retdata
 
@@ -1546,8 +1578,18 @@ class SpiderFootWebUi:
         created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[2]))
         started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[3]))
         ended = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[4]))
+        riskmatrix = {
+            "HIGH": 0,
+            "MEDIUM": 0,
+            "LOW": 0,
+            "INFO": 0
+        }
+        correlations = dbh.scanCorrelationSummary(id, by="risk")
+        if correlations:
+            for c in correlations:
+                riskmatrix[c[0]] = c[1]
 
-        return [data[0], data[1], created, started, ended, data[5]]
+        return [data[0], data[1], created, started, ended, data[5], riskmatrix]
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1585,13 +1627,39 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def scaneventresults(self: 'SpiderFootWebUi', id: str, eventType: str, filterfp: bool = False) -> list:
+    def scancorrelations(self: 'SpiderFootWebUi', id: str) -> list:
+        """Correlation results from a scan.
+
+        Args:
+            id (str): scan ID
+
+        Returns:
+            list: correlation result list
+        """
+        retdata = []
+
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            corrdata = dbh.scanCorrelationList(id)
+        except Exception:
+            return retdata
+
+        for row in corrdata:
+            retdata.append([row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]])
+
+        return retdata
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def scaneventresults(self: 'SpiderFootWebUi', id: str, eventType: str = None, filterfp: bool = False, correlationId: str = None) -> list:
         """Return all event results for a scan as JSON.
 
         Args:
             id (str): scan ID
             eventType (str): filter by event type
             filterfp (bool): remove false positives from search results
+            correlationId (str): filter by events associated with a correlation
 
         Returns:
             list: scan results
@@ -1600,8 +1668,11 @@ class SpiderFootWebUi:
 
         dbh = SpiderFootDb(self.config)
 
+        if not eventType:
+            eventType = 'ALL'
+
         try:
-            data = dbh.scanResultEvent(id, eventType, filterfp)
+            data = dbh.scanResultEvent(id, eventType, filterfp, correlationId=correlationId)
         except Exception:
             return retdata
 
