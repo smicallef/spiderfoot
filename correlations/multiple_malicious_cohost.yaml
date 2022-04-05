@@ -1,0 +1,33 @@
+id: multiple_malicious_cohost
+version: 1
+meta:
+  name: >
+    A co-hosted site was considered malicious by multiple sources
+  description: >
+    A co-hosted site was considered malicious by multiple sources.
+
+    Such cases have a high likelihood of being genuinely malicious and
+    should be investigated depending on the nature of the relationship
+    between the target and the co-host. Even if the entity in question is
+    not compromised, it's likely to be blocked across parts of the
+    Internet due to its presence in these lists and may therefore have
+    an impact on the target.
+  risk: LOW
+collections:
+  - collect:
+      - method: regex
+        field: type
+        value:
+          - MALICIOUS_*
+          - BLACKLIST_*
+      # Filter to only co-hosted sites
+      - method: regex
+        field: type
+        value: .*COHOST.*
+aggregation:
+  field: source.data
+analysis:
+  - method: threshold
+    field: source.data
+    minimum: 2
+headline: "Co-hosted site considered malicious by multiple sources: {source.data}"

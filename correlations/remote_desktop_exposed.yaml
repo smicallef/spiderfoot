@@ -1,0 +1,26 @@
+id: remote_desktop_exposed
+version: 1
+meta:
+  name: Remote desktop technology found exposed to the Internet
+  description: >
+    A remote desktop technology (RDP, VNC, NoMachine)
+    was found to be accessible over the Internet.
+
+    Even if authentication is required such systems should not
+    be exposed over the Internet due to the risk of misconfiguration
+    or unpatched vulnerabilities.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: TCP_PORT_OPEN
+      - method: regex
+        field: data
+        value:
+          - .*:5900$
+          - .*:3389$
+          - .*:4000$
+aggregation:
+  field: source.data
+headline: "Remote desktop exposed to the Internet: {source.data}"

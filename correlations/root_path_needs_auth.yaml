@@ -1,0 +1,25 @@
+id: root_path_needs_auth
+version: 1
+meta:
+  name: Website root path needs authentication
+  description: >
+    The base path of a server needs authentication, indicating the
+    server is likely sensitive or important.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: HTTP_CODE
+      - method: regex
+        field: data
+        value: 40[31]
+      # The source might be a host or URL
+      - method: regex
+        field: source.data
+        value:
+          - ^https?://[a-zA-Z0-9\.\-]+/?#?$
+          - ^[a-zA-Z0-9\.\-]+$
+aggregation:
+  field: source.data
+headline: "Base URL requires authentication: {source.data}"

@@ -1,0 +1,46 @@
+id: database_exposed
+version: 1
+meta:
+  name: Database server exposed to the Internet
+  description: >
+    A database technology (MySQL, Oracle, Postgres, Redis,
+    Hadoop, MongoDB, Spark) was found to be accessible over
+    the Internet.
+
+    Even if authentication is required such systems should not
+    be exposed over the Internet due to the risk of misconfiguration
+    or unpatched vulnerabilities.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: TCP_PORT_OPEN
+      - method: regex
+        field: data
+        value:
+          # MySQL
+          - .*:3306$
+          # Oracle
+          - .*:1521$
+          # PostgreSQL
+          - .*:5432$
+          # Redis
+          - .*:6379$
+          - .*:6380$
+          # Hadoop
+          - .*:50070$
+          - .*:50470$
+          - .*:50090$
+          - .*:500[12]0$
+          - .*:50475$
+          - .*:50075$
+          - .*:8020$
+          - .*:9000$
+          # Spark
+          - .*:7077$
+          # MongoDB
+          - .*:2701[789]$
+aggregation:
+  field: data
+headline: "Database server exposed to the Internet: {data}"

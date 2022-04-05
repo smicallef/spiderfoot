@@ -1,0 +1,33 @@
+id: multiple_malicious_affiliate
+version: 1
+meta:
+  name: >
+    An affiliated IP or host was considered malicious by multiple sources
+  description: >
+    An affiliated IP or host was considered malicious by multiple sources.
+
+    Such cases have a high likelihood of being genuinely malicious and
+    should be investigated depending on the nature of the relationship
+    between the target and the affiliate. Even if the entity in question is
+    not compromised, it's likely to be blocked across parts of the
+    Internet due to its presence in these lists and may therefore have
+    an impact on the target.
+  risk: LOW
+collections:
+  - collect:
+      - method: regex
+        field: type
+        value:
+          - MALICIOUS_*
+          - BLACKLIST_*
+      # Filter to only affiliated entities
+      - method: regex
+        field: type
+        value: .*AFFILIATE.*
+aggregation:
+  field: source.data
+analysis:
+  - method: threshold
+    field: source.data
+    minimum: 2
+headline: "Affiliated entity considered malicious by multiple sources: {source.data}"

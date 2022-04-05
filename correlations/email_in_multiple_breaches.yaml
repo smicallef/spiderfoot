@@ -1,0 +1,25 @@
+id: email_in_multiple_breaches
+version: 1
+meta:
+  name: >
+    An email address was reported to be in multiple breaches
+  description: >
+    An email address was reported to be in multiple breaches.
+
+    The presence in multiple breaches may indicate that the password
+    of the account is particularly weak, or that it was re-used across
+    the sites involved in the breaches. Note that some breaches simply
+    aggregate other breaches, or may be very old.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: EMAILADDR_COMPROMISED
+aggregation:
+  field: source.data
+analysis:
+  - method: threshold
+    field: source.data
+    minimum: 2
+headline: "Email address reported in multiple breaches: {source.data}"

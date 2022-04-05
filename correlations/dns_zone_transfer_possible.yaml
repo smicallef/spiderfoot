@@ -1,0 +1,18 @@
+id: dns_zone_transfer_possible
+version: 1
+meta:
+  name: DNS Zone Transfer is possible
+  description: >
+    It was possible to perform a DNS Zone Transfer with the
+    target's name server. Zone transfers can expose a significant
+    amount of information about the target network and have no
+    real need to be enabled in modern networks.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: module
+        value: sfp_dnszonexfer
+aggregation:
+  field: source.data
+headline: "DNS Zone Transfer possible with {source.data}"

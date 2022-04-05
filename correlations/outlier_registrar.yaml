@@ -1,0 +1,23 @@
+id: outlier_registrar
+version: 1
+meta:
+  name: Outlier registrar
+  description: >
+    A registrar that appeared in 10% or less of the total registrars
+    found. Outliers can often reveal entities that are rare and
+    therefore interesting.
+
+    Particularly in the case of registrars, an outlier may be an
+    indicator of Shadow IT or unmtaintained infrastructure.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: DOMAIN_REGISTRAR
+aggregation:
+  field: data
+analysis:
+  - method: outlier
+    maximum_percent: 10
+headline: "Outlier registrar found: {data}"

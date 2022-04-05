@@ -1,0 +1,89 @@
+# Set the ID for the rule. Ensure it matches the filename (without the .yaml
+# extension) and has no spaces or other special characters.
+id: set_a_meaningful_id_here
+
+# Use version 1 for now.
+version: 1
+
+# The meta section sets meta attributes about the rule.
+meta:
+
+  # The human-readable name for the rule
+  name: This is a briefly descriptive name.
+
+  # A longer description for the rule
+  description: >
+      This is a more detailed description about the rule and ideally
+      includes some rationale explaining the risk posed, or other
+      relevant information that helps the user better understand the
+      value of the rule results.
+
+      You can have multiple paragraphs here too.
+
+      For this example rule, our goal is to find all hosts that
+      match "foo" or "bar", creating a correlation result when such a
+      host is found more than once.
+
+  # The risk the results of this rule posed. They can be one of:
+  # - HIGH (reserved for genuine cases requiring immediate action)
+  # - MEDIUM (potential high risk, needs deeper examination)
+  # - LOW (potential risk, but probably low risk or false positive)
+  # - INFO (no risk posed but potential interesting information)
+  risk: MEDIUM
+
+# Define the collections to perform here. Refer to the README.md
+# in the correlations folder for more details.
+collections:
+
+  # Each 'collect' block represents a collection of data from
+  # the SpiderFoot database. You need at least one 'collect'
+  # block for the rule to actually do something.
+  - collect:
+      # Each 'collect' block may contain multiple blocks
+      # for collecting and analyzing data. The first pulls
+      # data from the SpiderFoot database, and subsequent
+      # blocks further refine that data down to what you are
+      # interested in. You need at least one for the 'collect'
+      # block to have data.
+      #
+      # For example, this rule will extract all data elements
+      # that exactly match the INTERNET_NAME type.
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      # This next rule will filter out all the INTERNET_NAME
+      # results where data doesn't match any of the regular
+      # expressions provided.
+      - method: regex
+        field: data
+        value:
+          - .*foo.*
+          - .*bar.*
+      # What we are now left with in this collection are all
+      # INTERNET_NAME elements with data matching either .*foo.*
+      # or .*bar.*
+
+# With the data from your one or more collections, you can
+# now use 'aggregation' to define how they should be grouped
+# (if at all) for analysis at the next stage (also optional).
+aggregation:
+  # Each data element will be placed into a bucket according
+  # to its data field, which is the hostname since we have
+  # INTERNET_NAME data elements.
+  field: data
+
+# Analysis is an optional step to perform analysis on the
+# (optionally aggegated) data gathered to apply some criteria
+# determining whether a correlation creates results or not.
+analysis:
+  # Here we want to only generate a correlation result when
+  # the value of the data element's data field (the hostname
+  # in this case) appears at least two times.
+  - method: threshold
+    minimum: 2
+    field: data
+
+# With the collection, aggegation and analysis performed,
+# we can now generate the correlation result with a title
+# that represents something meaningful to the user.
+headline: "A foo or bar host was found more than once: {data}"

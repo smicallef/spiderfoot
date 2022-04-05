@@ -1,0 +1,35 @@
+id: email_only_from_pasteleak_site
+version: 1
+meta:
+  name: Email address only from paste/leak site
+  description: >
+    An email address was found mentioned in a paste/leak site but
+    nowhere else.
+
+    Since the email address was not found anywhere else, this may indicate
+    that the address is in some way special, perhaps not intended to
+    be publicly exposed/used or targeted in an attack.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: EMAILADDR
+      - method: exact
+        field: source.type
+        value:
+          - LEAKSITE_CONTENT
+  - collect:
+      - method: exact
+        field: type
+        value: EMAILADDR
+      - method: exact
+        field: source.type
+        value:
+          - not LEAKSITE_CONTENT
+aggregation:
+  field: data
+analysis:
+  - method: first_collection_only
+    field: data
+headline: "Email address found only in paste/leak site: {data}"
