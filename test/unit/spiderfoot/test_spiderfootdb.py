@@ -413,7 +413,7 @@ class TestSpiderFootDb(unittest.TestCase):
         sfdb = SpiderFootDb(self.default_options, False)
 
         instance_id = "example instance id"
-        invalid_types = [None, list(), dict()]
+        invalid_types = [None, dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
