@@ -148,6 +148,7 @@ venv3/
 # IDE #
 #######
 .idea
+.vscode
 
 # Test & Coverage Reports #
 ###########################
