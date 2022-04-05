@@ -189,7 +189,7 @@ function showlisttable(types, filter, data) {
 
     buttons += "</div>";
     var table = "<table id='scanlist' class='table table-bordered table-striped'>";
-    table += "<thead><tr><th class='sorter-false text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='sorter-false text-center'>Action</th> </tr></thead><tbody>";
+    table += "<thead><tr><th class='sorter-false text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='text-center'>Correlations</th><th class='sorter-false text-center'>Action</th> </tr></thead><tbody>";
     filtered = 0;
     for (var i = 0; i < data.length; i++) {
         if (types != null && $.inArray(data[i][6], types)) {
@@ -217,6 +217,12 @@ function showlisttable(types, filter, data) {
         }
         table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
         table += "<td class='text-center'>" + data[i][7] + "</td>";
+        table += "<td class='text-center'>";
+        table += "<span class='badge alert-danger'>" + data[i][8]['HIGH'] + "</span>";
+        table += "<span class='badge alert-warning'>" + data[i][8]['MEDIUM'] + "</span>";
+        table += "<span class='badge alert-info'>" + data[i][8]['LOW'] + "</span>";
+        table += "<span class='badge alert-success'>" + data[i][8]['INFO'] + "</span>";
+        table += "</td>";
         table += "<td class='text-center'>";
         if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
             table += "<a rel='tooltip' title='Stop Scan' href='javascript:stopScan(\"" + data[i][0] + "\");'><i class='glyphicon glyphicon-stop text-muted'></i></a>";
