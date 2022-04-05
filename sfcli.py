@@ -58,6 +58,7 @@ class SpiderFootCli(cmd.Cmd):
     output = None
     modules = []
     types = []
+    correlationrules = []
     prompt = "sf> "
     nohelp = "[!] Unknown command '%s'."
     knownscans = []
@@ -591,6 +592,24 @@ class SpiderFootCli(cmd.Cmd):
         self.send_output(d, line, titles={"name": "Module name",
                                           "descr": "Description"})
 
+    # List all SpiderFoot correlation rules
+    def do_correlationrules(self, line, cacheonly=False):
+        """correlations
+        List all available correlation rules and their descriptions."""
+        d = self.request(self.ownopts['cli.server_baseurl'] + "/correlationrules")
+        if not d:
+            return
+
+        if cacheonly:
+            j = json.loads(d)
+            for m in j:
+                self.correlationrules.append(m['name'])
+            return
+
+        self.send_output(d, line, titles={"id": "Correlation rule ID",
+                                          "name": "Name",
+                                          "risk": "Risk"})
+
     # List all SpiderFoot data element types.
     def do_types(self, line, cacheonly=False):
         """types
@@ -686,6 +705,45 @@ class SpiderFootCli(cmd.Cmd):
                 "6": "Status",
                 "7": "Total Elements"
             }
+
+        self.send_output(d, line, titles=titles)
+
+    # Show the correlation results from a scan.
+    def do_correlations(self, line):
+        """correlations <sid> [-c correlation_id]
+        Get the correlation results for scan ID <sid> and optionally the
+        events associated with a correlation result [correlation_id] to
+        get the results for a particular correlation."""
+        c = self.myparseline(line)
+        if len(c[0]) < 1:
+            self.edprint("Invalid syntax.")
+            return
+
+        post = {"id": c[0][0]}
+
+        if "-c" in c[0]:
+            post['correlationId'] = c[0][c[0].index("-c") + 1]
+            url = self.ownopts['cli.server_baseurl'] + "/scaneventresults"
+            titles = {
+                "10": "Type",
+                "1": "Data"
+            }
+        else:
+            url = self.ownopts['cli.server_baseurl'] + "/scancorrelations"
+            titles = {
+                "0": "ID",
+                "1": "Title",
+                "3": "Risk",
+                "7": "Data Elements"
+            }
+
+        d = self.request(url, post=post)
+        if not d:
+            return
+        j = json.loads(d)
+        if len(j) < 1:
+            self.dprint("No results.")
+            return
 
         self.send_output(d, line, titles=titles)
 
@@ -1088,6 +1146,7 @@ class SpiderFootCli(cmd.Cmd):
             ["ping", "Test connectivity to the SpiderFoot server."],
             ["modules", "List available modules."],
             ["types", "List available data types."],
+            ["correlationrules", "List available correlation rules."],
             ["set", "Set variables and configuration settings."],
             ["scans", "List all scans that have been run or are running."],
             ["start", "Start a new scan."],
@@ -1095,6 +1154,7 @@ class SpiderFootCli(cmd.Cmd):
             ["delete", "Delete a scan."],
             ["scaninfo", "Scan information."],
             ["data", "Show data from a scan's results."],
+            ["correlations", "Show correlation results from a scan."],
             ["summary", "Scan result summary."],
             ["find", "Search for data within scan results."],
             ["query", "Run SQL against the SpiderFoot SQLite database."],
