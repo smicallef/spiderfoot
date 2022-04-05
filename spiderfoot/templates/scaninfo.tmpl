@@ -17,6 +17,7 @@
   <div class="btn-toolbar" role="toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
       <a id='btn-status' class="btn btn-default" onClick='scanSummaryView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Summary</a>
+      <a id='btn-correlations' class="btn btn-default" onClick='browseCorrelations("${id}")'><i class='glyphicon glyphicon-exclamation-sign'></i>&nbsp;Correlations</a>
       <a id='btn-browse' class="btn btn-default" onClick='browseEventList("${id}")'><i class='glyphicon glyphicon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-graph' class="btn btn-default" onClick='graphEvents("${id}")'><i class='glyphicon glyphicon-asterisk'></i>&nbsp;Graph</a>
       <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
@@ -131,7 +132,8 @@
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
-                "btn-export", "btn-download-logs", "btn-viz", "btn-status", "btn-graph" ]
+                "btn-export", "btn-download-logs", "btn-viz",
+                "btn-status", "btn-graph", "btn-correlations" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -280,25 +282,39 @@
 
         // Scan status
         function scanSummaryView(instanceId) {
-            grid = "<div id='scansummary-content'>"
-            grid += "<div class='row'>"
-            grid += "<div class='col-md-12 text-center'>"
-            grid += "<div class='btn-toolbar'>";
-            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Total</span></button>"
-            grid += "<button class='btn disabled btn-lg btn-default' id='tcounter' style='cursor: default;'>?</button></div>"
-            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Unique</button>"
-            grid += "<button class='btn disabled btn-lg btn-default' id='ucounter' style='cursor: default;'>?</button></div>"
-            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Status</button>"
-            grid += "<button class='btn disabled btn-lg btn-default' id='status' style='cursor: default;'>?</button></div>"
-            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Errors</button>"
-            grid += "<button class='btn disabled btn-lg btn-default' id='errors' style='cursor: default;'>?</button></div>"
-            grid += "</div></div></div><br />"
-            grid += "<div class='row'>"
-            grid += "<div class='col-md-12' id='vbarsummary'></div>"
-            grid += "</div><br />"
-            grid += "<div class='row'>"
-            grid += "<div class='col-md-12' id='logtable'></div>"
-            grid += "</div></div>"
+            grid = "<div id='scansummary-content'>";
+            grid += "<div class='row'>";
+            grid += "<div class='col-sm-7'>";
+            grid += "<div class='panel panel-default'>";
+            grid += "<div class='panel-heading'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;&nbsp;Scan Status</div><div class='panel-body' style='padding: 5px'>";
+            grid += "<div class='btn-toolbar text-center'>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-secondary' style='cursor: default;'>Total</span></button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='tcounter' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-secondary' style='cursor: default;'>Unique</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='ucounter' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-secondary' style='cursor: default;'>Status</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='status' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-secondary' style='cursor: default;'>Errors</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='errors' style='cursor: default;'>?</button></div>";
+            grid += "</div></div></div></div>";
+            grid += "<div class='col-sm-5'>";
+            grid += "<div class='panel panel-default'>";
+            grid += "<div class='panel-heading'><i class='glyphicon glyphicon-exclamation-sign'></i>&nbsp;&nbsp;Correlations</div><div class='panel-body' style='padding: 5px'>";
+            grid += "<div class='btn-toolbar text-center'>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-danger' style='cursor: default;'>High</span></button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='corr-high' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-warning' style='cursor: default;'>Medium</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='corr-medium' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-primary' style='cursor: default;'>Low</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='corr-low' style='cursor: default;'>?</button></div>";
+            grid += "<div class='btn-group' style='float: unset; padding: 5px'><button class='btn disabled btn-md btn-success' style='cursor: default;'>Info</button>";
+            grid += "<button class='btn disabled btn-md btn-default' id='corr-info' style='cursor: default;'>?</button></div>";
+            grid += "</div></div></div></div></div>";
+            grid += "<div class='row'><div class='col-sm-12'>";
+            grid += "<div class='panel panel-default'>";
+            grid += "<div class='panel-heading'><i class='glyphicon glyphicon-stats'></i>&nbsp;&nbsp;Data Types</div><div class='panel-body'>";
+            grid += "<div id='vbarsummary'></div>";
+            grid += "</div></div></div></div>";
 
             $("#scansummary-content").remove();
             $("#scanlogs-content").remove();
@@ -321,6 +337,12 @@
                         scanStarted = data[2];
                         scanEnded = data[4];
                         scanStatus = data[5];
+                        scanCorrelations = data[6];
+
+                        $("#corr-high").html(scanCorrelations['HIGH']);
+                        $("#corr-medium").html(scanCorrelations['MEDIUM']);
+                        $("#corr-low").html(scanCorrelations['LOW']);
+                        $("#corr-info").html(scanCorrelations['INFO']);
                     });
                 }
             );
@@ -390,6 +412,79 @@
                 dataloaders[i]();
             }
             loadersrunning = false;
+        }
+
+        // Expand the correlation list to show the events associated
+        function toggleCorrelation(instanceId, correlationId) {
+            if (!$("#corrwell_tr_" + correlationId).hasClass("hidden")) {
+                $("#corrwell_td_" + correlationId).empty();
+                $("#corrwell_tr_" + correlationId).addClass("hidden");
+                return;
+            }
+            sf.fetchData('${docroot}/scaneventresults', { 'id': instanceId, 'correlationId': correlationId }, function(data) {
+                var table = "<table id='corrcontent_'" + correlationId + "' class='table table-bordered table-striped small tablesorter'>";
+                table += "<thead><tr>";
+                table += "<th>Data Element</th></th>";
+                table += "<th>Source Data Element</th>";
+                table += "<th>Source Module</th>";
+                table += "<th>Identified</th>";
+                table += "</tr></thead><tbody>";
+
+                for (var i = 0; i < data.length; i++) {
+                    table += "<tr>";
+                    table += "<td><pre class='table-border-bg-inherit'>";
+                    table += sf.replace_sfurltag(data[i][1]);
+                    table += "</pre></td><td><pre class='table-border-bg-inherit'>";
+                    table += sf.replace_sfurltag(data[i][2]);
+                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
+                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][0];
+                    table += "</pre></td>";
+                    table += "</tr>";
+                }
+                table += "</tbody></table>"
+                $("#corrwell_td_" + correlationId).prepend(table);
+                $("#corrwell_tr_" + correlationId).removeClass("hidden");
+            });
+        }
+
+        // Correlation results for the scan
+        function browseCorrelations(instanceId) {
+            $("#scansummary-content").remove();
+            $("#loader").show();
+            $("#btn-search").hide();
+            $("#btn-export").hide();
+            $("#scanreminder").hide();
+            navTo("btn-correlations");
+            refresh = function() { browseCorrelations(instanceId); }
+            sf.fetchData('${docroot}/scancorrelations', {'id': instanceId}, function(data) {
+                var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed small'>";
+                table += "<thead><tr><th>Correlation</th><th>Risk</th><th>Data Elements</th></tr></thead><tbody>";
+                for (var i = 0; i < data.length; i++) {
+                    table += "<tr>";
+                    table += "<td><a style='cursor: pointer' onClick='toggleCorrelation(\"" + instanceId + "\",\"" + data[i][0] + "\")'>" + data[i][1] + "</a>&nbsp;&nbsp;";
+                    table += "<i class='glyphicon glyphicon-question-sign' style='color: #ccc' rel='tooltip' data-title=\"" + data[i][5] + "\"></i>";
+                    table += "</td>";
+                    if (data[i][3] == "HIGH") {
+                        statusy = "alert-danger";
+                    }
+                    if (data[i][3] == "MEDIUM") {
+                        statusy = "alert-warning";
+                    }
+                    if (data[i][3] == "LOW") {
+                        statusy = "alert-info";
+                    }
+                    if (data[i][3] == "INFO") {
+                        statusy = "alert-success";
+                    }
+                    table += "<td><span class='badge " + statusy + "'>" + data[i][3] + "</span></td>";
+                    table += "<td>" + data[i][7] + "</td>";
+                    table += "</tr><tr class='hidden' id='corrwell_tr_" + data[i][0] + "'><td colspan=3 id='corrwell_td_" + data[i][0] + "'></td></tr>";
+                }
+                table += "</tbody></table>";
+                $("#loader").fadeOut(500);
+                $("#mainbody").append(table);
+                sf.updateTooltips();
+            });
         }
 
         // Logs for the scan
@@ -542,10 +637,6 @@
                                 table += "<td><pre class='table-border-bg-inherit'>";
                                 //table += "<a href='${docroot}/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
                                 table += sf.replace_sfurltag(data[i][1]);
-                                // for debug
-                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][7];
-                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][5];
-                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][6];
                                 table += "</pre></td><td><pre class='table-border-bg-inherit'>";
                                 table += sf.replace_sfurltag(data[i][2]);
                                 table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
