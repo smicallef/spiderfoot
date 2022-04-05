@@ -31,6 +31,7 @@ from sfscan import startSpiderFootScanner
 from sfwebui import SpiderFootWebUi
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import SpiderFootDb
+from spiderfoot import SpiderFootCorrelator
 from spiderfoot.logger import logListenerSetup, logWorkerSetup
 from spiderfoot import __version__
 
@@ -133,10 +134,15 @@ def main():
     log = logging.getLogger(f"spiderfoot.{__name__}")
 
     sfModules = dict()
+    correlationRulesRaw = dict()
     sft = SpiderFoot(sfConfig)
 
     # Load each module in the modules directory with a .py extension
     mod_dir = sft.myPath() + '/modules/'
+
+    # Load each correlation rule in the correlations directory with
+    # a .yaml extension
+    corr_dir = sft.myPath() + '/correlations/'
 
     if not os.path.isdir(mod_dir):
         log.critical(f"Modules directory does not exist: {mod_dir}")
@@ -167,8 +173,34 @@ def main():
         log.critical(f"No modules found in modules directory: {mod_dir}")
         sys.exit(-1)
 
-    # Add module info to sfConfig so it can be used by the UI
+    if not os.path.isdir(corr_dir):
+        log.critical(f"Correlation rules directory does not exist: {corr_dir}")
+        sys.exit(-1)
+
+    for filename in os.listdir(corr_dir):
+        if not filename.endswith(".yaml"):
+            continue
+        if filename in ('template.yaml'):
+            continue
+
+        ruleName = filename.split('.')[0]
+        correlationRulesRaw[ruleName] = open(corr_dir + filename, 'r').read()
+
+    # Sanity-check the rules and parse them
+    dbh = SpiderFootDb(sfConfig)
+    correlator = None
+    if not correlationRulesRaw:
+        log.error(f"No correlation rules found in the directory: {corr_dir}. Maybe this was intended?")
+        sfCorrelationRules = list()
+    else:
+        correlator = SpiderFootCorrelator(dbh, correlationRulesRaw)
+        if not correlator:
+            log.fatal("Failure initializing correlation rules, aborting.")
+        sfCorrelationRules = correlator.get_ruleset()
+
+    # Add modules and the correlator to sfConfig so they can be used elsewhere
     sfConfig['__modules__'] = sfModules
+    sfConfig['__correlationrules__'] = sfCorrelationRules
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
 

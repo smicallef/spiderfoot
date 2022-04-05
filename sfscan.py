@@ -22,7 +22,7 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, SpiderFootThreadPool, logger
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, SpiderFootThreadPool, SpiderFootCorrelator, logger
 
 
 def startSpiderFootScanner(loggingQueue, *args, **kwargs):
@@ -110,7 +110,6 @@ class SpiderFootScanner():
             raise ValueError("moduleList is empty")
 
         self.__moduleList = moduleList
-
         self.__sf = SpiderFoot(self.__config)
         self.__sf.dbh = self.__dbh
 
@@ -422,9 +421,18 @@ class SpiderFootScanner():
 
         finally:
             if not failed:
+                self.runCorrelations()
                 self.__sf.status(f"Scan [{self.__scanId}] completed.")
                 self.__setStatus("FINISHED", None, time.time() * 1000)
             self.__dbh.close()
+
+    def runCorrelations(self):
+        self.__sf.status(f"Running {len(self.__config['__correlationrules__'])} correlation rules.")
+        ruleset = dict()
+        for rule in self.__config['__correlationrules__']:
+            ruleset[rule['id']] = rule['rawYaml']
+        corr = SpiderFootCorrelator(self.__dbh, ruleset, self.__scanId)
+        corr.run_correlations()
 
     def waitForThreads(self):
         counter = 0
