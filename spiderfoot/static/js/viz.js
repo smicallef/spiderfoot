@@ -73,7 +73,7 @@ function sf_viz_countLevels(arg, levelsDeep, maxLevels) {
 
 function sf_viz_vbar(targetId, gdata) {
     var margin = {top: 20, right: 20, bottom: 220, left: 60},
-        width = 1160 - margin.left - margin.right,
+        width = 1100 - margin.left - margin.right,
         height = 520 - margin.top - margin.bottom;
 
     var formatPercent = d3.format(".0%");
