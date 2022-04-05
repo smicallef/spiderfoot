@@ -102,11 +102,11 @@ a.link:hover {
 }
 
 .bar {
-  fill: orange;
+  fill: #79a8d0;
 }
 
 .bar:hover {
-  fill: orangered;
+  fill: #07aef1;
 }
 
 .x.axis path {
