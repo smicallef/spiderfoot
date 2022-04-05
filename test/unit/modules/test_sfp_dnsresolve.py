@@ -221,9 +221,6 @@ class TestModuleDnsResolve(unittest.TestCase):
     def test_handleEvent_event_data_raw_rir_data_containing_subdomain_should_return_internet_name_event(self):
         """
         Test handleEvent(self, event)
-
-        Raises:
-            Exception: TBD
         """
         sf = SpiderFoot(self.default_options)
 
