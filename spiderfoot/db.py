@@ -11,6 +11,8 @@
 # -------------------------------------------------------------------------------
 
 from pathlib import Path
+import hashlib
+import random
 import re
 import sqlite3
 import threading
@@ -82,12 +84,28 @@ class SpiderFootDb:
             false_positive      INT NOT NULL DEFAULT 0, \
             source_event_hash  VARCHAR DEFAULT 'ROOT' \
         )",
+        "CREATE TABLE tbl_scan_correlation_results ( \
+            id                  VARCHAR NOT NULL PRIMARY KEY, \
+            scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instances(guid), \
+            title               VARCHAR NOT NULL, \
+            rule_risk           VARCHAR NOT NULL, \
+            rule_id             VARCHAR NOT NULL, \
+            rule_name           VARCHAR NOT NULL, \
+            rule_descr          VARCHAR NOT NULL, \
+            rule_logic          VARCHAR NOT NULL \
+        )",
+        "CREATE TABLE tbl_scan_correlation_results_events ( \
+            correlation_id      VARCHAR NOT NULL REFERENCES tbl_scan_correlation_results(id), \
+            event_hash          VARCHAR NOT NULL REFERENCES tbl_scan_results(hash) \
+        )",
         "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
         "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
         "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
+        "CREATE INDEX idx_scan_results_module ON tbl_scan_results(scan_instance_id, module)",
         "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
-        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)"
-
+        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
+        "CREATE INDEX idx_scan_correlation ON tbl_scan_correlation_results (scan_instance_id, id)",
+        "CREATE INDEX idx_scan_correlation_events ON tbl_scan_correlation_results_events (correlation_id)"
     ]
 
     eventDetails = [
@@ -326,10 +344,9 @@ class SpiderFootDb:
                 self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
                 self.conn.create_function("REGEXP", 2, __dbregex__)
             except sqlite3.Error:
-                # .. If not set up, we set it up.
+                init = True
                 try:
                     self.create()
-                    init = True
                 except Exception as e:
                     raise IOError(f"Tried to set up the SpiderFoot database schema, but failed: {e.args[0]}")
 
@@ -686,7 +703,6 @@ class SpiderFootDb:
             except sqlite3.Error as e:
                 raise IOError(f"SQL error encountered when retrieving scan instance: {e.args[0]}")
 
-    # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId, by="type"):
         """Obtain a summary of the results, filtered by event type, module or entity.
 
@@ -699,7 +715,7 @@ class SpiderFootDb:
 
         Raises:
             TypeError: arg type was invalid
-            ValueError: arg valie was invalid
+            ValueError: arg value was invalid
             IOError: database I/O failed
         """
 
@@ -741,12 +757,94 @@ class SpiderFootDb:
             except sqlite3.Error as e:
                 raise IOError(f"SQL error encountered when fetching result summary: {e.args[0]}")
 
-    def scanResultEvent(self, instanceId, eventType='ALL', filterFp=False):
+    def scanCorrelationSummary(self, instanceId, by="rule"):
+        """Obtain a summary of the correlations, filtered by rule or risk
+
+        Args:
+            instanceId (str): scan instance ID
+            by (str): filter by rule or risk
+
+        Returns:
+            list: scan correlation summary
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(instanceId, str):
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+        if not isinstance(by, str):
+            raise TypeError(f"by is {type(by)}; expected str()")
+
+        if by not in ["rule", "risk"]:
+            raise ValueError(f"Invalid filter by value: {by}")
+
+        if by == "risk":
+            qry = "SELECT rule_risk, count(*) AS total FROM \
+                tbl_scan_correlation_results \
+                WHERE scan_instance_id = ? GROUP BY rule_risk ORDER BY rule_id"
+
+        if by == "rule":
+            qry = "SELECT rule_id, rule_name, rule_risk, rule_descr, \
+                count(*) AS total FROM \
+                tbl_scan_correlation_results \
+                WHERE scan_instance_id = ? GROUP BY rule_id ORDER BY rule_id"
+
+        qvars = [instanceId]
+
+        with self.dbhLock:
+            try:
+                self.dbh.execute(qry, qvars)
+                return self.dbh.fetchall()
+            except sqlite3.Error as e:
+                raise IOError(f"SQL error encountered when fetching correlation summary: {e.args[0]}")
+
+    def scanCorrelationList(self, instanceId):
+        """Obtain a list of the correlations from a scan
+
+        Args:
+            instanceId (str): scan instance ID
+
+        Returns:
+            list: scan correlation list
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(instanceId, str):
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+        qry = "SELECT c.id, c.title, c.rule_id, c.rule_risk, c.rule_name, \
+            c.rule_descr, c.rule_logic, count(e.event_hash) AS event_count FROM \
+            tbl_scan_correlation_results c, tbl_scan_correlation_results_events e \
+            WHERE scan_instance_id = ? AND c.id = e.correlation_id \
+            GROUP BY c.id ORDER BY c.title, c.rule_risk"
+
+        qvars = [instanceId]
+
+        with self.dbhLock:
+            try:
+                self.dbh.execute(qry, qvars)
+                return self.dbh.fetchall()
+            except sqlite3.Error as e:
+                raise IOError(f"SQL error encountered when fetching correlation list: {e.args[0]}")
+
+    def scanResultEvent(self, instanceId, eventType='ALL', srcModule=None,
+                        data=None, sourceId=None, correlationId=None, filterFp=False):
         """Obtain the data for a scan and event type.
 
         Args:
             instanceId (str): scan instance ID
             eventType (str): filter by event type
+            srcModule (str): filter by the generating module
+            data (list[str]): filter by the data
+            sourceId (list[str]): filter by the ID of the source event
+            correlationId (str): filter by the ID of a correlation result
             filterFp (bool): filter false positives
 
         Returns:
@@ -760,27 +858,62 @@ class SpiderFootDb:
         if not isinstance(instanceId, str):
             raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
 
-        if not isinstance(eventType, str):
-            raise TypeError(f"eventType is {type(eventType)}; expected str()")
+        if not isinstance(eventType, str) and not isinstance(eventType, list):
+            raise TypeError(f"eventType is {type(eventType)}; expected str() or list()")
 
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
             c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id, \
             c.false_positive as 'fp', s.false_positive as 'parent_fp' \
-            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
-            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
-            s.scan_instance_id = c.scan_instance_id AND \
-            t.event = c.type"
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t "
+
+        if correlationId:
+            qry += ", tbl_scan_correlation_results_events ce "
+
+        qry += "WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
+            s.scan_instance_id = c.scan_instance_id AND t.event = c.type"
 
         qvars = [instanceId]
 
+        if correlationId:
+            qry += " AND ce.event_hash = c.hash AND ce.correlation_id = ?"
+            qvars.append(correlationId)
+
         if eventType != "ALL":
-            qry += " AND c.type = ?"
-            qvars.append(eventType)
+            if isinstance(eventType, list):
+                qry += " AND c.type in (" + ','.join(['?'] * len(eventType)) + ")"
+                qvars.extend(eventType)
+            else:
+                qry += " AND c.type = ?"
+                qvars.append(eventType)
 
         if filterFp:
             qry += " AND c.false_positive <> 1"
+
+        if srcModule:
+            if isinstance(srcModule, list):
+                qry += " AND c.module in (" + ','.join(['?'] * len(srcModule)) + ")"
+                qvars.extend(srcModule)
+            else:
+                qry += " AND c.module = ?"
+                qvars.append(srcModule)
+
+        if data:
+            if isinstance(data, list):
+                qry += " AND c.data in (" + ','.join(['?'] * len(data)) + ")"
+                qvars.extend(data)
+            else:
+                qry += " AND c.data = ?"
+                qvars.append(data)
+
+        if sourceId:
+            if isinstance(sourceId, list):
+                qry += " AND c.source_event_hash in (" + ','.join(['?'] * len(sourceId)) + ")"
+                qvars.extend(sourceId)
+            else:
+                qry += " AND c.source_event_hash = ?"
+                qvars.append(sourceId)
 
         qry += " ORDER BY c.data"
 
@@ -1337,10 +1470,12 @@ class SpiderFootDb:
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
             c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id, \
-            c.false_positive as 'fp', s.false_positive as 'parent_fp' \
-            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
+            c.false_positive as 'fp', s.false_positive as 'parent_fp', \
+            s.type, s.module, st.event_type as 'source_entity_type' \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t, \
+            tbl_event_types st \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
-            s.scan_instance_id = c.scan_instance_id AND \
+            s.scan_instance_id = c.scan_instance_id AND st.event = s.type AND \
             t.event = c.type AND c.hash in ('%s')" % "','".join(hashIds)
         qvars = [instanceId]
 
@@ -1402,9 +1537,6 @@ class SpiderFootDb:
 
     def scanElementSourcesAll(self, instanceId, childData):
         """Get the full set of upstream IDs which are parents to the supplied set of IDs.
-
-        Data has to be in the format of output from scanElementSourcesDirect
-        and produce output in the same format.
 
         Args:
             instanceId (str): scan instance ID
@@ -1521,3 +1653,81 @@ class SpiderFootDb:
                 nextIds.append(row[8])
 
         return datamap
+
+    def correlationResultCreate(self, instanceId, ruleId, ruleName, ruleDescr,
+                                ruleRisk, ruleYaml, correlationTitle, eventHashes):
+        """Create a correlation result in the database.
+
+        Args:
+            instanceId (str): scan instance ID
+            ruleId(str): correlation rule ID
+            ruleName(str): correlation rule name
+            ruleDescr(str): correlation rule description
+            ruleRisk(str): correlation rule risk level
+            ruleYaml(str): correlation rule raw YAML
+            correlationTitle(str): correlation title
+            eventHashes(list): events mapped to the correlation result
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+
+        Returns:
+            str: Correlation ID created
+        """
+
+        if not isinstance(instanceId, str):
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+        if not isinstance(ruleId, str):
+            raise TypeError(f"ruleId is {type(ruleId)}; expected str()")
+
+        if not isinstance(ruleName, str):
+            raise TypeError(f"ruleName is {type(ruleName)}; expected str()")
+
+        if not isinstance(ruleDescr, str):
+            raise TypeError(f"ruleDescr is {type(ruleDescr)}; expected str()")
+
+        if not isinstance(ruleRisk, str):
+            raise TypeError(f"ruleRisk is {type(ruleRisk)}; expected str()")
+
+        if not isinstance(ruleYaml, str):
+            raise TypeError(f"ruleYaml is {type(ruleYaml)}; expected str()")
+
+        if not isinstance(correlationTitle, str):
+            raise TypeError(f"correlationTitle is {type(correlationTitle)}; expected str()")
+
+        if not isinstance(eventHashes, list):
+            raise TypeError(f"eventHashes is {type(eventHashes)}; expected list()")
+
+        uniqueId = str(hashlib.md5(str(time.time() + random.SystemRandom().randint(0, 99999999)).encode('utf-8')).hexdigest())  # noqa: DUO130
+
+        qry = "INSERT INTO tbl_scan_correlation_results \
+            (id, scan_instance_id, title, rule_name, rule_descr, rule_risk, rule_id, rule_logic) \
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+
+        with self.dbhLock:
+            try:
+                self.dbh.execute(qry, (
+                    uniqueId, instanceId, correlationTitle, ruleName, ruleDescr, ruleRisk, ruleId, ruleYaml
+                ))
+                self.conn.commit()
+            except sqlite3.Error as e:
+                raise IOError(f"Unable to create correlation result in DB: {e.args[0]}")
+
+        # Map events to the correlation result
+        qry = "INSERT INTO tbl_scan_correlation_results_events \
+            (correlation_id, event_hash) \
+            VALUES (?, ?)"
+
+        with self.dbhLock:
+            for eventHash in eventHashes:
+                try:
+                    self.dbh.execute(qry, (
+                        uniqueId, eventHash
+                    ))
+                    self.conn.commit()
+                except sqlite3.Error as e:
+                    raise IOError(f"Unable to create correlation result in DB: {e.args[0]}")
+
+        return uniqueId
