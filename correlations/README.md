@@ -165,6 +165,7 @@ The analysis section applies (you guessed it) some analysis to the aggregated re
 
 **headline**
 After all data elements have been collected, filtered down, aggregated and analyzed, if data elements are remaining, these are what we call "correlation results" -> the results of your correlation rule. These need a "headline" to summarize the findings, which you can define here. To place any value from your data into the headline, you must enclose the field in `{}`, e.g. `{entity.data}`. There are two ways to write a `headline` rule. The typical way is to simply have `headline: titletexthere`, or have it as a block, in which case you can be more granular about how the correlation results are published:
+
     * **text**: The headline text, as described above.
     * **publish_collections**: The collection you wish to have associated with the correlation result. This is not often needed, but more in combination with the `match_all_to_first_collection` analysis rule in case your first collection is only used as a reference point and not actually contain any data elements you wish to publish with this correlation result. Take a look at the `egress_ip_from_wikipedia.yaml` rule for an example of this used in practice.
 
