@@ -457,6 +457,13 @@
             navTo("btn-correlations");
             refresh = function() { browseCorrelations(instanceId); }
             sf.fetchData('${docroot}/scancorrelations', {'id': instanceId}, function(data) {
+                if (data.length == 0) {
+                    table = "<div id='scansummary-content' class='alert alert-warning'><h4>No correlations.</h4>If the scan is still running please reload once it has completed.</div>";
+                    $("#loader").fadeOut(500);
+                    $("#mainbody").append(table);
+                    sf.updateTooltips();
+                    return;
+                }
                 var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed small'>";
                 table += "<thead><tr><th>Correlation</th><th>Risk</th><th>Data Elements</th></tr></thead><tbody>";
                 for (var i = 0; i < data.length; i++) {
