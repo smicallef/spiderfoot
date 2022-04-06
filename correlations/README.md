@@ -152,7 +152,7 @@ The analysis section applies (you guessed it) some analysis to the aggregated re
   * **method**:
       * **threshold**: Drop any collection/aggregation of data elements that do not meet the defined thresholds. You would use this analysis rule when wanting to generate a result only when a data element has appeared more or less than a limit specified, for instance reporting when an email address is reported just once, or more than 100 times.
         * **field**: The field you want to apply the threshold too. As per above, you can use `child.`, `source.` and `entity.` field prefixes here too.
-        * **count_unique_only**: By default the threshold is applied to the `field` specified on all events, but by setting `count_unique_only` to `true`, you can limit the threshold to only unique values in the `field` specified, so as not to also count duplicates.
+        * **count_unique_only**: By default the threshold is applied to the `field` specified on all data elements, but by setting `count_unique_only` to `true`, you can limit the threshold to only unique values in the `field` specified, so as not to also count duplicates.
         * **minimum**: The minimum number of data elements that must appear within the collection or aggregation.
         * **maximum**: The maximum number of data elements that must appear within the collection or aggregation.
       * **outlier**: Only keep outliers within any collection/aggregation of data elements.
@@ -162,6 +162,11 @@ The analysis section applies (you guessed it) some analysis to the aggregated re
         * **field**: The field you want to use for looking up between collections.
       * **match_all_to_first_collection**: Only keep data elements that have matched in some way to the first collection. This requires an aggregation to have been performed, as the field used for aggregation is what will be used for checking for a match.
         * **match_method**: How to match between all collections and the first collection. Options are `contains` (simple wildcard match), `exact` and `subnet` which reports a match if the expected field may contain an IP address that is within the first collection field containing a subnet.
+
+**headline**
+After all data elements have been collected, filtered down, aggregated and analyzed, if data elements are remaining, these are what we call "correlation results" -> the results of your correlation rule. These need a "headline" to summarize the findings, which you can define here. To place any value from your data into the headline, you must enclose the field in `{}`, e.g. `{entity.data}`. There are two ways to write a `headline` rule. The typical way is to simply have `headline: titletexthere`, or have it as a block, in which case you can be more granular about how the correlation results are published:
+    * **text**: The headline text, as described above.
+    * **publish_collections**: The collection you wish to have associated with the correlation result. This is not often needed, but more in combination with the `match_all_to_first_collection` analysis rule in case your first collection is only used as a reference point and not actually contain any data elements you wish to publish with this correlation result. Take a look at the `egress_ip_from_wikipedia.yaml` rule for an example of this used in practice.
 
 ### A note about `child.`, `source.` and `entity.` field prefixes
 
