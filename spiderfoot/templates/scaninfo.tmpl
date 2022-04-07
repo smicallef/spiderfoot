@@ -422,7 +422,7 @@
                 return;
             }
             sf.fetchData('${docroot}/scaneventresults', { 'id': instanceId, 'correlationId': correlationId }, function(data) {
-                var table = "<table id='corrcontent_'" + correlationId + "' class='table table-bordered table-striped small tablesorter'>";
+                var table = "<table id='corrcontent_'" + correlationId + "' class='table table-bordered table-striped small'>";
                 table += "<thead><tr>";
                 table += "<th>Data Element</th></th>";
                 table += "<th>Source Data Element</th>";
@@ -464,7 +464,7 @@
                     sf.updateTooltips();
                     return;
                 }
-                var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed small'>";
+                var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed tablesorter small'>";
                 table += "<thead><tr><th>Correlation</th><th>Risk</th><th>Data Elements</th></tr></thead><tbody>";
                 for (var i = 0; i < data.length; i++) {
                     table += "<tr>";
@@ -490,6 +490,17 @@
                 table += "</tbody></table>";
                 $("#loader").fadeOut(500);
                 $("#mainbody").append(table);
+                $.tablesorter.addParser({ 
+                    id: 'criticality', 
+                    is: function(s) { 
+                        return false; 
+                    }, 
+                    format: function(s) { 
+                        return s.toLowerCase().replace(/high/,3).replace(/medium/,2).replace(/low/,1).replace(/info/,0); 
+                    }, 
+                    type: 'numeric' 
+                });
+                $("#scansummary-content").tablesorter({ headers: { 1: { sorter: 'criticality' } } });
                 sf.updateTooltips();
             });
         }
