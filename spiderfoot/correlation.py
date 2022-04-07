@@ -46,6 +46,7 @@ class SpiderFootCorrelator:
         self.dbh = dbh
         self.scanId = scanId
         self.types = self.dbh.eventTypes()
+        self.rules = list()
         for t in self.types:
             self.type_entity_map[t[1]] = t[3]
 

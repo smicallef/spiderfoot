@@ -95,6 +95,7 @@ def main():
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
     p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
     p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
+    p.add_argument("-C", "--correlate", metavar="scanID", help="Run correlation rules against a scan ID.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
     p.add_argument("-u", choices=["all", "footprint", "investigate", "passive"], type=str, help="Select modules automatically by use case")
@@ -203,6 +204,15 @@ def main():
     sfConfig['__correlationrules__'] = sfCorrelationRules
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
+
+    if args.correlate:
+        if not correlationRulesRaw:
+            log.error("Unable to perform correlations as no correlation rules were found.")
+            sys.exit(-1)
+        log.info(f"Running {len(correlationRulesRaw)} correlation rules against scan, {args.correlate}.")
+        corr = SpiderFootCorrelator(dbh, correlationRulesRaw, args.correlate)
+        corr.run_correlations()
+        sys.exit(0)
 
     if args.modules:
         log.info("Modules available:")
