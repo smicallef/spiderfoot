@@ -350,6 +350,21 @@ class SpiderFootDb:
                 except Exception as e:
                     raise IOError(f"Tried to set up the SpiderFoot database schema, but failed: {e.args[0]}")
 
+            # For users with pre 4.0 databases, add the correlation
+            # tables + indexes if they don't exist.
+            try:
+                self.dbh.execute("SELECT COUNT(*) FROM tbl_scan_correlation_results")
+            except sqlite3.Error:
+                try:
+                    for query in self.createSchemaQueries:
+                        if "correlation" in query:
+                            self.dbh.execute(query)
+                        self.conn.commit()
+                except sqlite3.Error:
+                    raise IOError("Looks like you are running a pre-4.0 database. Unfortunately "
+                                  "SpiderFoot wasn't able to migrate you, so you'll need to delete "
+                                  "your SpiderFoot database in order to proceed.")
+
             if init:
                 for row in self.eventDetails:
                     event = row[0]
