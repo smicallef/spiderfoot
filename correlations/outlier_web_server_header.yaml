@@ -1,0 +1,19 @@
+id: outlier_web_server_header
+version: 1
+meta:
+  name: Outlier web server header
+  description: >
+    A web server produced a header response which appeared
+    in 10% or less of the total web servers found.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: WEBSERVER_HTTPHEADERS
+aggregation:
+  field: data
+analysis:
+  - method: outlier
+    maximum_percent: 10
+headline: "Outlier web server header found: {data}"
