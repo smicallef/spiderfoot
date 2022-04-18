@@ -197,15 +197,18 @@ class SpiderFootScanner():
         # Set the user agent
         self.__config['_useragent'] = self.__sf.optValueToData(self.__config['_useragent'])
 
-        # Get internet TLDs
-        tlddata = self.__sf.cacheGet("internet_tlds", self.__config['_internettlds_cache'])
+        # Set up the Internet TLD list.
+        # If the cached does not exist or has expired, reload it from scratch.
+        tld_data = self.__sf.cacheGet("internet_tlds", self.__config['_internettlds_cache'])
+        if tld_data is None:
+            tld_data = self.__sf.optValueToData(self.__config['_internettlds'])
+            if tld_data is None:
+                self.__sf.status(f"Scan [{self.__scanId}] failed: Could not update TLD list")
+                self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
+                raise ValueError("Could not update TLD list")
+            self.__sf.cachePut("internet_tlds", tld_data)
 
-        # If it wasn't loadable from cache, load it from scratch
-        if tlddata is None:
-            self.__config['_internettlds'] = self.__sf.optValueToData(self.__config['_internettlds'])
-            self.__sf.cachePut("internet_tlds", self.__config['_internettlds'])
-        else:
-            self.__config["_internettlds"] = tlddata.splitlines()
+        self.__config['_internettlds'] = tld_data.splitlines()
 
         self.__setStatus("INITIALIZING", time.time() * 1000, None)
 
