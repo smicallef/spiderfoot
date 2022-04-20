@@ -66,10 +66,12 @@ class sfp_citadel(SpiderFootPlugin):
     }
 
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.errorState = False
         self.__dataSource__ = "Leak-Lookup.com"
 
         for opt in list(userOpts.keys()):
