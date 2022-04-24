@@ -177,12 +177,14 @@ class sfp_robtex(SpiderFootPlugin):
 
             if res['content'] is None:
                 self.error("No reply from robtex API.")
+                self.errorState = True
                 continue
 
             try:
                 data = json.loads(res['content'])
             except Exception as e:
                 self.error(f"Error parsing JSON from Robtex API: {e}")
+                self.errorState = True
                 return
 
             if not data:
