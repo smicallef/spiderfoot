@@ -1011,7 +1011,7 @@ class SpiderFootCli(cmd.Cmd):
             self.dprint(f"Unable to start scan: {s[1]}")
 
         if "-w" in c[0]:
-            return self.do_logs("{s[1]} -w")
+            return self.do_logs(f"{s[1]} -w")
 
         return None
 

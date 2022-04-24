@@ -415,7 +415,7 @@ class SpiderFootCorrelator:
     # Aggregate events according to the rule
     def aggregate_events(self, rule: dict, events: list) -> dict:
         if 'field' not in rule:
-            self.error("Unable to find field definition for aggregation in {rule['id']}")
+            self.error(f"Unable to find field definition for aggregation in {rule['id']}")
             return False
 
         # strip sub fields that don't match value
