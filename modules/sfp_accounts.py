@@ -37,6 +37,7 @@ class sfp_accounts(SpiderFootPlugin):
         "musthavename": True,
         "userfromemail": True,
         "permutate": False,
+        "usernamesize": 4,
         "_maxthreads": 20
     }
 
@@ -47,6 +48,7 @@ class sfp_accounts(SpiderFootPlugin):
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
         "permutate": "Look for the existence of account name permutations. Useful to identify fraudulent social media accounts or account squatting.",
+        "usernamesize": "The minimum length of a username to query across social media sites. Helps avoid false positives for very common short usernames.",
         "_maxthreads": "Maximum threads"
     }
 
@@ -363,6 +365,10 @@ class sfp_accounts(SpiderFootPlugin):
                 continue
 
             if user not in self.reportedUsers and eventData != user:
+                if len(user) < self.opts['usernamesize']:
+                    self.debug(f"{user} is too short, skipping.")
+                    continue
+
                 evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
                 self.notifyListeners(evt)
                 self.reportedUsers.append(user)
