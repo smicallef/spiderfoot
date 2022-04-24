@@ -73,8 +73,7 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
             'VULNERABILITY_CVE_HIGH',
             'VULNERABILITY_CVE_MEDIUM',
             'VULNERABILITY_CVE_LOW',
-            'VULNERABILITY_GENERAL',
-            'IP_ADDRESS'
+            'VULNERABILITY_GENERAL'
         ]
 
     def handleEvent(self, event):
@@ -195,6 +194,7 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 self.debug(f"testssl.sh returned no output for {target}")
                 continue
 
+            cves = list()
             for result in result_json:
                 if result['finding'] == "not vulnerable":
                     continue
@@ -204,10 +204,16 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
 
                 if 'cve' in result:
                     for cve in result['cve'].split(" "):
+                        if cve in cves:
+                            continue
+                        cves.append(cve)
                         etype, cvetext = self.sf.cveInfo(cve)
                         evt = SpiderFootEvent(etype, cvetext, self.__name__, event)
                         self.notifyListeners(evt)
                 else:
+                    if result['id'] in cves:
+                        continue
+                    cves.append(result['id'])
                     evt = SpiderFootEvent("VULNERABILITY_GENERAL", f"{result['id']} ({result['finding']})", self.__name__, event)
                     self.notifyListeners(evt)
 
