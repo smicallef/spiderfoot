@@ -102,6 +102,9 @@ class sfp_robtex(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
+        if self.errorState:
+            return
+
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.cohostcount > self.opts['maxcohost']:
@@ -190,7 +193,7 @@ class sfp_robtex(SpiderFootPlugin):
             if status and status == "ratelimited":
                 self.error("You are being rate-limited by robtex API.")
                 self.errorState = True
-                continue
+                return
 
             evt = SpiderFootEvent("RAW_RIR_DATA", json.dumps(data), self.__name__, event)
             self.notifyListeners(evt)
