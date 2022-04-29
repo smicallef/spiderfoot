@@ -12,6 +12,10 @@ collections:
   - collect:
       - method: exact
         field: type
+        value: INTERNAL_IP_ADDRESS
+  - collect:
+      - method: exact
+        field: type
         value: IP_ADDRESS
       - method: regex
         field: data
