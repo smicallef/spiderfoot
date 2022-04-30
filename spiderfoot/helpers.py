@@ -56,6 +56,57 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
+    def loadModulesAsDict(path: str, ignore_files: list = ['sfp_template.py']) -> dict():
+        """Load modules from modules directory.
+
+        Args:
+            path (str): file system path for modules directory
+            ignore_files (list): List of module file names to ignore
+
+        Returns:
+            dict: SpiderFoot modules
+
+        Raises:
+            TypeError: ignore file list was invalid
+            ValueError: module path does not exist
+            SyntaxError: module data is malformed
+        """
+        if not isinstance(ignore_files, list):
+            raise TypeError(f"ignore_files is {type(ignore_files)}; expected list()")
+
+        if not os.path.isdir(path):
+            raise ValueError(f"Modules directory does not exist: {path}")
+
+        sfModules = dict()
+        valid_categories = ["Content Analysis", "Crawling and Scanning", "DNS",
+                            "Leaks, Dumps and Breaches", "Passive DNS",
+                            "Public Registries", "Real World", "Reputation Systems",
+                            "Search Engines", "Secondary Networks", "Social Media"]
+
+        for filename in os.listdir(path):
+            if not filename.startswith("sfp_"):
+                continue
+            if not filename.endswith(".py"):
+                continue
+            if filename in ignore_files:
+                continue
+
+            modName = filename.split('.')[0]
+            sfModules[modName] = dict()
+            mod = __import__('modules.' + modName, globals(), locals(), [modName])
+            sfModules[modName]['object'] = getattr(mod, modName)()
+            mod_dict = sfModules[modName]['object'].asdict()
+            sfModules[modName].update(mod_dict)
+
+            if len(sfModules[modName]['cats']) > 1:
+                raise SyntaxError(f"Module {modName} has multiple categories defined but only one is supported.")
+
+            if sfModules[modName]['cats'] and sfModules[modName]['cats'][0] not in valid_categories:
+                raise SyntaxError(f"Module {modName} has invalid category '{sfModules[modName]['cats']}'.")
+
+        return sfModules
+
+    @staticmethod
     def targetTypeFromString(target: str) -> None:
         """Return the scan target seed data type for the specified scan target input.
 

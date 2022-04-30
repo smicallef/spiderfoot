@@ -1,5 +1,4 @@
 # test_sfwebui.py
-import os
 import unittest
 
 import cherrypy
@@ -37,39 +36,9 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
             'root': '/'
         }
 
-        sfModules = dict()
         sf = SpiderFoot(default_config)
         mod_dir = sf.myPath() + '/modules/'
-        for filename in os.listdir(mod_dir):
-            if not filename.startswith("sfp_"):
-                continue
-            if not filename.endswith(".py"):
-                continue
-            # Skip the module template and debugging modules
-            if filename in ('sfp_template.py', 'sfp_stor_print.py'):
-                continue
-            modName = filename.split('.')[0]
-
-            # Load and instantiate the module
-            sfModules[modName] = dict()
-            mod = __import__('modules.' + modName, globals(), locals(), [modName])
-            sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
-            sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
-            sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-            if len(sfModules[modName]['cats']) > 1:
-                raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
-            sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
-            sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
-            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-            sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-            if hasattr(sfModules[modName]['object'], 'opts'):
-                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-            if hasattr(sfModules[modName]['object'], 'optdescs'):
-                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
-
-        default_config['__modules__'] = sfModules
+        default_config['__modules__'] = SpiderFootHelpers.loadModulesAsDict(mod_dir)
 
         conf = {
             '/query': {

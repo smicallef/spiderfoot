@@ -16,6 +16,7 @@ def default_options(request):
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
         '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.test.db",  # note: test database file
         '__modules__': None,  # List of modules. Will be set after start-up.
+        '__correlationrules__': None,  # List of correlation rules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',

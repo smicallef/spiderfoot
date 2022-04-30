@@ -64,6 +64,7 @@ def main():
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
         '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.db",
         '__modules__': None,  # List of modules. Will be set after start-up.
+        '__correlationrules__': None,  # List of correlation rules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',
@@ -133,51 +134,30 @@ def main():
     logListenerSetup(loggingQueue, sfConfig)
     logWorkerSetup(loggingQueue)
     log = logging.getLogger(f"spiderfoot.{__name__}")
-
-    sfModules = dict()
-    correlationRulesRaw = dict()
     sft = SpiderFoot(sfConfig)
 
     # Load each module in the modules directory with a .py extension
-    mod_dir = sft.myPath() + '/modules/'
-
-    # Load each correlation rule in the correlations directory with
-    # a .yaml extension
-    corr_dir = sft.myPath() + '/correlations/'
-
-    if not os.path.isdir(mod_dir):
-        log.critical(f"Modules directory does not exist: {mod_dir}")
+    sfModules = dict()
+    try:
+        mod_dir = sft.myPath() + '/modules/'
+        sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir)
+    except BaseException as e:
+        log.critical(f"Failed to load modules: {e}")
         sys.exit(-1)
-
-    for filename in os.listdir(mod_dir):
-        if not filename.endswith(".py"):
-            continue
-        if not filename.startswith("sfp_"):
-            continue
-        if filename in ('sfp_template.py'):
-            continue
-
-        modName = filename.split('.')[0]
-
-        # Load and instantiate the module
-        sfModules[modName] = dict()
-        try:
-            mod = __import__('modules.' + modName, globals(), locals(), [modName])
-            sfModules[modName]['object'] = getattr(mod, modName)()
-            mod_dict = sfModules[modName]['object'].asdict()
-            sfModules[modName].update(mod_dict)
-        except BaseException as e:
-            log.critical(f"Failed to load module {modName}: {e}")
-            sys.exit(-1)
 
     if not sfModules:
         log.critical(f"No modules found in modules directory: {mod_dir}")
         sys.exit(-1)
 
+    # Load each correlation rule in the correlations directory with
+    # a .yaml extension
+    corr_dir = sft.myPath() + '/correlations/'
+
     if not os.path.isdir(corr_dir):
         log.critical(f"Correlation rules directory does not exist: {corr_dir}")
         sys.exit(-1)
 
+    correlationRulesRaw = dict()
     for filename in os.listdir(corr_dir):
         if not filename.endswith(".yaml"):
             continue
@@ -202,6 +182,7 @@ def main():
     # Add modules and the correlator to sfConfig so they can be used elsewhere
     sfConfig['__modules__'] = sfModules
     sfConfig['__correlationrules__'] = sfCorrelationRules
+
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
 
@@ -245,7 +226,7 @@ def main():
         sfWebUiConfig['port'] = port
 
         start_web_server(sfWebUiConfig, sfConfig, loggingQueue)
-        exit(0)
+        sys.exit(0)
 
     start_scan(sfConfig, sfModules, args, loggingQueue)
 
