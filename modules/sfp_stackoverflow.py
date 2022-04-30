@@ -28,7 +28,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
         'useCases': ["Passive"],
         'categories': ["Content Analysis"],
         'dataSource': {
-            'website': "https://www.stackecxchange.com",
+            'website': "https://www.stackexchange.com",
             'model': "FREE_NOAUTH_LIMITED",
             'references': [
                 "https://api.stackexchange.com/docs"

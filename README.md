@@ -309,7 +309,7 @@ Social Network Identifier|Identify presence on social media networks such as Lin
 [SpyOnWeb](http://spyonweb.com/)|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|Tiered API
 [Spyse](https://spyse.com)|Search Spyse.com Internet assets registry for information about domains, IP addresses, host info, potential vulnerabilities, passive DNS, etc.|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|Internal
-[StackOverflow](https://www.stackecxchange.com)|Search StackOverflow for any mentions of a target domain. Returns potentially related information.|Tiered API
+[StackOverflow](https://www.stackexchange.com)|Search StackOverflow for any mentions of a target domain. Returns potentially related information.|Tiered API
 [Steven Black Hosts](https://github.com/StevenBlack/hosts)|Check if a domain is malicious (malware or adware) according to Steven Black Hosts list.|Free API
 Strange Header Identifier|Obtain non-standard HTTP headers returned by web servers.|Internal
 Subdomain Takeover Checker|Check if affiliated subdomains are vulnerable to takeover.|Internal
