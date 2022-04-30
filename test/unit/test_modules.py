@@ -1,10 +1,10 @@
-# test_spiderfoot_module_loading.py
-import os
+# test_modules.py
 import pytest
 import unittest
 
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootDb
+from spiderfoot import SpiderFootHelpers
 
 
 @pytest.mark.usefixtures
@@ -15,25 +15,8 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
     @staticmethod
     def load_modules(sf):
-        # Go through each module in the modules directory with a .py extension
-        sfModules = dict()
         mod_dir = sf.myPath() + '/modules/'
-        for filename in os.listdir(mod_dir):
-            if not filename.startswith("sfp_"):
-                continue
-            if not filename.endswith(".py"):
-                continue
-
-            modName = filename.split('.')[0]
-
-            # Load and instantiate the module
-            sfModules[modName] = dict()
-            mod = __import__('modules.' + modName, globals(), locals(), [modName])
-            sfModules[modName]['object'] = getattr(mod, modName)()
-            mod_dict = sfModules[modName]['object'].asdict()
-            sfModules[modName].update(mod_dict)
-
-        return sfModules
+        return SpiderFootHelpers.loadModulesAsDict(mod_dir)
 
     def test_module_use_cases_are_valid(self):
         sf = SpiderFoot(self.default_options)
