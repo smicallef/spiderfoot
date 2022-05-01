@@ -39,6 +39,7 @@ Create a use case scan
 Scan info page should render tabs
     Element Should Be Visible            id:btn-status
     Element Should Be Visible            id:btn-browse
+    Element Should Be Visible            id:btn-correlations
     Element Should Be Visible            id:btn-graph
     Element Should Be Visible            id:btn-info
     Element Should Be Visible            id:btn-log
@@ -53,6 +54,10 @@ Scan info Browse tab should render
     Element Should Be Visible            id:btn-export
     Element Should Be Visible            id:searchvalue
     Element Should Be Visible            id:searchbutton
+
+Scan info Correlations tab should render
+    Scan info page should render tabs
+    Element Should Be Visible            id:scansummary-content
 
 Scan info Graph tab should render
     Scan info page should render tabs
@@ -104,7 +109,7 @@ Main navigation pages should render correctly
     Wait Until Page Contains             New Scan    timeout=5s
     New scan page should render
     Click Element                        id:nav-link-scans
-    Wait Until Page Contains             Scans       timeout=5s
+    Wait Until Page Contains             Started     timeout=5s
     Scan list page should render
     Click Element                        id:nav-link-settings
     Wait Until Page Contains             Settings    timeout=5s
@@ -113,7 +118,7 @@ Main navigation pages should render correctly
 Scan info page should render correctly
     Create a module scan                 test scan info       spiderfoot.net           sfp_countryname
     Wait Until Page Contains             Browse               timeout=5s
-    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=5s
+    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=10s
     Click Element                        id:btn-status
     Scan info Summary tab should render
     Click Element                        id:btn-browse
@@ -133,7 +138,7 @@ Scan list page should list scans
 A sfp_dnsresolve scan should resolve INTERNET_NAME to IP_ADDRESS
     Create a module scan                 dns resolve          spiderfoot.net           sfp_dnsresolve
     Wait Until Page Contains             Browse               timeout=5s
-    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=5s
+    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=10s
     Click Element                        id:btn-browse
     Scan info Browse tab should render
     Page Should Contain                  Domain Name
@@ -143,7 +148,7 @@ A sfp_dnsresolve scan should resolve INTERNET_NAME to IP_ADDRESS
 A sfp_dnsresolve scan should reverse resolve IP_ADDRESS to INTERNET_NAME
     Create a module scan                 reverse resolve      1.1.1.1                  sfp_dnsresolve
     Wait Until Page Contains             Browse               timeout=5s
-    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=5s
+    Wait Until Element Contains          scanstatusbadge      FINISHED                 timeout=10s
     Click Element                        id:btn-browse
     Scan info Browse tab should render
     Page Should Contain                  Domain Name
@@ -153,7 +158,7 @@ A sfp_dnsresolve scan should reverse resolve IP_ADDRESS to INTERNET_NAME
 #A passive scan with unresolvable target internet name should fail
 #    Create a use case scan               shouldnotresolve.doesnotexist.local  passive
 #    Wait Until Page Contains             Browse           timeout=5s
-#    Wait Until Element Contains          scanstatusbadge  RUNNING  timeout=5s
+#    Wait Until Element Contains          scanstatusbadge  RUNNING  timeout=10s
 #    Click Element                        id:btn-browse
 #    Page Should Contain                  Domain Name
 #    Page Should Contain                  Internet Name
