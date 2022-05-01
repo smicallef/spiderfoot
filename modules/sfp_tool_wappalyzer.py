@@ -25,10 +25,7 @@ class sfp_tool_wappalyzer(SpiderFootPlugin):
         "name": "Tool - Wappalyzer",
         "summary": "Wappalyzer indentifies technologies on websites.",
         "flags": ["tool"],
-        "useCases": [
-            "Footprint",
-            "Investigate"
-        ],
+        "useCases": ["Footprint", "Investigate"],
         "categories": ["Content Analysis"],
         "toolDetails": {
             "name": "Wappalyzer",

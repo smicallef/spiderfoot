@@ -26,10 +26,7 @@ class sfp_tool_retirejs(SpiderFootPlugin):
         "name": "Tool - Retire.js",
         "summary": "Scanner detecting the use of JavaScript libraries with known vulnerabilities",
         "flags": ["tool"],
-        "useCases": [
-            "Footprint",
-            "Investigate"
-        ],
+        "useCases": ["Footprint", "Investigate"],
         "categories": ["Content Analysis"],
         "toolDetails": {
             "name": "Retire.js",
