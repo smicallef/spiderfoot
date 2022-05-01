@@ -136,13 +136,15 @@ def main():
     log = logging.getLogger(f"spiderfoot.{__name__}")
     sft = SpiderFoot(sfConfig)
 
+    # Add descriptions of the global config options
+    sfConfig['__globaloptdescs__'] = sfOptdescs
+
     # Load each module in the modules directory with a .py extension
-    sfModules = dict()
     try:
         mod_dir = sft.myPath() + '/modules/'
         sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir)
     except BaseException as e:
-        log.critical(f"Failed to load modules: {e}")
+        log.critical(f"Failed to load modules: {e}", exc_info=True)
         sys.exit(-1)
 
     if not sfModules:
@@ -151,48 +153,48 @@ def main():
 
     # Load each correlation rule in the correlations directory with
     # a .yaml extension
-    corr_dir = sft.myPath() + '/correlations/'
-
-    if not os.path.isdir(corr_dir):
-        log.critical(f"Correlation rules directory does not exist: {corr_dir}")
+    try:
+        correlations_dir = sft.myPath() + '/correlations/'
+        correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(correlations_dir)
+    except BaseException as e:
+        log.critical(f"Failed to load correlation rules: {e}", exc_info=True)
         sys.exit(-1)
 
-    correlationRulesRaw = dict()
-    for filename in os.listdir(corr_dir):
-        if not filename.endswith(".yaml"):
-            continue
-        if filename in ('template.yaml'):
-            continue
-
-        ruleName = filename.split('.')[0]
-        correlationRulesRaw[ruleName] = open(corr_dir + filename, 'r').read()
+    # Initialize database handle
+    try:
+        dbh = SpiderFootDb(sfConfig)
+    except Exception as e:
+        log.critical(f"Failed to initialize database: {e}", exc_info=True)
+        sys.exit(-1)
 
     # Sanity-check the rules and parse them
-    dbh = SpiderFootDb(sfConfig)
-    correlator = None
+    sfCorrelationRules = list()
     if not correlationRulesRaw:
-        log.error(f"No correlation rules found in the directory: {corr_dir}. Maybe this was intended?")
-        sfCorrelationRules = list()
+        log.error(f"No correlation rules found in correlations directory: {correlations_dir}")
     else:
-        correlator = SpiderFootCorrelator(dbh, correlationRulesRaw)
-        if not correlator:
-            log.fatal("Failure initializing correlation rules, aborting.")
-        sfCorrelationRules = correlator.get_ruleset()
+        try:
+            correlator = SpiderFootCorrelator(dbh, correlationRulesRaw)
+            sfCorrelationRules = correlator.get_ruleset()
+        except Exception as e:
+            log.critical(f"Failure initializing correlation rules: {e}", exc_info=True)
+            sys.exit(-1)
 
-    # Add modules and the correlator to sfConfig so they can be used elsewhere
+    # Add modules and correlation rules to sfConfig so they can be used elsewhere
     sfConfig['__modules__'] = sfModules
     sfConfig['__correlationrules__'] = sfCorrelationRules
-
-    # Add descriptions of the global config options
-    sfConfig['__globaloptdescs__'] = sfOptdescs
 
     if args.correlate:
         if not correlationRulesRaw:
             log.error("Unable to perform correlations as no correlation rules were found.")
             sys.exit(-1)
-        log.info(f"Running {len(correlationRulesRaw)} correlation rules against scan, {args.correlate}.")
-        corr = SpiderFootCorrelator(dbh, correlationRulesRaw, args.correlate)
-        corr.run_correlations()
+
+        try:
+            log.info(f"Running {len(correlationRulesRaw)} correlation rules against scan, {args.correlate}.")
+            corr = SpiderFootCorrelator(dbh, correlationRulesRaw, args.correlate)
+            corr.run_correlations()
+        except Exception as e:
+            log.critical(f"Unable to run correlation rules: {e}", exc_info=True)
+            sys.exit(-1)
         sys.exit(0)
 
     if args.modules:

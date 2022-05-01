@@ -107,6 +107,39 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
+    def loadCorrelationRulesRaw(path: str, ignore_files: list = ['template.yaml']) -> dict():
+        """Load correlation rules from correlations directory.
+
+        Args:
+            path (str): file system path for correlations directory
+            ignore_files (list): List of module file names to ignore
+
+        Returns:
+            dict: raw correlation rules
+
+        Raises:
+            TypeError: ignore file list was invalid
+            ValueError: module path does not exist
+        """
+        if not isinstance(ignore_files, list):
+            raise TypeError(f"ignore_files is {type(ignore_files)}; expected list()")
+
+        if not os.path.isdir(path):
+            raise ValueError(f"Correlations directory does not exist: {path}")
+
+        correlationRulesRaw = dict()
+        for filename in os.listdir(path):
+            if not filename.endswith(".yaml"):
+                continue
+            if filename in ignore_files:
+                continue
+
+            ruleName = filename.split('.')[0]
+            correlationRulesRaw[ruleName] = open(path + filename, 'r').read()
+
+        return correlationRulesRaw
+
+    @staticmethod
     def targetTypeFromString(target: str) -> None:
         """Return the scan target seed data type for the specified scan target input.
 

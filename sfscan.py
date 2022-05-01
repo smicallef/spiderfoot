@@ -424,9 +424,9 @@ class SpiderFootScanner():
 
         finally:
             if not failed:
+                self.__setStatus("FINISHED", None, time.time() * 1000)
                 self.runCorrelations()
                 self.__sf.status(f"Scan [{self.__scanId}] completed.")
-                self.__setStatus("FINISHED", None, time.time() * 1000)
             self.__dbh.close()
 
     def runCorrelations(self):
