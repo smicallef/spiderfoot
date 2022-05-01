@@ -873,7 +873,7 @@ class SpiderFoot:
             return False
 
         try:
-            return bool(netaddr.IPNetwork(str(cidr)).size > 0)
+            return netaddr.IPNetwork(str(cidr)).size > 0
         except BaseException:
             return False
 
