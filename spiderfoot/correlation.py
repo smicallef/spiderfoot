@@ -81,7 +81,7 @@ class SpiderFootCorrelator:
                 self.rules.append(yaml.safe_load(ruleset[rule_id]))
                 self.rules[len(self.rules) - 1]['rawYaml'] = ruleset[rule_id]
             except Exception as e:
-                raise SyntaxError(f"Unable to process a YAML correlation rule [{rule_id}]: {e}")
+                raise SyntaxError(f"Unable to process a YAML correlation rule [{rule_id}]") from e
 
         # Strip any trailing newlines that may have creeped into meta name/description
         for rule in self.rules:
@@ -508,7 +508,7 @@ class SpiderFootCorrelator:
                 for se in e['source']:
                     se['_collection'] = collectIndex
 
-        self.log.debug("returning collection...")
+        self.log.debug(f"returning collection ({len(events)})...")
         return events
 
     def aggregate_events(self, rule: dict, events: list) -> dict:
@@ -595,6 +595,15 @@ class SpiderFootCorrelator:
         self.log.debug(f"called with buckets {buckets}")
 
         def check_event(events: list, reference: list) -> bool:
+            """Check event.
+
+            Args:
+                events (list): TBD
+                reference (list): TBD
+
+            Returns:
+                bool: TBD
+            """
             for event_data in events:
                 if rule['match_method'] == 'subnet':
                     for r in reference:
@@ -647,6 +656,13 @@ class SpiderFootCorrelator:
                 del(buckets[bucket])
 
     def analysis_first_collection_only(self, rule: dict, buckets: dict) -> None:
+        """analysis_first_collection_only TBD
+
+        Args:
+            rule (dict): TBD
+            buckets (dict): TBD
+        """
+
         colzero = set()
 
         for bucket in buckets:
@@ -671,6 +687,13 @@ class SpiderFootCorrelator:
                     break
 
     def analysis_outlier(self, rule: dict, buckets: dict) -> None:
+        """analysis_outlier TBD
+
+        Args:
+            rule (dict): TBD
+            buckets (dict): TBD
+        """
+
         countmap = dict()
         for bucket in list(buckets.keys()):
             countmap[bucket] = len(buckets[bucket])
@@ -701,6 +724,13 @@ class SpiderFootCorrelator:
             del(buckets[bucket])
 
     def analysis_threshold(self, rule: dict, buckets: dict) -> None:
+        """analysis_treshold TBD
+
+        Args:
+            rule (dict): TBD
+            buckets (dict): TBD
+        """
+
         for bucket in list(buckets.keys()):
             countmap = dict()
             for event in buckets[bucket]:
@@ -727,22 +757,32 @@ class SpiderFootCorrelator:
                 del(buckets[bucket])
 
     def analyze_field_scope(self, field: str) -> list:
-        children = False
-        source = False
-        entity = False
+        """Analysis field scope.
 
-        if field.startswith('child.'):
-            children = True
-        if field.startswith('source.'):
-            source = True
-        if field.startswith('entity.'):
-            entity = True
+        Args:
+            field (str): TBD
 
-        return children, source, entity
+        Returns:
+            list: TBD
+        """
 
-    # Analyze the rule for use of children, sources or entities
-    # so that they can be fetched during collection
+        return [
+            field.startswith('child.'),
+            field.startswith('source.'),
+            field.startswith('entity.')
+        ]
+
     def analyze_rule_scope(self, rule: dict) -> list:
+        """Analyze the rule for use of children, sources or entities
+        so that they can be fetched during collection.
+
+        Args:
+            rule (dict): TBD
+
+        Returns:
+            list: TBD
+        """
+
         children = False
         source = False
         entity = False
@@ -798,17 +838,15 @@ class SpiderFootCorrelator:
         fetchChildren, fetchSources, fetchEntities = self.analyze_rule_scope(rule)
 
         # Go through collections and collect the data from the DB
-        collectIndex = 0
-        for c in rule.get('collections'):
+        for collectIndex, c in enumerate(rule.get('collections')):
             events.extend(self.collect_events(c['collect'],
                           fetchChildren,
                           fetchSources,
                           fetchEntities,
                           collectIndex))
-            collectIndex += 1
 
         if not events:
-            self.log.debug("no events found after going through collections")
+            self.log.debug("No events found after going through collections.")
             return None
 
         self.log.debug(f"{len(events)} proceeding to next stage: aggregation.")
@@ -841,7 +879,7 @@ class SpiderFootCorrelator:
             data (list): TBD
 
         Returns:
-            str: TBD
+            str: correlation rule title
         """
         title = rule['headline']
         if type(title) == dict:
@@ -965,12 +1003,10 @@ class SpiderFootCorrelator:
 
             for opt in strictoptions:
                 if type(rule[field]) == list:
-                    item = 0
-                    for optelement in rule[field]:
+                    for item, optelement in enumerate(rule[field]):
                         if not optelement.get(opt):
                             self.log.error(f"Required field for {field} missing in {rule['id']}, item {item}: {opt}")
                             ok = False
-                        item += 1
                     continue
 
                 if not rule[field].get(opt):

@@ -51,7 +51,7 @@ class SpiderFootScanner():
     __modconfig = dict()
     __scanName = None
 
-    def __init__(self, scanName, scanId, targetValue, targetType, moduleList, globalOpts, start=True):
+    def __init__(self, scanName: str, scanId: str, targetValue: str, targetType: str, moduleList: list, globalOpts: dict, start: bool = True) -> None:
         """Initialize SpiderFootScanner object.
 
         Args:
@@ -128,7 +128,7 @@ class SpiderFootScanner():
         except (TypeError, ValueError) as e:
             self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
-            raise ValueError(f"Invalid target: {e}")
+            raise ValueError(f"Invalid target: {e}") from None
 
         # Save the config current set for this scan
         self.__config['_modulesenabled'] = self.__moduleList
@@ -221,14 +221,14 @@ class SpiderFootScanner():
             self.__startScan()
 
     @property
-    def scanId(self):
+    def scanId(self) -> str:
         return self.__scanId
 
     @property
-    def status(self):
+    def status(self) -> str:
         return self.__status
 
-    def __setStatus(self, status, started=None, ended=None):
+    def __setStatus(self, status: str, started: float = None, ended: float = None) -> None:
         """Set the status of the currently running scan (if any).
 
         Args:
@@ -259,7 +259,7 @@ class SpiderFootScanner():
         self.__status = status
         self.__dbh.scanInstanceSet(self.__scanId, started, ended, status)
 
-    def __startScan(self):
+    def __startScan(self) -> None:
         """Start running a scan.
 
         Raises:
@@ -416,9 +416,11 @@ class SpiderFootScanner():
 
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.__sf.error(f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
-                            + "Please report this as a bug: "
-                            + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+            self.__sf.error(
+                f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
+                + "Please report this as a bug: " +
+                + repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            )
             self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
@@ -429,7 +431,9 @@ class SpiderFootScanner():
                 self.__sf.status(f"Scan [{self.__scanId}] completed.")
             self.__dbh.close()
 
-    def runCorrelations(self):
+    def runCorrelations(self) -> None:
+        """Run correlation rules."""
+
         self.__sf.status(f"Running {len(self.__config['__correlationrules__'])} correlation rules.")
         ruleset = dict()
         for rule in self.__config['__correlationrules__']:
@@ -437,7 +441,14 @@ class SpiderFootScanner():
         corr = SpiderFootCorrelator(self.__dbh, ruleset, self.__scanId)
         corr.run_correlations()
 
-    def waitForThreads(self):
+    def waitForThreads(self) -> None:
+        """Wait for threads.
+
+        Raises:
+            TypeError: queue tried to process a malformed event
+            AssertionError: scan halted for some reason
+        """
+
         counter = 0
 
         try:
@@ -510,7 +521,15 @@ class SpiderFootScanner():
                 mod._stopScanning = True
             self.__sharedThreadPool.shutdown(wait=True)
 
-    def threadsFinished(self, log_status=False):
+    def threadsFinished(self, log_status: bool = False) -> bool:
+        """Check if all threads are complete.
+
+        Args:
+            log_status (bool): print thread queue status to debug log
+
+        Returns:
+            bool: True if all threads are finished
+        """
         if self.eventQueue is None:
             return True
 

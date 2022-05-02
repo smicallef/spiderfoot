@@ -248,8 +248,7 @@ class SpiderFootCli(cmd.Cmd):
         spaces = 2
         # Find the maximum column sizes
         for r in data:
-            i = 0
-            for c in r:
+            for i, c in enumerate(r):
                 if type(r) == list:
                     # we have  list index
                     cn = str(i)
@@ -264,7 +263,6 @@ class SpiderFootCli(cmd.Cmd):
                 # print(str(cn) + ", " + str(c) + ", " + str(v))
                 if len(v) > maxsize.get(cn, 0):
                     maxsize[cn] = len(v)
-                i += 1
 
         # Adjust for long titles
         if titlemap:
@@ -273,8 +271,7 @@ class SpiderFootCli(cmd.Cmd):
                     maxsize[c] = len(titlemap.get(c, c))
 
         # Display the column titles
-        i = 0
-        for c in cols:
+        for i, c in enumerate(cols):
             if titlemap:
                 t = titlemap.get(c, c)
             else:
@@ -287,19 +284,16 @@ class SpiderFootCli(cmd.Cmd):
             if sdiff > 0 and i < len(cols) - 1:
                 # out += " " * sdiff
                 out.append(" " * sdiff)
-            i += 1
         # out += "\n"
         out.append('\n')
 
         # Then the separator
-        i = 0
-        for c in cols:
+        for i, c in enumerate(cols):
             # out += "-" * ((maxsize[c]+spaces))
             out.append("-" * ((maxsize[c] + spaces)))
             if i < len(cols) - 1:
                 # out += "+"
                 out.append("+")
-            i += 1
         # out += "\n"
         out.append("\n")
 
@@ -1364,9 +1358,10 @@ if __name__ == "__main__":
     # Load commands from a file
     if args.e:
         try:
-            cin = open(args.e, "r")
+            with open(args.e, 'r') as f:
+                cin = f.read()
         except BaseException as e:
-            print("Unable to open " + args.e + ":" + " (" + str(e) + ")")
+            print(f"Unable to open {args.e}: ({e})")
             sys.exit(-1)
     else:
         cin = sys.stdin
@@ -1380,9 +1375,8 @@ if __name__ == "__main__":
         s.ownopts['cli.password'] = args.p
     if args.P:
         try:
-            pf = open(args.P, "r")
-            s.ownopts['cli.password'] = pf.readlines()[0].strip('\n')
-            pf.close()
+            with open(args.P, 'r') as f:
+                s.ownopts['cli.password'] = f.readlines()[0].strip('\n')
         except BaseException as e:
             print(f"Unable to open {args.P}: ({e})")
             sys.exit(-1)

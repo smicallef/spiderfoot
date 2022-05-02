@@ -91,10 +91,9 @@ class sfp_s3bucket(SpiderFootPlugin):
     def threadSites(self, siteList):
         self.s3results = dict()
         running = True
-        i = 0
         t = []
 
-        for site in siteList:
+        for i, site in enumerate(siteList):
             if self.checkForStop():
                 return False
 
@@ -103,7 +102,6 @@ class sfp_s3bucket(SpiderFootPlugin):
             t.append(threading.Thread(name='thread_sfp_s3buckets_' + tname,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
-            i += 1
 
         # Block until all threads are finished
         while running:

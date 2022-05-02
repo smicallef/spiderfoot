@@ -117,7 +117,7 @@ class SpiderFoot:
         for logging events to the database about a scan.
 
         Args:
-            dbh (SpiderFootDB): database handle
+            dbh (SpiderFootDb): database handle
         """
         self._dbh = dbh
 
@@ -1014,11 +1014,10 @@ class SpiderFoot:
 
         for d in dicts:
             try:
-                wdct = open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r')
-                dlines = wdct.readlines()
-                wdct.close()
+                with open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r') as wdct:
+                    dlines = wdct.readlines()
             except BaseException as e:
-                self.debug("Could not read dictionary: " + str(e))
+                self.debug(f"Could not read dictionary: {e}")
                 continue
 
             for w in dlines:
@@ -2364,7 +2363,7 @@ class SpiderFoot:
 
         return True
 
-    def cveInfo(self, cveId: str, sources="circl,nist") -> (str, str):
+    def cveInfo(self, cveId: str, sources: str = "circl,nist") -> (str, str):
         """Look up a CVE ID for more information in the first available source.
 
         Args:
@@ -2379,7 +2378,7 @@ class SpiderFoot:
         # a real/mappable CVE.
         eventType = "VULNERABILITY_GENERAL"
 
-        def cveRating(score):
+        def cveRating(score: int) -> str:
             if score == "Unknown":
                 return None
             if score >= 0 and score <= 3.9:

@@ -141,10 +141,8 @@ class sfp_similar(SpiderFootPlugin):
             domlist.append(c + dom)
 
         # Search for double character domains
-        pos = 0
-        for c in dom:
+        for pos, c in enumerate(dom):
             domlist.append(dom[0:pos] + c + c + dom[(pos + 1):len(dom)])
-            pos += 1
 
         for d in domlist:
             try:

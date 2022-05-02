@@ -56,7 +56,7 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
-    def loadModulesAsDict(path: str, ignore_files: list = ['sfp_template.py']) -> dict():
+    def loadModulesAsDict(path: str, ignore_files: list = ['sfp_template.py']) -> dict:
         """Load modules from modules directory.
 
         Args:
@@ -107,7 +107,7 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
-    def loadCorrelationRulesRaw(path: str, ignore_files: list = ['template.yaml']) -> dict():
+    def loadCorrelationRulesRaw(path: str, ignore_files: list = ['template.yaml']) -> dict:
         """Load correlation rules from correlations directory.
 
         Args:
@@ -135,12 +135,13 @@ class SpiderFootHelpers():
                 continue
 
             ruleName = filename.split('.')[0]
-            correlationRulesRaw[ruleName] = open(path + filename, 'r').read()
+            with open(path + filename, 'r') as f:
+                correlationRulesRaw[ruleName] = f.read()
 
         return correlationRulesRaw
 
     @staticmethod
-    def targetTypeFromString(target: str) -> None:
+    def targetTypeFromString(target: str) -> str:
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
@@ -321,7 +322,7 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_next_parent_entities(item: str, pids: list) -> list:
+        def get_next_parent_entities(item: str, pids: list = []) -> list:
             ret = list()
 
             for [parent, entity_id] in parents[item]:
@@ -362,9 +363,8 @@ class SpiderFootHelpers():
                         # Add entity parent
                         mapping.add((entity, parent))
                 else:
-                    ppids = list()
                     # Check parent for entityship.
-                    next_parents = get_next_parent_entities(parent, ppids)
+                    next_parents = get_next_parent_entities(parent)
                     for next_parent in next_parents:
                         if entity != next_parent:
                             # Add next entity parent
