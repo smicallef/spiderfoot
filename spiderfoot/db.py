@@ -283,7 +283,7 @@ class SpiderFootDb:
         ['WIKIPEDIA_PAGE_EDIT', 'Wikipedia Page Edit', 0, 'DESCRIPTOR'],
     ]
 
-    def __init__(self, opts, init=False):
+    def __init__(self, opts: dict, init: bool = False) -> None:
         """Initialize database and create handle to the SQLite database file.
         Creates the database file if it does not exist.
         Creates database schema if it does not exist.
@@ -300,11 +300,11 @@ class SpiderFootDb:
         """
 
         if not isinstance(opts, dict):
-            raise TypeError(f"opts is {type(opts)}; expected dict()")
+            raise TypeError(f"opts is {type(opts)}; expected dict()") from None
         if not opts:
-            raise ValueError("opts is empty")
+            raise ValueError("opts is empty") from None
         if not opts.get('__database'):
-            raise ValueError("opts['__database'] is empty")
+            raise ValueError("opts['__database'] is empty") from None
 
         database_path = opts['__database']
 
@@ -317,19 +317,28 @@ class SpiderFootDb:
         try:
             dbh = sqlite3.connect(database_path)
         except Exception as e:
-            raise IOError(f"Error connecting to internal database {database_path}: {e}")
+            raise IOError(f"Error connecting to internal database {database_path}") from e
 
         if dbh is None:
-            raise IOError(f"Could not connect to internal database, and could not create {database_path}")
+            raise IOError(f"Could not connect to internal database, and could not create {database_path}") from None
 
         dbh.text_factory = str
 
         self.conn = dbh
         self.dbh = dbh.cursor()
 
-        # SQLite doesn't support regex queries, so we create
-        # a custom function to do so..
-        def __dbregex__(qry, data):
+        def __dbregex__(qry: str, data: str) -> bool:
+            """SQLite doesn't support regex queries, so we create
+            a custom function to do so.
+
+            Args:
+                qry (str): TBD
+                data (str): TBD
+
+            Returns:
+                bool: matches
+            """
+
             try:
                 rx = re.compile(qry, re.IGNORECASE | re.DOTALL)
                 ret = rx.match(data)
@@ -348,7 +357,7 @@ class SpiderFootDb:
                 try:
                     self.create()
                 except Exception as e:
-                    raise IOError(f"Tried to set up the SpiderFoot database schema, but failed: {e.args[0]}")
+                    raise IOError("Tried to set up the SpiderFoot database schema, but failed") from e
 
             # For users with pre 4.0 databases, add the correlation
             # tables + indexes if they don't exist.
@@ -363,7 +372,7 @@ class SpiderFootDb:
                 except sqlite3.Error:
                     raise IOError("Looks like you are running a pre-4.0 database. Unfortunately "
                                   "SpiderFoot wasn't able to migrate you, so you'll need to delete "
-                                  "your SpiderFoot database in order to proceed.")
+                                  "your SpiderFoot database in order to proceed.") from None
 
             if init:
                 for row in self.eventDetails:
@@ -386,7 +395,7 @@ class SpiderFootDb:
     # Back-end database operations
     #
 
-    def create(self):
+    def create(self) -> None:
         """Create the database schema.
 
         Raises:
@@ -410,15 +419,15 @@ class SpiderFootDb:
                     ))
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when setting up database: {e.args[0]}")
+                raise IOError("SQL error encountered when setting up database") from e
 
-    def close(self):
+    def close(self) -> None:
         """Close the database handle."""
 
         with self.dbhLock:
             self.dbh.close()
 
-    def search(self, criteria, filterFp=False):
+    def search(self, criteria: dict, filterFp: bool = False) -> list:
         """Search database.
 
         Args:
@@ -439,7 +448,7 @@ class SpiderFootDb:
             IOError: database I/O failed
         """
         if not isinstance(criteria, dict):
-            raise TypeError(f"criteria is {type(criteria)}; expected dict()")
+            raise TypeError(f"criteria is {type(criteria)}; expected dict()") from None
 
         valid_criteria = ['scan_id', 'type', 'value', 'regex']
 
@@ -449,14 +458,14 @@ class SpiderFootDb:
                 continue
 
             if not isinstance(criteria.get(key), str):
-                raise TypeError(f"criteria[{key}] is {type(criteria.get(key))}; expected str()")
+                raise TypeError(f"criteria[{key}] is {type(criteria.get(key))}; expected str()") from None
 
             if not criteria[key]:
                 criteria.pop(key, None)
                 continue
 
         if len(criteria) == 0:
-            raise ValueError(f"No valid search criteria provided; expected: {', '.join(valid_criteria)}")
+            raise ValueError(f"No valid search criteria provided; expected: {', '.join(valid_criteria)}") from None
 
         if len(criteria) == 1:
             raise ValueError("Only one search criteria provided; expected at least two")
@@ -499,9 +508,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching search results: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching search results") from e
 
-    def eventTypes(self):
+    def eventTypes(self) -> list:
         """Get event types.
 
         Returns:
@@ -517,9 +526,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when retrieving event types: {e.args[0]}")
+                raise IOError("SQL error encountered when retrieving event types") from e
 
-    def scanLogEvents(self, batch):
+    def scanLogEvents(self, batch: list) -> bool:
         """Logs a batch of events to the database.
 
         Args:
@@ -530,20 +539,20 @@ class SpiderFootDb:
             IOError: database I/O failed
 
         Returns:
-            logResult: Whether the logging operation succeeded
+            bool: Whether the logging operation succeeded
         """
 
         inserts = []
 
         for instanceId, classification, message, component, logTime in batch:
             if not isinstance(instanceId, str):
-                raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+                raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
             if not isinstance(classification, str):
-                raise TypeError(f"classification is {type(classification)}; expected str()")
+                raise TypeError(f"classification is {type(classification)}; expected str()") from None
 
             if not isinstance(message, str):
-                raise TypeError(f"message is {type(message)}; expected str()")
+                raise TypeError(f"message is {type(message)}; expected str()") from None
 
             if not component:
                 component = "SpiderFoot"
@@ -561,11 +570,11 @@ class SpiderFootDb:
                     self.conn.commit()
                 except sqlite3.Error as e:
                     if "locked" not in e.args[0] and "thread" not in e.args[0]:
-                        raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
+                        raise IOError("Unable to log scan event in database") from e
                     return False
         return True
 
-    def scanLogEvent(self, instanceId, classification, message, component=None):
+    def scanLogEvent(self, instanceId: str, classification: str, message: str, component: str = None) -> None:
         """Log an event to the database.
 
         Args:
@@ -583,13 +592,13 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(classification, str):
-            raise TypeError(f"classification is {type(classification)}; expected str()")
+            raise TypeError(f"classification is {type(classification)}; expected str()") from None
 
         if not isinstance(message, str):
-            raise TypeError(f"message is {type(message)}; expected str()")
+            raise TypeError(f"message is {type(message)}; expected str()") from None
 
         if not component:
             component = "SpiderFoot"
@@ -606,12 +615,12 @@ class SpiderFootDb:
                 self.conn.commit()
             except sqlite3.Error as e:
                 if "locked" not in e.args[0] and "thread" not in e.args[0]:
-                    raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
+                    raise IOError("Unable to log scan event in database") from e
                 # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
                 # log.critical(f"Unable to log event in DB due to lock: {e.args[0]}")
                 pass
 
-    def scanInstanceCreate(self, instanceId, scanName, scanTarget):
+    def scanInstanceCreate(self, instanceId: str, scanName: str, scanTarget: str) -> None:
         """Store a scan instance in the database.
 
         Args:
@@ -625,13 +634,13 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(scanName, str):
-            raise TypeError(f"scanName is {type(scanName)}; expected str()")
+            raise TypeError(f"scanName is {type(scanName)}; expected str()") from None
 
         if not isinstance(scanTarget, str):
-            raise TypeError(f"scanTarget is {type(scanTarget)}; expected str()")
+            raise TypeError(f"scanTarget is {type(scanTarget)}; expected str()") from None
 
         qry = "INSERT INTO tbl_scan_instance \
             (guid, name, seed_target, created, status) \
@@ -644,9 +653,9 @@ class SpiderFootDb:
                 ))
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"Unable to create scan instance in DB: {e.args[0]}")
+                raise IOError("Unable to create scan instance in database") from e
 
-    def scanInstanceSet(self, instanceId, started=None, ended=None, status=None):
+    def scanInstanceSet(self, instanceId: str, started: str = None, ended: str = None, status: str = None) -> None:
         """Update the start time, end time or status (or all 3) of a scan instance.
 
         Args:
@@ -661,7 +670,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qvars = list()
         qry = "UPDATE tbl_scan_instance SET "
@@ -687,9 +696,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 self.conn.commit()
             except sqlite3.Error:
-                raise IOError("Unable to set information for the scan instance.")
+                raise IOError("Unable to set information for the scan instance.") from None
 
-    def scanInstanceGet(self, instanceId):
+    def scanInstanceGet(self, instanceId: str) -> list:
         """Return info about a scan instance (name, target, created, started, ended, status)
 
         Args:
@@ -704,7 +713,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry = "SELECT name, seed_target, ROUND(created/1000) AS created, \
             ROUND(started/1000) AS started, ROUND(ended/1000) AS ended, status \
@@ -716,9 +725,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchone()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when retrieving scan instance: {e.args[0]}")
+                raise IOError("SQL error encountered when retrieving scan instance") from e
 
-    def scanResultSummary(self, instanceId, by="type"):
+    def scanResultSummary(self, instanceId: str, by: str = "type") -> list:
         """Obtain a summary of the results, filtered by event type, module or entity.
 
         Args:
@@ -735,13 +744,13 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(by, str):
-            raise TypeError(f"by is {type(by)}; expected str()")
+            raise TypeError(f"by is {type(by)}; expected str()") from None
 
         if by not in ["type", "module", "entity"]:
-            raise ValueError(f"Invalid filter by value: {by}")
+            raise ValueError(f"Invalid filter by value: {by}") from None
 
         if by == "type":
             qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
@@ -770,9 +779,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching result summary: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching result summary") from e
 
-    def scanCorrelationSummary(self, instanceId, by="rule"):
+    def scanCorrelationSummary(self, instanceId: str, by: str = "rule") -> list:
         """Obtain a summary of the correlations, filtered by rule or risk
 
         Args:
@@ -789,13 +798,13 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(by, str):
-            raise TypeError(f"by is {type(by)}; expected str()")
+            raise TypeError(f"by is {type(by)}; expected str()") from None
 
         if by not in ["rule", "risk"]:
-            raise ValueError(f"Invalid filter by value: {by}")
+            raise ValueError(f"Invalid filter by value: {by}") from None
 
         if by == "risk":
             qry = "SELECT rule_risk, count(*) AS total FROM \
@@ -815,9 +824,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching correlation summary: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching correlation summary") from e
 
-    def scanCorrelationList(self, instanceId):
+    def scanCorrelationList(self, instanceId: str) -> list:
         """Obtain a list of the correlations from a scan
 
         Args:
@@ -832,7 +841,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry = "SELECT c.id, c.title, c.rule_id, c.rule_risk, c.rule_name, \
             c.rule_descr, c.rule_logic, count(e.event_hash) AS event_count FROM \
@@ -847,18 +856,26 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching correlation list: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching correlation list") from e
 
-    def scanResultEvent(self, instanceId, eventType='ALL', srcModule=None,
-                        data=None, sourceId=None, correlationId=None, filterFp=False):
+    def scanResultEvent(
+        self,
+        instanceId: str,
+        eventType: str = 'ALL',
+        srcModule: str = None,
+        data: list = None,
+        sourceId: list = None,
+        correlationId: str = None,
+        filterFp: bool = False
+    ) -> list:
         """Obtain the data for a scan and event type.
 
         Args:
             instanceId (str): scan instance ID
             eventType (str): filter by event type
             srcModule (str): filter by the generating module
-            data (list[str]): filter by the data
-            sourceId (list[str]): filter by the ID of the source event
+            data (list): filter by the data
+            sourceId (list): filter by the ID of the source event
             correlationId (str): filter by the ID of a correlation result
             filterFp (bool): filter false positives
 
@@ -871,10 +888,10 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(eventType, str) and not isinstance(eventType, list):
-            raise TypeError(f"eventType is {type(eventType)}; expected str() or list()")
+            raise TypeError(f"eventType is {type(eventType)}; expected str() or list()") from None
 
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
@@ -937,9 +954,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching result events: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching result events") from e
 
-    def scanResultEventUnique(self, instanceId, eventType='ALL', filterFp=False):
+    def scanResultEventUnique(self, instanceId: str, eventType: str = 'ALL', filterFp: bool = False) -> list:
         """Obtain a unique list of elements.
 
         Args:
@@ -956,10 +973,10 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(eventType, str):
-            raise TypeError(f"eventType is {type(eventType)}; expected str()")
+            raise TypeError(f"eventType is {type(eventType)}; expected str()") from None
 
         qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
@@ -979,9 +996,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching unique result events: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching unique result events") from e
 
-    def scanLogs(self, instanceId, limit=None, fromRowId=None, reverse=False):
+    def scanLogs(self, instanceId: str, limit: int = None, fromRowId: int = 0, reverse: bool = False) -> list:
         """Get scan logs.
 
         Args:
@@ -999,7 +1016,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry = "SELECT generated AS generated, component, \
             type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
@@ -1014,20 +1031,20 @@ class SpiderFootDb:
         qvars = [instanceId]
 
         if fromRowId:
-            qvars.append(fromRowId)
+            qvars.append(str(fromRowId))
 
         if limit is not None:
             qry += " LIMIT ?"
-            qvars.append(limit)
+            qvars.append(str(limit))
 
         with self.dbhLock:
             try:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching scan logs: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching scan logs") from e
 
-    def scanErrors(self, instanceId, limit=None):
+    def scanErrors(self, instanceId: str, limit: int = 0) -> list:
         """Get scan errors.
 
         Args:
@@ -1043,30 +1060,35 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
+
+        if not isinstance(limit, int):
+            raise TypeError(f"limit is {type(limit)}; expected int()") from None
 
         qry = "SELECT generated AS generated, component, \
             message FROM tbl_scan_log WHERE scan_instance_id = ? \
             AND type = 'ERROR' ORDER BY generated DESC"
         qvars = [instanceId]
 
-        if limit is not None:
+        if limit:
             qry += " LIMIT ?"
-            qvars.append(limit)
+            qvars.append(str(limit))
 
         with self.dbhLock:
             try:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching scan errors: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching scan errors") from e
 
-    # Delete a scan instance
-    def scanInstanceDelete(self, instanceId):
+    def scanInstanceDelete(self, instanceId: str) -> bool:
         """Delete a scan instance.
 
         Args:
             instanceId (str): scan instance ID
+
+        Returns:
+            bool: success
 
         Raises:
             TypeError: arg type was invalid
@@ -1074,7 +1096,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"
         qry2 = "DELETE FROM tbl_scan_config WHERE scan_instance_id = ?"
@@ -1090,9 +1112,11 @@ class SpiderFootDb:
                 self.dbh.execute(qry4, qvars)
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when deleting scan: {e.args[0]}")
+                raise IOError("SQL error encountered when deleting scan") from e
 
-    def scanResultsUpdateFP(self, instanceId, resultHashes, fpFlag):
+        return True
+
+    def scanResultsUpdateFP(self, instanceId: str, resultHashes: list, fpFlag: int) -> bool:
         """Set the false positive flag for a result.
 
         Args:
@@ -1109,10 +1133,10 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(resultHashes, list):
-            raise TypeError(f"resultHashes is {type(resultHashes)}; expected list()")
+            raise TypeError(f"resultHashes is {type(resultHashes)}; expected list()") from None
 
         with self.dbhLock:
             for resultHash in resultHashes:
@@ -1122,20 +1146,23 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvars)
                 except sqlite3.Error as e:
-                    raise IOError(f"SQL error encountered when updating F/P: {e.args[0]}")
+                    raise IOError("SQL error encountered when updating false-positive") from e
 
             try:
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when updating F/P: {e.args[0]}")
+                raise IOError("SQL error encountered when updating false-positive") from e
 
         return True
 
-    def configSet(self, optMap=dict()):
+    def configSet(self, optMap: dict = {}) -> bool:
         """Store the default configuration in the database.
 
         Args:
             optMap (dict): config options
+
+        Returns:
+            bool: success
 
         Raises:
             TypeError: arg type was invalid
@@ -1144,9 +1171,9 @@ class SpiderFootDb:
         """
 
         if not isinstance(optMap, dict):
-            raise TypeError(f"optMap is {type(optMap)}; expected dict()")
+            raise TypeError(f"optMap is {type(optMap)}; expected dict()") from None
         if not optMap:
-            raise ValueError("optMap is empty")
+            raise ValueError("optMap is empty") from None
 
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
 
@@ -1163,14 +1190,16 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvals)
                 except sqlite3.Error as e:
-                    raise IOError(f"SQL error encountered when storing config, aborting: {e.args[0]}")
+                    raise IOError("SQL error encountered when storing config, aborting") from e
 
             try:
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when storing config, aborting: {e.args[0]}")
+                raise IOError("SQL error encountered when storing config, aborting") from e
 
-    def configGet(self):
+        return True
+
+    def configGet(self) -> dict:
         """Retreive the config from the database
 
         Returns:
@@ -1195,10 +1224,11 @@ class SpiderFootDb:
 
                 return retval
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching configuration: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching configuration") from e
 
-    def configClear(self):
+    def configClear(self) -> None:
         """Reset the config to default.
+
         Clears the config from the database and lets the hard-coded settings in the code take effect.
 
         Raises:
@@ -1211,9 +1241,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry)
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"Unable to clear configuration from the database: {e.args[0]}")
+                raise IOError("Unable to clear configuration from the database") from e
 
-    def scanConfigSet(self, scan_id, optMap=dict()):
+    def scanConfigSet(self, scan_id, optMap=dict()) -> None:
         """Store a configuration value for a scan.
 
         Args:
@@ -1227,9 +1257,9 @@ class SpiderFootDb:
         """
 
         if not isinstance(optMap, dict):
-            raise TypeError(f"optMap is {type(optMap)}; expected dict()")
+            raise TypeError(f"optMap is {type(optMap)}; expected dict()") from None
         if not optMap:
-            raise ValueError("optMap is empty")
+            raise ValueError("optMap is empty") from None
 
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
@@ -1247,18 +1277,18 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvals)
                 except sqlite3.Error as e:
-                    raise IOError(f"SQL error encountered when storing config, aborting: {e.args[0]}")
+                    raise IOError("SQL error encountered when storing config, aborting") from e
 
             try:
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when storing config, aborting: {e.args[0]}")
+                raise IOError("SQL error encountered when storing config, aborting") from e
 
-    def scanConfigGet(self, instanceId):
+    def scanConfigGet(self, instanceId: str) -> dict:
         """Retrieve configuration data for a scan component.
 
         Args:
-            instanceId (int): scan instance ID
+            instanceId (str): scan instance ID
 
         Returns:
             dict: configuration data
@@ -1269,7 +1299,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry = "SELECT component, opt, val FROM tbl_scan_config \
                 WHERE scan_instance_id = ? ORDER BY component, opt"
@@ -1287,9 +1317,9 @@ class SpiderFootDb:
                         retval[f"{component}:{opt}"] = val
                 return retval
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching configuration: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching configuration") from e
 
-    def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
+    def scanEventStore(self, instanceId: str, sfEvent, truncateSize: int = 0) -> None:
         """Store an event in the database.
 
         Args:
@@ -1305,66 +1335,66 @@ class SpiderFootDb:
         from spiderfoot import SpiderFootEvent
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not instanceId:
-            raise ValueError("instanceId is empty")
+            raise ValueError("instanceId is empty") from None
 
         if not isinstance(sfEvent, SpiderFootEvent):
-            raise TypeError(f"sfEvent is {type(sfEvent)}; expected SpiderFootEvent()")
+            raise TypeError(f"sfEvent is {type(sfEvent)}; expected SpiderFootEvent()") from None
 
         if not isinstance(sfEvent.generated, float):
-            raise TypeError(f"sfEvent.generated is {type(sfEvent.generated)}; expected float()")
+            raise TypeError(f"sfEvent.generated is {type(sfEvent.generated)}; expected float()") from None
 
         if not sfEvent.generated:
-            raise ValueError("sfEvent.generated is empty")
+            raise ValueError("sfEvent.generated is empty") from None
 
         if not isinstance(sfEvent.eventType, str):
-            raise TypeError(f"sfEvent.eventType is {type(sfEvent.eventType,)}; expected str()")
+            raise TypeError(f"sfEvent.eventType is {type(sfEvent.eventType,)}; expected str()") from None
 
         if not sfEvent.eventType:
-            raise ValueError("sfEvent.eventType is empty")
+            raise ValueError("sfEvent.eventType is empty") from None
 
         if not isinstance(sfEvent.data, str):
-            raise TypeError(f"sfEvent.data is {type(sfEvent.data)}; expected str()")
+            raise TypeError(f"sfEvent.data is {type(sfEvent.data)}; expected str()") from None
 
         if not sfEvent.data:
-            raise ValueError("sfEvent.data is empty")
+            raise ValueError("sfEvent.data is empty") from None
 
         if not isinstance(sfEvent.module, str):
-            raise TypeError(f"sfEvent.module is {type(sfEvent.module)}; expected str()")
+            raise TypeError(f"sfEvent.module is {type(sfEvent.module)}; expected str()") from None
 
         if not sfEvent.module:
             if sfEvent.eventType != "ROOT":
-                raise ValueError("sfEvent.module is empty")
+                raise ValueError("sfEvent.module is empty") from None
 
         if not isinstance(sfEvent.confidence, int):
-            raise TypeError(f"sfEvent.confidence is {type(sfEvent.confidence)}; expected int()")
+            raise TypeError(f"sfEvent.confidence is {type(sfEvent.confidence)}; expected int()") from None
 
         if not 0 <= sfEvent.confidence <= 100:
-            raise ValueError(f"sfEvent.confidence value is {type(sfEvent.confidence)}; expected 0 - 100")
+            raise ValueError(f"sfEvent.confidence value is {type(sfEvent.confidence)}; expected 0 - 100") from None
 
         if not isinstance(sfEvent.visibility, int):
-            raise TypeError(f"sfEvent.visibility is {type(sfEvent.visibility)}; expected int()")
+            raise TypeError(f"sfEvent.visibility is {type(sfEvent.visibility)}; expected int()") from None
 
         if not 0 <= sfEvent.visibility <= 100:
-            raise ValueError(f"sfEvent.visibility value is {type(sfEvent.visibility)}; expected 0 - 100")
+            raise ValueError(f"sfEvent.visibility value is {type(sfEvent.visibility)}; expected 0 - 100") from None
 
         if not isinstance(sfEvent.risk, int):
-            raise TypeError(f"sfEvent.risk is {type(sfEvent.risk)}; expected int()")
+            raise TypeError(f"sfEvent.risk is {type(sfEvent.risk)}; expected int()") from None
 
         if not 0 <= sfEvent.risk <= 100:
-            raise ValueError(f"sfEvent.risk value is {type(sfEvent.risk)}; expected 0 - 100")
+            raise ValueError(f"sfEvent.risk value is {type(sfEvent.risk)}; expected 0 - 100") from None
 
         if not isinstance(sfEvent.sourceEvent, SpiderFootEvent):
             if sfEvent.eventType != "ROOT":
-                raise TypeError(f"sfEvent.sourceEvent is {type(sfEvent.sourceEvent)}; expected str()")
+                raise TypeError(f"sfEvent.sourceEvent is {type(sfEvent.sourceEvent)}; expected str()") from None
 
         if not isinstance(sfEvent.sourceEventHash, str):
-            raise TypeError(f"sfEvent.sourceEventHash is {type(sfEvent.sourceEventHash)}; expected str()")
+            raise TypeError(f"sfEvent.sourceEventHash is {type(sfEvent.sourceEventHash)}; expected str()") from None
 
         if not sfEvent.sourceEventHash:
-            raise ValueError("sfEvent.sourceEventHash is empty")
+            raise ValueError("sfEvent.sourceEventHash is empty") from None
 
         storeData = sfEvent.data
 
@@ -1388,9 +1418,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvals)
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when storing event data ({self.dbh}): {e.args[0]}")
+                raise IOError(f"SQL error encountered when storing event data ({self.dbh})") from e
 
-    def scanInstanceList(self):
+    def scanInstanceList(self) -> list:
         """List all previously run scans.
 
         Returns:
@@ -1419,9 +1449,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching scan list: {e.args[0]}")
+                raise IOError("SQL error encountered when fetching scan list") from e
 
-    def scanResultHistory(self, instanceId):
+    def scanResultHistory(self, instanceId: str) -> list:
         """History of data from the scan.
 
         Args:
@@ -1436,7 +1466,7 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         qry = "SELECT STRFTIME('%H:%M %w', generated, 'unixepoch') AS hourmin, \
                 type, COUNT(*) FROM tbl_scan_results \
@@ -1448,9 +1478,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when fetching scan history: {e.args[0]}")
+                raise IOError(f"SQL error encountered when fetching history for scan {instanceId}") from e
 
-    def scanElementSourcesDirect(self, instanceId, elementIdList):
+    def scanElementSourcesDirect(self, instanceId: str, elementIdList: list) -> list:
         """Get the source IDs, types and data for a set of IDs.
 
         Args:
@@ -1466,10 +1496,10 @@ class SpiderFootDb:
         """
 
         if not isinstance(instanceId, str):
-            raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+            raise TypeError(f"instanceId is {type(instanceId)}; expected str()") from None
 
         if not isinstance(elementIdList, list):
-            raise TypeError(f"elementIdList is {type(elementIdList)}; expected list()")
+            raise TypeError(f"elementIdList is {type(elementIdList)}; expected list()") from None
 
         hashIds = []
         for hashId in elementIdList:
@@ -1499,9 +1529,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when getting source element IDs: {e.args[0]}")
+                raise IOError("SQL error encountered when getting source element IDs") from e
 
-    def scanElementChildrenDirect(self, instanceId, elementIdList):
+    def scanElementChildrenDirect(self, instanceId: str, elementIdList: list) -> list:
         """Get the child IDs, types and data for a set of IDs.
 
         Args:
@@ -1548,9 +1578,9 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                raise IOError(f"SQL error encountered when getting child element IDs: {e.args[0]}")
+                raise IOError("SQL error encountered when getting child element IDs") from e
 
-    def scanElementSourcesAll(self, instanceId, childData):
+    def scanElementSourcesAll(self, instanceId: str, childData: list) -> list:
         """Get the full set of upstream IDs which are parents to the supplied set of IDs.
 
         Args:
@@ -1621,7 +1651,7 @@ class SpiderFootDb:
         datamap[parentId] = row
         return [datamap, pc]
 
-    def scanElementChildrenAll(self, instanceId, parentIds):
+    def scanElementChildrenAll(self, instanceId: str, parentIds: list) -> list:
         """Get the full set of downstream IDs which are children of the supplied set of IDs.
 
         Args:
@@ -1669,8 +1699,17 @@ class SpiderFootDb:
 
         return datamap
 
-    def correlationResultCreate(self, instanceId, ruleId, ruleName, ruleDescr,
-                                ruleRisk, ruleYaml, correlationTitle, eventHashes):
+    def correlationResultCreate(
+        self,
+        instanceId: str,
+        ruleId: str,
+        ruleName: str,
+        ruleDescr: str,
+        ruleRisk: str,
+        ruleYaml: str,
+        correlationTitle: str,
+        eventHashes: list
+    ) -> str:
         """Create a correlation result in the database.
 
         Args:
@@ -1728,7 +1767,7 @@ class SpiderFootDb:
                 ))
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise IOError(f"Unable to create correlation result in DB: {e.args[0]}")
+                raise IOError("Unable to create correlation result in database") from e
 
         # Map events to the correlation result
         qry = "INSERT INTO tbl_scan_correlation_results_events \
@@ -1743,6 +1782,6 @@ class SpiderFootDb:
                     ))
                     self.conn.commit()
                 except sqlite3.Error as e:
-                    raise IOError(f"Unable to create correlation result in DB: {e.args[0]}")
+                    raise IOError("Unable to create correlation result in database") from e
 
         return uniqueId

@@ -132,46 +132,62 @@ class sfp_zetalytics(SpiderFootPlugin):
             if self.verify_emit_internet_name(qname, pevent):
                 events_generated = True
 
-        return events_generated
+        return events_generated # noqa R504
 
     def generate_hostname_events(self, data, pevent):
-        events_generated = False
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         hostnames = set()
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance("results", list):
-                for r in results:
-                    qname = r.get("qname")
-                    if isinstance("qname", str):
-                        hostnames.add(qname)
+        for r in results:
+            qname = r.get("qname")
+            if isinstance("qname", str):
+                hostnames.add(qname)
+
+        events_generated = False
         for hostname in hostnames:
             if self.verify_emit_internet_name(hostname, pevent):
                 events_generated = True
-        return events_generated
+
+        return events_generated # noqa R504
 
     def generate_email_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance(results, list):
-                for r in results:
-                    domain = r.get("d")
-                    if isinstance(domain, str):
-                        self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
-                        events_generated = True
-        return events_generated
+        for r in results:
+            domain = r.get("d")
+            if isinstance(domain, str):
+                self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
+                events_generated = True
+
+        return events_generated # noqa R504
 
     def generate_email_domain_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance(results, list):
-                for r in results:
-                    domain = r.get("d")
-                    if isinstance(domain, str):
-                        self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
-                        events_generated = True
-        return events_generated
+        for r in results:
+            domain = r.get("d")
+            if isinstance(domain, str):
+                self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
+                events_generated = True
+
+        return events_generated # noqa R504
 
     def handleEvent(self, event):
         eventName = event.eventType

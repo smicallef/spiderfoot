@@ -65,21 +65,17 @@ class sfp_dnsbrute(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
         dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts/"
-        cslines = list()
         if self.opts['commons']:
-            cs = open(f"{dicts_dir}/subdomains.txt", 'r')
-            cslines = cs.readlines()
-            for s in cslines:
-                s = s.strip()
-                self.sublist[s] = True
+            with open(f"{dicts_dir}/subdomains.txt", 'r') as f:
+                for s in f.readlines():
+                    s = s.strip()
+                    self.sublist[s] = True
 
-        ttlines = list()
         if self.opts['top10000']:
-            tt = open(f"{dicts_dir}/subdomains-10000.txt", 'r')
-            ttlines = tt.readlines()
-            for s in ttlines:
-                s = s.strip()
-                self.sublist[s] = True
+            with open(f"{dicts_dir}/subdomains-10000.txt", 'r') as f:
+                for s in f.readlines():
+                    s = s.strip()
+                    self.sublist[s] = True
 
     # What events is this module interested in for input
     def watchedEvents(self):

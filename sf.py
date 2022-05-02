@@ -39,7 +39,7 @@ scanId = None
 dbh = None
 
 
-def main():
+def main() -> None:
     # web server config
     sfWebUiConfig = {
         'host': '127.0.0.1',
@@ -233,7 +233,7 @@ def main():
     start_scan(sfConfig, sfModules, args, loggingQueue)
 
 
-def start_scan(sfConfig, sfModules, args, loggingQueue):
+def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
     """Start scan
 
     Args:
@@ -452,7 +452,7 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     return
 
 
-def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
+def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> None:
     """Start the web server so you can start looking at results
 
     Args:
@@ -497,9 +497,10 @@ def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
             log.error("Could not read passwd file. Permission denied.")
             sys.exit(-1)
 
-        pw = open(passwd_file, 'r')
+        with open(passwd_file, 'r') as f:
+            passwd_data = f.readlines()
 
-        for line in pw.readlines():
+        for line in passwd_data:
             if line.strip() == '':
                 continue
 
@@ -581,7 +582,7 @@ def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
 
 
-def handle_abort(signal, frame):
+def handle_abort(signal, frame) -> None:
     """Handle interrupt and abort scan.
 
     Args:

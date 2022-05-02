@@ -95,17 +95,15 @@ class sfp_tldsearch(SpiderFootPlugin):
     def tryTldWrapper(self, tldList, sourceEvent):
         self.tldResults = dict()
         running = True
-        i = 0
         t = []
 
         # Spawn threads for scanning
-        self.info("Spawning threads to check TLDs: " + str(tldList))
-        for pair in tldList:
+        self.info(f"Spawning threads to check TLDs: {tldList}")
+        for i, pair in enumerate(tldList):
             (domain, tld) = pair
             tn = 'thread_sfp_tldsearch_' + str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name=tn, target=self.tryTld, args=(domain, tld,)))
             t[i].start()
-            i += 1
 
         # Block until all threads are finished
         while running:
