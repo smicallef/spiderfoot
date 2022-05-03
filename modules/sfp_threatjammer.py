@@ -5,7 +5,7 @@
 #
 # Author:      diego.parrilla.santamaria@gmail.com
 #
-# Created:     05/05/2022
+# Created:     2022-05-03
 # Copyright:   (c) Diego Parrilla 2022
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ class sfp_threatjammer(SpiderFootPlugin):
 
     meta = {
         'name': "Threat Jammer",
-        'summary': "Check if an IP or netblock is malicious according to ThreatJammer.com",
+        'summary': "Check if an IP address is malicious according to ThreatJammer.com",
         'flags': ["apikey"],
         'useCases': ["Passive", "Investigate"],
         'categories': ["Reputation Systems"],
@@ -50,22 +50,26 @@ class sfp_threatjammer(SpiderFootPlugin):
     }
 
     opts = {
-        'api_key': '',
-        "risk_score_min": 35,
+        'api_key': "",
+        'api_hostname': "dublin.api.threatjammer.com",
+        'risk_score_min': 35,
         'checkaffiliates': True,
     }
 
     optdescs = {
-        'api_key': "ThreatJammer.com API key.",
-        "risk_score_min": "Minimum Threat Jammer risk score.",
+        'api_key': "API key",
+        'api_hostname': "User API hostname",
+        'risk_score_min': "Minimum Threat Jammer risk score",
         'checkaffiliates': "Apply checks to affiliates?",
     }
 
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -102,7 +106,7 @@ class sfp_threatjammer(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            f"https://dublin.api.threatjammer.com/v1/assess/ip/{ip}",
+            f"https://{self.opts['api_hostname']}/v1/assess/ip/{ip}",
             timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'],
             headers=headers
@@ -115,8 +119,23 @@ class sfp_threatjammer(SpiderFootPlugin):
             self.errorState = True
             return None
 
+        if res['code'] == '401':
+            self.error("You are not authorized by ThreatJammer.com. Check your API key.")
+            self.errorState = True
+            return None
+
+        if res['code'] == '400':
+            self.error("ThreatJammer.com rejected the IP address. Use only public IP addresses.")
+            self.errorState = True
+            return None
+
+        if res['code'] == '422':
+            self.error("ThreatJammer.com could not process the IP address. Check the format.")
+            self.errorState = True
+            return None
+
         if res['code'] != "200":
-            self.error("Error retrieving search results from ThreatJammer.com")
+            self.error("ThreatJammer.com could not process the IP address. Unknown error.")
             self.errorState = True
             return None
 
@@ -129,7 +148,6 @@ class sfp_threatjammer(SpiderFootPlugin):
             return json.loads(res['content'])
         except Exception as e:
             self.debug(f"Error processing JSON response: {e}")
-            return None
 
         return None
 
@@ -143,6 +161,13 @@ class sfp_threatjammer(SpiderFootPlugin):
         if self.opts["api_key"] == "":
             self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
+            )
+            self.errorState = True
+            return
+
+        if self.opts["api_hostname"] == "":
+            self.error(
+                f"You enabled {self.__class__.__name__} but did not set an API hostname!"
             )
             self.errorState = True
             return
@@ -174,8 +199,16 @@ class sfp_threatjammer(SpiderFootPlugin):
             self.sf.error(f"Error processing JSON response for {eventData} from ThreatJammer.com")
             return
 
-        risk_score = int(ip_info["score"])
+        score = ip_info.get('score')
+        if not score:
+            self.sf.error(f"No risk score found for {eventData} from ThreatJammer.com. Skipping.")
+            return
+        risk_score = int(score)
+
         risk = ip_info["risk"]
+        if not risk:
+            self.sf.error(f"No risk type found for {eventData} from ThreatJammer.com. Skipping.")
+            return
 
         if risk_score < self.opts["risk_score_min"]:
             self.debug(f"Skipping {eventData} for ThreatJammer.com, risk score below minimum threshold.")
