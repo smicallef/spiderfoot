@@ -108,18 +108,22 @@ class sfp_botscout(SpiderFootPlugin):
 
         return self.parseApiResponse(res)
 
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from BotScout.")
+            return None
+
+        if res['code'] != "200":
+            self.error(f"Unexpected HTTP response code {res['code']} from BotScout.")
+            self.errorState = True
+            return None
+
         if not res['content']:
             self.error("No response from BotScout.")
             return None
 
         if res['content'].startswith("! "):
             self.error(f"Received error from BotScout: {res['content']}")
-            self.errorState = True
-            return None
-
-        if res['code'] != "200":
-            self.error(f"Unexpected HTTP response code {res['code']} from BotScout.")
             self.errorState = True
             return None
 

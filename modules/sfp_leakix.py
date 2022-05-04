@@ -97,10 +97,14 @@ class sfp_leakix(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     # Parse API response
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from LeakIX.")
+            return None
+
         if res['code'] == '404':
             self.debug("Host not found")
             return None

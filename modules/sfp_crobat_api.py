@@ -82,9 +82,13 @@ class sfp_crobat_api(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from Crobat API.")
+            return None
+
         # Future proofing - Crobat API does not implement rate limiting
         if res['code'] == '429':
             self.error("You are being rate-limited by Crobat API")

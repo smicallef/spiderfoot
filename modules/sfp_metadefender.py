@@ -117,7 +117,11 @@ class sfp_metadefender(SpiderFootPlugin):
         return self.parseApiResponse(res)
 
     # Parse API response
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from MetaDefender.")
+            return None
+
         if res['code'] == "401":
             self.error("Invalid MetaDefender API key")
             self.errorState = True

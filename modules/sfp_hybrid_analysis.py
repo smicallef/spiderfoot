@@ -103,7 +103,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryHost(self, qry):
         """Query a host
@@ -132,7 +132,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryHash(self, qry):
         """Query a hash
@@ -161,9 +161,9 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
         """Parse HTTP response from API
 
         Args:
@@ -172,6 +172,9 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         Returns:
             str: API response as JSON
         """
+        if not res:
+            self.error("No response from Hybrid Analysis.")
+            return None
 
         if res['code'] == '400':
             self.error("Failed to retrieve content from Hybrid Analysis: Invalid request")

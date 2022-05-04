@@ -118,14 +118,18 @@ class sfp_whatcms(SpiderFootPlugin):
         return self.parseApiResponse(res)
 
     # Parse API response
-    def parseApiResponse(self, res):
-        if res['content'] is None:
-            self.debug('No response from WhatCMS.org')
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from WhatCMS.org.")
             return None
 
         if res['code'] != '200':
             self.error('Unexpected reply from WhatCMS.org: ' + res['code'])
             self.errorState = True
+            return None
+
+        if res['content'] is None:
+            self.debug('No response from WhatCMS.org')
             return None
 
         try:

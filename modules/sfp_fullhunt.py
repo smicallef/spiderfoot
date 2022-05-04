@@ -99,8 +99,9 @@ class sfp_fullhunt(SpiderFootPlugin):
 
         return self.parseApiResponse(res)
 
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
         if not res:
+            self.error("No response from FullHunt.")
             return None
 
         if res['code'] == "400":
@@ -108,10 +109,12 @@ class sfp_fullhunt(SpiderFootPlugin):
             return None
 
         if res['code'] == "401":
+            self.errorState = True
             self.error("Unauthorized -- Your API key is wrong.")
             return None
 
         if res['code'] == "403":
+            self.errorState = True
             self.error("Forbidden -- The requested resource is forbidden.")
             return None
 
@@ -120,6 +123,7 @@ class sfp_fullhunt(SpiderFootPlugin):
             return None
 
         if res['code'] == "429":
+            self.errorState = True
             self.error("Too Many Requests -- You are sending too many requests.")
             return None
 
@@ -127,6 +131,7 @@ class sfp_fullhunt(SpiderFootPlugin):
             results = json.loads(res['content'])
         except Exception as e:
             self.debug(f"Error processing JSON response: {e}")
+            return None
 
         return results.get('hosts')
 

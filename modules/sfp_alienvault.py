@@ -145,7 +145,11 @@ class sfp_alienvault(SpiderFootPlugin):
         ]
 
     # Parse API response
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from AlienVault OTX.")
+            return None
+
         # Future proofing - AlienVault OTX does not implement rate limiting
         if res['code'] == '429':
             self.error("You are being rate-limited by AienVault OTX")
@@ -187,7 +191,7 @@ class sfp_alienvault(SpiderFootPlugin):
             useragent="SpiderFoot",
             headers=headers)
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryPassiveDns(self, qry):
         if ":" in qry:
@@ -209,7 +213,7 @@ class sfp_alienvault(SpiderFootPlugin):
             useragent="SpiderFoot",
             headers=headers)
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryDomainUrlList(self, qry, page=1, per_page=50):
         params = urllib.parse.urlencode({
@@ -227,7 +231,7 @@ class sfp_alienvault(SpiderFootPlugin):
             useragent="SpiderFoot",
             headers=headers)
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryHostnameUrlList(self, qry, page=1, per_page=50):
         params = urllib.parse.urlencode({
@@ -245,7 +249,7 @@ class sfp_alienvault(SpiderFootPlugin):
             useragent="SpiderFoot",
             headers=headers)
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     # Handle events sent to this module
     def handleEvent(self, event):
