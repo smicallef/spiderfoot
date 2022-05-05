@@ -141,8 +141,9 @@ class sfp_censys(SpiderFootPlugin):
 
         return self.parseApiResponse(res)
 
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
         if not res:
+            self.error("No response from Censys.io.")
             return None
 
         if res['code'] == "400":

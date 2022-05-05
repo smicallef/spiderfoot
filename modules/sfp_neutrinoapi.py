@@ -138,7 +138,11 @@ class sfp_neutrinoapi(SpiderFootPlugin):
         return self.parseApiResponse(res)
 
     # Parse API response
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from NeutrinoAPI.")
+            return None
+
         if res['code'] == "403":
             self.error("Authentication failed")
             self.errorState = True

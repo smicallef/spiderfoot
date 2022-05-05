@@ -76,6 +76,7 @@ class sfp_badpackets(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.errorState = False
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
@@ -113,12 +114,12 @@ class sfp_badpackets(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     # Parse API Response from Bad Packets
-    def parseAPIResponse(self, res):
-        if res['content'] is None:
-            self.info("No Bad Packets information found")
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from Bad Packets.")
             return None
 
         # Error codes as mentioned in Bad Packets Documentation
@@ -128,15 +129,21 @@ class sfp_badpackets(SpiderFootPlugin):
 
         if res['code'] == '401':
             self.error("Unauthorized API Key")
+            self.errorState = True
             return None
 
         if res['code'] == '403':
             self.error("Forbidden Request")
+            self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
             self.error("Failed to retrieve content from Bad Packets")
+            return None
+
+        if res['content'] is None:
+            self.info("No Bad Packets information found")
             return None
 
         # Always always always process external data with try/except since we cannot

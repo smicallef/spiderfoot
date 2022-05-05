@@ -73,10 +73,12 @@ class sfp_abstractapi(SpiderFootPlugin):
     def producedEvents(self):
         return ["COMPANY_NAME", "SOCIAL_MEDIA", "GEOINFO", "PHYSICAL_COORDINATES", "PROVIDER_TELCO", "RAW_RIR_DATA"]
 
-    def parseApiResponse(self, res):
+    def parseApiResponse(self, res: dict):
         if not res:
+            self.error("No response from Abstract API.")
             return None
 
+        # Rate limited to one request per second
         if res['code'] == '429':
             self.error("You are being rate-limited by AbstractAPI.")
             return None
@@ -91,7 +93,7 @@ class sfp_abstractapi(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        if res['code'] == '500' or res['code'] == '503':
+        if res['code'] == '500' or res['code'] == '502' or res['code'] == '503':
             self.error("Abstract API service is unavailable")
             self.errorState = True
             return None
