@@ -11,7 +11,7 @@
 #
 # Created:     2020-03-14
 # Copyright:   (c) bcoles 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json

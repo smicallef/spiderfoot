@@ -7,7 +7,7 @@
 #
 # Created:     2021-08-15
 # Copyright:   (c) bcoles
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import base64
