@@ -10,7 +10,7 @@
 #
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re

@@ -8,7 +8,7 @@
 #
 # Created:     06/04/2015
 # Copyright:   (c) Steve Micallef 2012
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import ipwhois

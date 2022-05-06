@@ -8,7 +8,7 @@
 #
 # Created:     20/02/2013
 # Copyright:   (c) Steve Micallef 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random

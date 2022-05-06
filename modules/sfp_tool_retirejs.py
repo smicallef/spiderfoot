@@ -7,7 +7,7 @@
 #
 # Created:     2022-04-02
 # Copyright:   (c) Steve Micallef 2022
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import os

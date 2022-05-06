@@ -7,7 +7,7 @@
 #
 # Created:     03/12/2016
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import string

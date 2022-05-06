@@ -7,7 +7,7 @@
 #
 # Created:     16/05/2020
 # Copyright:   (c) Steve Micallef, 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin

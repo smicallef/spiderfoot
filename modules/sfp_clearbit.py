@@ -6,7 +6,7 @@
 #
 # Created:     20/03/2017
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import base64

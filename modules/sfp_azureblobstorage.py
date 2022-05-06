@@ -8,7 +8,7 @@
 #
 # Created:     14/07/2019
 # Copyright:   (c) Steve Micallef 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random

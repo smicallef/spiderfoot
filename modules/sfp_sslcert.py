@@ -7,7 +7,7 @@
 #
 # Created:     23/08/2013
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from urllib.parse import urlparse

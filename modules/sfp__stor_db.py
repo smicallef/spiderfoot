@@ -8,7 +8,7 @@
 #
 # Created:     14/05/2012
 # Copyright:   (c) Steve Micallef 2012
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from spiderfoot import SpiderFootPlugin

@@ -7,7 +7,7 @@
 #
 # Created:      11/03/2013
 # Copyright:    (c) Steve Micallef 2013
-# License:      GPL
+# License:      MIT
 # -----------------------------------------------------------------
 import socket
 import sys

@@ -8,7 +8,7 @@
 #
 # Created:     24/01/2020
 # Copyright:   (c) Steve Micallef 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random

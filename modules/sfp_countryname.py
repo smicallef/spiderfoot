@@ -8,7 +8,7 @@
 #
 # Created:     28/04/2020
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re

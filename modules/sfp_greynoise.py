@@ -9,7 +9,7 @@
 # Created:      20/11/2018
 # Updated:      15-Nov-2021
 # Copyright:    (c) Steve Micallef
-# Licence:      GPL
+# Licence:      MIT
 # -------------------------------------------------------------------------------
 
 import json

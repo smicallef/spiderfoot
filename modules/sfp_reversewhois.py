@@ -7,7 +7,7 @@
 #
 # Created:     05/20/2021
 # Copyright:   (c) Steve Micallef 2021
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re

@@ -8,7 +8,7 @@
 #
 # Created:     03/05/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import argparse

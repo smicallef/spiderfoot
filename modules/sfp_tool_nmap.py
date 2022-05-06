@@ -7,7 +7,7 @@
 #
 # Created:     03/05/2020
 # Copyright:   (c) Steve Micallef 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import os.path

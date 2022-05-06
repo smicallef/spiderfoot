@@ -6,7 +6,7 @@
 #
 # Created:     04/10/2015
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re

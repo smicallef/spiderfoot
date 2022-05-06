@@ -6,7 +6,7 @@
 //
 // Created:     03/10/2012
 // Copyright:   (c) Steve Micallef 2012
-// Licence:     GPL
+// Licence:     MIT
 //-------------------------------------------------------------------------------
 
 // Toggler for theme

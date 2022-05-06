@@ -8,7 +8,7 @@
 #
 # Created:     26/03/2019
 # Copyright:   (c) Steve Micallef, 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork

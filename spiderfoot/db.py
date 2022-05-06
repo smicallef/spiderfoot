@@ -7,7 +7,7 @@
 #
 # Created:     15/05/2012
 # Copyright:   (c) Steve Micallef 2012
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from pathlib import Path

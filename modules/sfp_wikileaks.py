@@ -7,7 +7,7 @@
 #
 # Created:     16/11/2016
 # Copyright:   (c) Steve Micallef 2016
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import datetime
