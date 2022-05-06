@@ -1,4 +1,3 @@
-# test_sfp_template.py
 import pytest
 import unittest
 
@@ -7,21 +6,14 @@ from sflib import SpiderFoot
 
 
 @pytest.mark.usefixtures
-class TestModuletemplate(unittest.TestCase):
-    """
-    Test modules.sfp_template
-    """
+class TestModuleTemplate(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_template()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_template()
         module.setup(sf, dict())
 

@@ -1,4 +1,3 @@
-# test_sfp_tool_trufflehog.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuleTrufflehog(unittest.TestCase):
-    """
-    Test modules.sfp_tool_trufflehog
-    """
+class TestModuleToolTrufflehog(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_tool_trufflehog()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_tool_trufflehog()
         module.setup(sf, dict())
 
@@ -35,9 +27,6 @@ class TestModuleTrufflehog(unittest.TestCase):
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent_no_tool_path_configured_should_set_errorState(self):
-        """
-        Test handleEvent(self, event)
-        """
         sf = SpiderFoot(self.default_options)
 
         module = sfp_tool_trufflehog()

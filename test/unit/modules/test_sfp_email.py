@@ -1,4 +1,3 @@
-# test_sfp_email.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleEmail(unittest.TestCase):
-    """
-    Test modules.sfp_email
-    """
 
     def test_opts(self):
         module = sfp_email()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_email()
         module.setup(sf, dict())
 
@@ -34,19 +26,30 @@ class TestModuleEmail(unittest.TestCase):
         module = sfp_email()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
+    @unittest.skip("todo")
+    def test_handleEvent_event_data_target_web_content_containing_email_address_should_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_email()
         module.setup(sf, dict())
 
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            expected = 'EMAILADDR'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = 'firstname.lastname@spiderfoot.net'
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_email)
 
         event_type = 'ROOT'
         event_data = 'example data'
@@ -54,6 +57,13 @@ class TestModuleEmail(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        result = module.handleEvent(evt)
+        event_type = 'TARGET_WEB_CONTENT'
+        event_data = '<p>sample data firstname.lastname@spiderfoot.net sample data.</p>'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        self.assertIsNone(result)
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))

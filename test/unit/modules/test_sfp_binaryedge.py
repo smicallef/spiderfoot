@@ -1,4 +1,3 @@
-# test_sfp_binaryedge.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModulebinaryedge(unittest.TestCase):
-    """
-    Test modules.sfp_binaryedge
-    """
+class TestModuleBinaryedge(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_binaryedge()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_binaryedge()
         module.setup(sf, dict())
 
@@ -35,9 +27,6 @@ class TestModulebinaryedge(unittest.TestCase):
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent_no_api_key_should_set_errorState(self):
-        """
-        Test handleEvent(self, event)
-        """
         sf = SpiderFoot(self.default_options)
 
         module = sfp_binaryedge()

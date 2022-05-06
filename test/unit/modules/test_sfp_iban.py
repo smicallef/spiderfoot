@@ -1,4 +1,3 @@
-# test_sfp_iban.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleIban(unittest.TestCase):
-    """
-    Test modules.sfp_iban
-    """
 
     def test_opts(self):
         module = sfp_iban()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_iban()
         module.setup(sf, dict())
 

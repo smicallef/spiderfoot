@@ -1,4 +1,3 @@
-# test_sfp_twitter.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuletwitter(unittest.TestCase):
-    """
-    Test modules.sfp_twitter
-    """
+class TestModuleTwitter(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_twitter()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_twitter()
         module.setup(sf, dict())
 

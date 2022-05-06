@@ -1,4 +1,3 @@
-# test_sfp_intfiles.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuleintfiles(unittest.TestCase):
-    """
-    Test modules.sfp_intfiles
-    """
+class TestModuleIntfiles(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_intfiles()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_intfiles()
         module.setup(sf, dict())
 

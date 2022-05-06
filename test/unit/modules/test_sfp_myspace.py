@@ -1,4 +1,3 @@
-# test_sfp_myspace.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModulemyspace(unittest.TestCase):
-    """
-    Test modules.sfp_myspace
-    """
+class TestModuleMyspace(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_myspace()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_myspace()
         module.setup(sf, dict())
 
@@ -34,19 +26,21 @@ class TestModulemyspace(unittest.TestCase):
         module = sfp_myspace()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
+    def test_handleEvent_event_data_social_media_not_myspace_profile_should_not_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_myspace()
         module.setup(sf, dict())
 
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            raise Exception(f"Raised event {event.eventType}: {event.data}")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_myspace)
 
         event_type = 'ROOT'
         event_data = 'example data'
@@ -54,6 +48,12 @@ class TestModulemyspace(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
+        event_type = 'SOCIAL_MEDIA'
+        event_data = 'Not MySpace: example_username'
+        event_module = 'example module'
+        source_event = evt
+
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)

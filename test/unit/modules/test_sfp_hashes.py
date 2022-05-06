@@ -1,4 +1,3 @@
-# test_sfp_hashes.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleHashes(unittest.TestCase):
-    """
-    Test modules.sfp_hashes
-    """
 
     def test_opts(self):
         module = sfp_hashes()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_hashes()
         module.setup(sf, dict())
 

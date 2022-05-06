@@ -5,4 +5,4 @@
 # Must be run from SpiderFoot root directory; ie:
 # ./test/run
 
-time python3 -m pytest -n auto --flake8 --dist loadfile --durations=5 --cov-report html --cov=. .
+time python3 -m pytest -n auto --flake8 --dist loadfile --ignore=test/integration/modules/ --durations=5 --cov-report html --cov=. .

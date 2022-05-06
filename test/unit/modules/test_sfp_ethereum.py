@@ -1,4 +1,3 @@
-# test_sfp_ethereum.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleEthereum(unittest.TestCase):
-    """
-    Test modules.sfp_ethereum
-    """
 
     def test_opts(self):
         module = sfp_ethereum()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_ethereum()
         module.setup(sf, dict())
 

@@ -1,4 +1,3 @@
-# test_sfp_virustotal.py
 import pytest
 import unittest
 
@@ -8,21 +7,14 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModulevirustotal(unittest.TestCase):
-    """
-    Test modules.sfp_virustotal
-    """
+class TestModuleVirustotal(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_virustotal()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_virustotal()
         module.setup(sf, dict())
 
@@ -35,9 +27,6 @@ class TestModulevirustotal(unittest.TestCase):
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent_no_api_key_should_set_errorState(self):
-        """
-        Test handleEvent(self, event)
-        """
         sf = SpiderFoot(self.default_options)
 
         module = sfp_virustotal()

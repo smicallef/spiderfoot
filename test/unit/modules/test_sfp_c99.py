@@ -1,4 +1,3 @@
-# test_sfp_c99.py
 import pytest
 import unittest
 
@@ -9,9 +8,6 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleC99(unittest.TestCase):
-    """
-    Test modules.sfp_c99
-    """
 
     def test_opts(self):
         module = sfp_c99()
@@ -19,7 +15,6 @@ class TestModuleC99(unittest.TestCase):
 
     def test_setup(self):
         sf = SpiderFoot(self.default_options)
-
         module = sfp_c99()
         module.setup(sf, dict())
 
