@@ -8,7 +8,7 @@
 #
 # Created:     2019-05-26
 # Copyright:   (c) bcoles 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import hashlib
