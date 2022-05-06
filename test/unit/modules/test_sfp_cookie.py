@@ -1,4 +1,3 @@
-# test_sfp_cookie.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleCookie(unittest.TestCase):
-    """
-    Test modules.sfp_cookie
-    """
 
     def test_opts(self):
         module = sfp_cookie()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_cookie()
         module.setup(sf, dict())
 

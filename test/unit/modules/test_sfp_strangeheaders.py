@@ -1,4 +1,3 @@
-# test_sfp_strangeheaders.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleStrangeHeaders(unittest.TestCase):
-    """
-    Test modules.sfp_strangeheaders
-    """
 
     def test_opts(self):
         module = sfp_strangeheaders()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_strangeheaders()
         module.setup(sf, dict())
 

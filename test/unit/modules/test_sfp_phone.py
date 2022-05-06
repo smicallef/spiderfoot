@@ -1,4 +1,3 @@
-# test_sfp_phone.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModulePhone(unittest.TestCase):
-    """
-    Test modules.sfp_phone
-    """
 
     def test_opts(self):
         module = sfp_phone()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_phone()
         module.setup(sf, dict())
 

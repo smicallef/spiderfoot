@@ -1,4 +1,3 @@
-# test_sfp_base64.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleBase64(unittest.TestCase):
-    """
-    Test modules.sfp_base64
-    """
 
     def test_opts(self):
         module = sfp_base64()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_base64()
         module.setup(sf, dict())
 

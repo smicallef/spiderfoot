@@ -1,4 +1,3 @@
-# test_sfp_errors.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleErrors(unittest.TestCase):
-    """
-    Test modules.sfp_errors
-    """
 
     def test_opts(self):
         module = sfp_errors()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_errors()
         module.setup(sf, dict())
 

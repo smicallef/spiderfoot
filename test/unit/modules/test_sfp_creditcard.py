@@ -1,4 +1,3 @@
-# test_sfp_creditcard.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleCreditCard(unittest.TestCase):
-    """
-    Test modules.sfp_creditcard
-    """
 
     def test_opts(self):
         module = sfp_creditcard()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_creditcard()
         module.setup(sf, dict())
 
@@ -34,7 +26,7 @@ class TestModuleCreditCard(unittest.TestCase):
         module = sfp_creditcard()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent_event_data_containing_creditcard(self):
+    def test_handleEvent_event_data_containing_creditcard_should_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_creditcard()

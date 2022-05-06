@@ -1,4 +1,3 @@
-# test_sfp_gleif.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleGleif(unittest.TestCase):
-    """
-    Test modules.sfp_gleif
-    """
 
     def test_opts(self):
         module = sfp_gleif()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_gleif()
         module.setup(sf, dict())
 
@@ -34,20 +26,21 @@ class TestModuleGleif(unittest.TestCase):
         module = sfp_gleif()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
+    def test_handleEvent_event_data_invalid_lei_should_not_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_gleif()
         module.setup(sf, dict())
 
-        target_value = '7ZW8QJWVPR4P1J1KQY45'
-        target_type = 'LEI'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            raise Exception(f"Raised event {event.eventType}: {event.data}")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_gleif)
 
         event_type = 'ROOT'
         event_data = 'example data'
@@ -55,6 +48,11 @@ class TestModuleGleif(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
+        event_type = 'LEI'
+        event_data = 'invalid LEI'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)

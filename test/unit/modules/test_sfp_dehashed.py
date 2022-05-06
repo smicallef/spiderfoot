@@ -1,4 +1,3 @@
-# test_sfp_dehashed.py
 import pytest
 import unittest
 
@@ -8,19 +7,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuledebounce(unittest.TestCase):
-    """
-    Test modules.sfp_dehashed
-    """
+class TestModuleDehashed(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_dehashed()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
 
         module = sfp_dehashed()
@@ -35,9 +28,6 @@ class TestModuledebounce(unittest.TestCase):
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent_no_api_key_should_set_errorState(self):
-        """
-        Test handleEvent(self, event)
-        """
         sf = SpiderFoot(self.default_options)
 
         module = sfp_dehashed()

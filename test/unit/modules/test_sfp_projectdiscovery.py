@@ -1,6 +1,6 @@
-# test_sfp_projectdiscovery.py
 import pytest
 import unittest
+
 from modules.sfp_projectdiscovery import sfp_projectdiscovery
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
@@ -8,9 +8,6 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleProjectdiscovery(unittest.TestCase):
-    """
-    Test modules.sfp_projectdiscovery
-    """
 
     def test_opts(self):
         module = sfp_projectdiscovery()
@@ -18,7 +15,6 @@ class TestModuleProjectdiscovery(unittest.TestCase):
 
     def test_setup(self):
         sf = SpiderFoot(self.default_options)
-
         module = sfp_projectdiscovery()
         module.setup(sf, dict())
 
