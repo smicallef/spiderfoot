@@ -69,7 +69,7 @@ class SpiderFoot:
             TypeError: options argument was invalid type
         """
         if not isinstance(options, dict):
-            raise TypeError("options is %s; expected dict()" % type(options))
+            raise TypeError(f"options is {type(options)}; expected dict()")
 
         self.opts = deepcopy(options)
         self.log = logging.getLogger(f"spiderfoot.{__name__}")
@@ -307,16 +307,16 @@ class SpiderFoot:
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = SpiderFootHelpers.cachePath() + "/" + pathLabel
         try:
-            (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
-
-            if sz == 0:
-                return None
-
-            if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-                with open(cacheFile, "r") as fp:
-                    return fp.read()
-        except BaseException:
+            cache_stat = os.stat(cacheFile)
+        except OSError:
             return None
+
+        if cache_stat.st_size == 0:
+            return None
+
+        if cache_stat.st_mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
+            with open(cacheFile, "r") as fp:
+                return fp.read()
 
         return None
 
@@ -361,7 +361,7 @@ class SpiderFoot:
             return storeopts
 
         if not isinstance(opts['__modules__'], dict):
-            raise TypeError("opts['__modules__'] is %s; expected dict()" % type(opts['__modules__']))
+            raise TypeError(f"opts['__modules__'] is {type(opts['__modules__'])}; expected dict()")
 
         for mod in opts['__modules__']:
             for opt in opts['__modules__'][mod]['opts']:
@@ -401,9 +401,9 @@ class SpiderFoot:
         """
 
         if not isinstance(opts, dict):
-            raise TypeError("opts is %s; expected dict()" % type(opts))
+            raise TypeError(f"opts is {type(opts)}; expected dict()")
         if not isinstance(referencePoint, dict):
-            raise TypeError("referencePoint is %s; expected dict()" % type(referencePoint))
+            raise TypeError(f"referencePoint is {type(referencePoint)}; expected dict()")
 
         returnOpts = referencePoint
 
@@ -614,7 +614,7 @@ class SpiderFoot:
             str: URL relative path
         """
         if not url:
-            self.error("Invalid URL: %s" % url)
+            self.error(f"Invalid URL: {url}")
             return None
 
         finalBits = list()
@@ -651,7 +651,7 @@ class SpiderFoot:
             str: base directory
         """
         if not url:
-            self.error("Invalid URL: %s" % url)
+            self.error(f"Invalid URL: {url}")
             return None
 
         bits = url.split('/')
@@ -680,7 +680,7 @@ class SpiderFoot:
             str: base URL without trailing slash
         """
         if not url:
-            self.error("Invalid URL: %s" % url)
+            self.error(f"Invalid URL: {url}")
             return None
 
         if '://' in url:
@@ -754,14 +754,14 @@ class SpiderFoot:
             set: List of keywords
         """
         if not domainList:
-            self.error("Invalid domain list: %s" % domainList)
+            self.error(f"Invalid domain list: {domainList}")
             return set()
 
         keywords = list()
         for domain in domainList:
             keywords.append(self.domainKeyword(domain, tldList))
 
-        self.debug("Keywords: %s" % keywords)
+        self.debug(f"Keywords: {keywords}")
         return set([k for k in keywords if k])
 
     def hostDomain(self, hostname: str, tldList: list) -> str:
@@ -1726,7 +1726,7 @@ class SpiderFoot:
 
         Args:
             rawcert (str): PEM-format SSL certificate
-            fqdn (str): TBD
+            fqdn (str): expected FQDN for certificate
             expiringdays (int): The certificate will be considered as "expiring" if within this number of days of expiry.
 
         Returns:
@@ -1779,8 +1779,7 @@ class SpiderFoot:
                 if isinstance(x, cryptography.x509.DNSName):
                     ret['altnames'].append(x.value.lower().encode('raw_unicode_escape').decode("ascii", errors='replace'))
         except BaseException as e:
-            self.debug("Problem processing certificate: " + str(e))
-            pass
+            self.debug(f"Problem processing certificate: {e}")
 
         certhosts = list()
         try:
@@ -1792,8 +1791,7 @@ class SpiderFoot:
                 if name not in ret['altnames']:
                     certhosts.append(name)
         except BaseException as e:
-            self.debug("Problem processing certificate: " + str(e))
-            pass
+            self.debug(f"Problem processing certificate: {e}")
 
         # Check for mismatch
         if fqdn and ret['issued']:
@@ -1810,7 +1808,7 @@ class SpiderFoot:
 
                 ret['hosts'] = certhosts
 
-                self.debug("Checking for " + fqdn + " in certificate subject")
+                self.debug(f"Checking for {fqdn} in certificate subject")
                 fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
 
                 found = False
@@ -1825,7 +1823,7 @@ class SpiderFoot:
                 if not found:
                     ret['mismatch'] = True
             except BaseException as e:
-                self.error("Error processing certificate: " + str(e))
+                self.error(f"Error processing certificate: {e}")
                 ret['certerror'] = True
 
         return ret
@@ -1843,10 +1841,11 @@ class SpiderFoot:
         # https://tools.ietf.org/html/rfc3986#section-3.3
         return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
 
-    def parseLinks(self, url: str, data: str, domains: list) -> list:
+    def parseLinks(self, url: str, data: str, domains: list) -> dict:
         """Find all URLs within the supplied content.
 
-        This does not fetch any URLs!
+        This function does not fetch any URLs.
+
         A dictionary will be returned, where each link will have the keys
         'source': The URL where the link was obtained from
         'original': What the link looked like in the content it was obtained from
@@ -1860,12 +1859,12 @@ class SpiderFoot:
             domains: TBD
 
         Returns:
-            list: links
+            dict: links
         """
         returnLinks = dict()
 
         if not isinstance(data, str):
-            self.debug("parseLinks() data is %s; expected str()" % type(data))
+            self.debug(f"parseLinks() data is {type(data)}; expected str()")
             return returnLinks
 
         if not data:
@@ -1900,7 +1899,7 @@ class SpiderFoot:
                     if lnk.has_attr(tags[t]):
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
-            self.error("Error parsing with BeautifulSoup: " + str(e))
+            self.error(f"Error parsing with BeautifulSoup: {e}")
             return returnLinks
 
         # Loop through all the URLs/links found
@@ -2272,6 +2271,8 @@ class SpiderFoot:
 
         try:
             result['headers'] = dict()
+            result['realurl'] = res.url
+            result['code'] = str(res.status_code)
 
             for header, value in res.headers.items():
                 result['headers'][str(header).lower()] = str(value)
@@ -2279,8 +2280,6 @@ class SpiderFoot:
             # Sometimes content exceeds the size limit after decompression
             if sizeLimit and len(res.content) > sizeLimit:
                 self.debug(f"Content exceeded size limit ({sizeLimit}), so returning no data just headers")
-                result['realurl'] = res.url
-                result['code'] = str(res.status_code)
                 return result
 
             refresh_header = result['headers'].get('refresh')
@@ -2307,8 +2306,6 @@ class SpiderFoot:
                     headOnly
                 )
 
-            result['realurl'] = res.url
-            result['code'] = str(res.status_code)
             if disableContentEncoding:
                 result['content'] = res.content
             else:
@@ -2344,10 +2341,10 @@ class SpiderFoot:
         return result
 
     def checkDnsWildcard(self, target: str) -> bool:
-        """Check if wildcard DNS is enabled by looking up a random subdomain.
+        """Check if wildcard DNS is enabled for a domain by looking up a random subdomain.
 
         Args:
-            target (str): TBD
+            target (str): domain
 
         Returns:
             bool: Domain returns DNS records for any subdomains
@@ -2460,7 +2457,7 @@ class SpiderFoot:
             timeout: API call timeout
 
         Args:
-            searchString (str) :TBD
+            searchString (str): Google search query
             opts (dict): TBD
 
         Returns:
@@ -2506,7 +2503,7 @@ class SpiderFoot:
             "webSearchUrl": f"https://www.google.com/search?q={search_string}&{params}"
         }
 
-    def bingIterate(self, searchString: str, opts: dict = {}) -> dict:
+    def bingIterate(self, searchString: str, opts: dict = None) -> dict:
         """Request search results from the Bing API.
 
         Will return a dict:
@@ -2521,12 +2518,14 @@ class SpiderFoot:
             timeout: API call timeout
 
         Args:
-            searchString (str): TBD
+            searchString (str): Bing search query
             opts (dict): TBD
 
         Returns:
             dict: Search results as {"webSearchUrl": "URL", "urls": [results]}
         """
+        if opts is None:
+            opts = {}
 
         search_string = searchString.replace(" ", "%20")
         params = urllib.parse.urlencode({
