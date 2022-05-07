@@ -366,6 +366,7 @@ class sfp_spyse(SpiderFootPlugin):
             self.retrieve_subdomains(event)
         else:
             self.debug(f"Unexpected event type {event.eventType}, skipping")
+            return
 
     def retrieve_cohosts(self, event):
         cohosts = list()

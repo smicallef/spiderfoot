@@ -192,8 +192,6 @@ class sfp_gleif(SpiderFootPlugin):
             self.debug(f"Skipping {eventData}, already checked.")
             return
 
-        self.results[eventData] = True
-
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         leis = list()
@@ -201,6 +199,7 @@ class sfp_gleif(SpiderFootPlugin):
         if eventName == "LEI":
             leis.append(eventData)
         elif eventName == "COMPANY_NAME":
+            self.results[eventData] = True
             res = self.searchAutocompletions(eventData)
 
             if res is None:
@@ -238,6 +237,8 @@ class sfp_gleif(SpiderFootPlugin):
             if not SpiderFootHelpers.validLEI(lei):
                 continue
 
+            self.results[lei] = True
+
             e = SpiderFootEvent("LEI", lei, self.__name__, event)
             self.notifyListeners(e)
 
@@ -246,7 +247,7 @@ class sfp_gleif(SpiderFootPlugin):
             res = self.retrieveRecord(lei)
             if not res:
                 self.debug(f"Found no results for {eventData}")
-                return
+                continue
 
             attributes = res.get('attributes')
             if not attributes:
