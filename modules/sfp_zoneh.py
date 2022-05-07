@@ -130,6 +130,7 @@ class sfp_zoneh(SpiderFootPlugin):
             evtType = 'DEFACED_AFFILIATE_IPADDR'
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
         if self.checkForStop():
             return

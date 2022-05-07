@@ -112,6 +112,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
             e = "BLACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
         family = self.sf.normalizeDNS(self.queryFamilyDNS(eventData))
         malware = self.sf.normalizeDNS(self.queryMalwareDNS(eventData))

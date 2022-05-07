@@ -147,6 +147,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
             blacklist_type = "BLACKLISTED_COHOST"
         else:
             self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by CleanBrowsing DNS.
