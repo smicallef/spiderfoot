@@ -978,53 +978,47 @@ class SpiderFoot:
         except Exception:
             return False
 
-    def dictwords(self) -> list:
-        """Return dictionary words and/or names from several language dictionaries.
+    def dictwords(self) -> set:
+        """Return dictionary words from several language dictionaries.
 
         Returns:
-            list: words and names from dictionaries
+            set: words from dictionaries
         """
-        wd = dict()
+        words = set()
 
         dicts = ["english", "german", "french", "spanish"]
 
         for d in dicts:
             try:
-                with io.open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r', encoding='utf8', errors='ignore') as wdct:
-                    dlines = wdct.readlines()
+                with io.open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r', encoding='utf8', errors='ignore') as dict_file:
+                    for w in dict_file.readlines():
+                        words.add(w.strip().lower().split('/')[0])
             except BaseException as e:
                 self.debug(f"Could not read dictionary: {e}")
                 continue
 
-            for w in dlines:
-                w = w.strip().lower()
-                wd[w.split('/')[0]] = True
+        return words
 
-        return list(wd.keys())
-
-    def dictnames(self) -> list:
-        """Return names of available dictionary files.
+    def dictnames(self) -> set:
+        """Return list of human names.
 
         Returns:
-            list: list of dictionary file names.
+            set: human names
         """
-        wd = dict()
+        words = set()
 
         dicts = ["names"]
 
         for d in dicts:
             try:
-                with open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r') as wdct:
-                    dlines = wdct.readlines()
+                with open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r') as dict_file:
+                    for w in dict_file.readlines():
+                        words.add(w.strip().lower().split('/')[0])
             except BaseException as e:
                 self.debug(f"Could not read dictionary: {e}")
                 continue
 
-            for w in dlines:
-                w = w.strip().lower()
-                wd[w.split('/')[0]] = True
-
-        return list(wd.keys())
+        return words
 
     def resolveHost(self, host: str) -> list:
         """Return a normalised IPv4 resolution of a hostname.

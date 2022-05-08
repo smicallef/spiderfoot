@@ -722,23 +722,15 @@ class TestSpiderFoot(unittest.TestCase):
                 dns = sf.normalizeDNS(invalid_type)
                 self.assertIsInstance(dns, list)
 
-    def test_dictwords_should_return_a_list(self):
-        """
-        Test dictwords(self)
-        """
+    def test_dictwords_should_return_a_set(self):
         sf = SpiderFoot(dict())
-
         dict_words = sf.dictwords()
-        self.assertIsInstance(dict_words, list)
+        self.assertIsInstance(dict_words, set)
 
-    def test_dictnames_should_return_a_list(self):
-        """
-        Test dictnames(self)
-        """
+    def test_dictnames_should_return_a_set(self):
         sf = SpiderFoot(dict())
-
         dict_names = sf.dictnames()
-        self.assertIsInstance(dict_names, list)
+        self.assertIsInstance(dict_names, set)
 
     def test_resolve_host_should_return_list(self):
         """
