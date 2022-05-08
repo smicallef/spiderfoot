@@ -11,6 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
+import importlib
 import random
 import threading
 import time
@@ -64,15 +65,14 @@ class sfp_dnsbrute(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-        dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts/"
         if self.opts['commons']:
-            with open(f"{dicts_dir}/subdomains.txt", 'r') as f:
+            with importlib.resources.open_text('spiderfoot.dicts', 'subdomains.txt') as f:
                 for s in f.readlines():
                     s = s.strip()
                     self.sublist[s] = True
 
         if self.opts['top10000']:
-            with open(f"{dicts_dir}/subdomains-10000.txt", 'r') as f:
+            with importlib.resources.open_text('spiderfoot.dicts', 'subdomains-10000.txt') as f:
                 for s in f.readlines():
                     s = s.strip()
                     self.sublist[s] = True
@@ -198,7 +198,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             if self.checkForStop():
                 return
 
-            name = sub + "." + eventData
+            name = f"{sub}.{eventData}"
 
             if len(targetList) <= self.opts['_maxthreads']:
                 targetList.append(name)
