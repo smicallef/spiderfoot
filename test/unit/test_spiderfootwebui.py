@@ -74,9 +74,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(error_page_404, str)
 
     def test_clean_user_input_should_return_a_list(self):
-        """
-        Test cleanUserInput(self, inputList)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -84,9 +81,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(clean_user_input, list)
 
     def test_clean_user_input_invalid_input_should_raise(self):
-        """
-        Test cleanUserInput(self, inputList)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -96,6 +90,21 @@ class TestSpiderFootWebUi(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     sfwebui.cleanUserInput(invalid_type)
+
+    def test_clean_user_input_should_clean_user_input(self):
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+
+        clean_input = sfwebui.cleanUserInput([
+            "<p>some HTML with \"some quotes\" & some JavaScript\n<script>alert('JavaScript')</script></p>",
+            "Some more input. This function accepts a list"
+        ])
+        self.assertIsInstance(clean_input, list)
+        self.assertEqual(clean_input, [
+            '&lt;p&gt;some HTML with "some quotes" & some JavaScript\n&lt;script&gt;alert(&#x27;JavaScript&#x27;)&lt;/script&gt;&lt;/p&gt;',
+            "Some more input. This function accepts a list"
+        ])
 
     def test_search_base_should_return_a_list(self):
         """
@@ -204,28 +213,21 @@ class TestSpiderFootWebUi(unittest.TestCase):
         scan_viz_multi = sfwebui.scanvizmulti(None, None)
         self.assertIsInstance(scan_viz_multi, str)
 
-    @unittest.skip("todo")
-    def test_scanopts(self):
-        """
-        Test scanopts(self, id)
-        """
+    def test_scanopts_should_return_dict(self):
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_opts = sfwebui.scanopts("example scan instance")
-        self.assertIsInstance(scan_opts, str)
+        self.assertIsInstance(scan_opts, dict)
+        self.assertEqual(scan_opts, dict())
 
-        self.assertEqual('TBD', 'TBD')
-
-    def test_rerunscan(self):
-        """
-        Test rerunscan(self, id)
-        """
+    def test_rerunscan_invalid_scan_id_should_return_error(self):
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         rerunscan = sfwebui.rerunscan("example scan instance")
         self.assertIsInstance(rerunscan, str)
+        self.assertIn("Invalid scan ID", rerunscan)
 
     @unittest.skip("todo")
     def test_rerunscanmulti(self):
@@ -275,17 +277,16 @@ class TestSpiderFootWebUi(unittest.TestCase):
         scan_info = sfwebui.scaninfo("example scan instance")
         self.assertIsInstance(scan_info, str)
 
-    @unittest.skip("todo")
     def test_opts(self):
-        """
-        Test opts(self)
-        """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        opts['__globaloptdescs__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        opts_page = sfwebui.opts()
+        self.assertIsInstance(opts_page, str)
+        self.assertIn('Settings', opts_page)
 
     def test_optsexport_should_return_a_string(self):
-        """
-        Test optsexport(self, pattern)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -293,9 +294,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(opts_export, str)
 
     def test_optsraw_should_return_a_list(self):
-        """
-        Test optsraw(self)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -304,9 +302,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertEqual(opts_raw[0], 'SUCCESS')
 
     def test_error(self):
-        """
-        Test error(self, message)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -327,19 +322,40 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(scan_delete, dict)
         self.assertEqual("Scan example scan id does not exist", scan_delete.get('error').get('message'))
 
-    @unittest.skip("todo")
-    def test_savesettings(self):
+    def test_savesettings_invalid_csrf_token_should_return_an_error(self):
         """
         Test savesettings(self, allopts, token, configFile=None)
         """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        save_settings = sfwebui.savesettings(None, "invalid token", None)
+        self.assertIsInstance(save_settings, str)
+        self.assertIn("Invalid token", save_settings)
+
+    @unittest.skip("todo")
+    def test_savesettings(self):
         self.assertEqual('TBD', 'TBD')
+
+    def test_savesettingsraw_invalid_csrf_token_should_return_an_error(self):
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        save_settings_raw = sfwebui.savesettingsraw(None, "invalid token")
+        self.assertIsInstance(save_settings_raw, bytes)
+        self.assertIn(b"Invalid token", save_settings_raw)
 
     @unittest.skip("todo")
     def test_savesettingsraw(self):
-        """
-        Test savesettingsraw(self, allopts, token)
-        """
         self.assertEqual('TBD', 'TBD')
+
+    def test_reset_settings_should_return_true(self):
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        reset_settings = sfwebui.reset_settings()
+        self.assertIsInstance(reset_settings, bool)
+        self.assertTrue(reset_settings)
 
     @unittest.skip("todo")
     def test_result_set_fp(self):
@@ -349,9 +365,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertEqual('TBD', 'TBD')
 
     def test_eventtypes_should_return_list(self):
-        """
-        Test eventtypes(self)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
@@ -359,14 +372,18 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(event_types, list)
 
     def test_modules_should_return_list(self):
-        """
-        Test modules(self)
-        """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        modules = sfwebui.eventtypes()
+        modules = sfwebui.modules()
         self.assertIsInstance(modules, list)
+
+    def test_correlationrules_should_return_list(self):
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        correlationrules = sfwebui.correlationrules()
+        self.assertIsInstance(correlationrules, list)
 
     def test_ping_should_return_list(self):
         """
