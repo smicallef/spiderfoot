@@ -125,7 +125,7 @@ class SpiderFootWebUi:
         """Error page."""
         cherrypy.response.status = 500
 
-        if self.config['_debug']:
+        if self.config.get('_debug'):
             cherrypy.response.body = _cperror.get_error_page(status=500, traceback=_cperror.format_exc())
         else:
             cherrypy.response.body = b"<html><body>Error</body></html>"
@@ -191,16 +191,20 @@ class SpiderFootWebUi:
         return templ.render(message=message, docroot=self.docroot, version=__version__)
 
     def cleanUserInput(self: 'SpiderFootWebUi', inputList: list) -> list:
-        """Sanitize user input, poorly.
+        """Convert data to HTML entities; except quotes and ampersands.
 
         Args:
-            inputList (list): TBD
+            inputList (list): list of strings to sanitize
 
         Returns:
             list: sanitized input
 
         Raises:
             TypeError: inputList type was invalid
+
+        Todo:
+            Review all uses of this function, then remove it.
+            Use of this function is overloaded.
         """
         if not isinstance(inputList, list):
             raise TypeError(f"inputList is {type(inputList)}; expected list()")
@@ -212,8 +216,8 @@ class SpiderFootWebUi:
                 ret.append('')
                 continue
             c = html.escape(item, True)
-            c = c.replace("'", '&quot;')
-            # We don't actually want & translated to &amp;
+
+            # Decode '&' and '"' HTML entities
             c = c.replace("&amp;", "&").replace("&quot;", "\"")
             ret.append(c)
 
@@ -674,14 +678,14 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def scanopts(self: 'SpiderFootWebUi', id: str) -> str:
+    def scanopts(self: 'SpiderFootWebUi', id: str) -> dict:
         """Return configuration used for the specified scan as JSON.
 
         Args:
             id: scan ID
 
         Returns:
-            str: options as JSON string
+            dict: scan options for the specified scan
         """
         dbh = SpiderFootDb(self.config)
         ret = dict()
@@ -1195,11 +1199,11 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def eventtypes(self: 'SpiderFootWebUi') -> str:
+    def eventtypes(self: 'SpiderFootWebUi') -> list:
         """List all event types.
 
         Returns:
-            str: list of event types
+            list: list of event types
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
@@ -1214,17 +1218,22 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def modules(self: 'SpiderFootWebUi') -> str:
+    def modules(self: 'SpiderFootWebUi') -> list:
         """List all modules.
 
         Returns:
-            str: list of modules
+            list: list of modules
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        modinfo = list(self.config['__modules__'].keys())
-        modinfo.sort()
         ret = list()
+
+        modinfo = list(self.config['__modules__'].keys())
+        if not modinfo:
+            return ret
+
+        modinfo.sort()
+
         for m in modinfo:
             if "__" in m:
                 continue
@@ -1234,16 +1243,20 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def correlationrules(self: 'SpiderFootWebUi') -> str:
+    def correlationrules(self: 'SpiderFootWebUi') -> list:
         """List all correlation rules.
 
         Returns:
-            str: list of correlation rules
+            list: list of correlation rules
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        rules = self.config['__correlationrules__']
         ret = list()
+
+        rules = self.config['__correlationrules__']
+        if not rules:
+            return ret
+
         for r in rules:
             ret.append({
                 'id': r['id'],
@@ -1308,7 +1321,8 @@ class SpiderFootWebUi:
         Raises:
             HTTPRedirect: redirect to new scan info page
         """
-        [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
+        scanname = self.cleanUserInput([scanname])[0]
+        scantarget = self.cleanUserInput([scantarget])[0]
 
         if not scanname:
             if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):

@@ -46,7 +46,7 @@
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
 % for opt in sorted(opts.keys()):
     % if not opt.startswith("__"):
-    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td style='vertical-align: middle'>
+    <tr><td>${opts['__globaloptdescs__'].get(opt) or "No description available"}</td><td style='vertical-align: middle'>
         % if type(opts[opt]) is int:
         <div class='form-group'>
             <input id='${opt}' class='form-control' type=text value="${opts[opt]}">
