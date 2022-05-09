@@ -14,7 +14,7 @@ import json
 import re
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_stackoverflow(SpiderFootPlugin):
@@ -217,7 +217,7 @@ class sfp_stackoverflow(SpiderFootPlugin):
             )
             self.notifyListeners(e)
 
-            emails = self.sf.parseEmails(text)
+            emails = SpiderFootHelpers.extractEmailsFromText(text)
             if emails:
                 for email in emails:
                     allEmails.append(str(email))

@@ -15,7 +15,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_emailformat(SpiderFootPlugin):
@@ -90,7 +90,7 @@ class sfp_emailformat(SpiderFootPlugin):
             # fall back to raw page contents
             data = res["content"]
 
-        emails = self.sf.parseEmails(data)
+        emails = SpiderFootHelpers.extractEmailsFromText(data)
         for email in emails:
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]

@@ -12,7 +12,7 @@
 import json
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_builtwith(SpiderFootPlugin):
@@ -155,7 +155,7 @@ class sfp_builtwith(SpiderFootPlugin):
                                             self.__name__, event)
                         self.notifyListeners(e)
                         if nb.get('Email', None):
-                            if self.sf.validEmail(nb['Email']):
+                            if SpiderFootHelpers.validEmail(nb['Email']):
                                 if nb['Email'].split("@")[0] in self.opts['_genericusers'].split(","):
                                     evttype = "EMAILADDR_GENERIC"
                                 else:
@@ -166,7 +166,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
                 if data['Meta'].get("Emails", []):
                     for email in data['Meta']['Emails']:
-                        if self.sf.validEmail(email):
+                        if SpiderFootHelpers.validEmail(email):
                             if email.split("@")[0] in self.opts['_genericusers'].split(","):
                                 evttype = "EMAILADDR_GENERIC"
                             else:

@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_snov(SpiderFootPlugin):
@@ -206,7 +206,7 @@ class sfp_snov(SpiderFootPlugin):
                         if email:
                             if email in self.results:
                                 continue
-                            if not self.sf.validEmail(email):
+                            if not SpiderFootHelpers.validEmail(email):
                                 continue
                             self.results[email] = True
 

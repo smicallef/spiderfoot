@@ -15,7 +15,7 @@
 
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_crossref(SpiderFootPlugin):
@@ -124,7 +124,7 @@ class sfp_crossref(SpiderFootPlugin):
             # fetch the base URL of the affiliate to check for a crossref.
             if eventName == "LINKED_URL_EXTERNAL" and self.opts['checkbase']:
                 # Check the base url to see if there is an affiliation
-                url = self.sf.urlBaseUrl(eventData)
+                url = SpiderFootHelpers.urlBaseUrl(eventData)
                 if url in self.fetched:
                     return
 

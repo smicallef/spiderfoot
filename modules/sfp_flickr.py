@@ -18,7 +18,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_flickr(SpiderFootPlugin):
@@ -203,7 +203,7 @@ class sfp_flickr(SpiderFootPlugin):
 
             # Extract data
             for photo in photos.get('photo', list()):
-                emails = self.sf.parseEmails(str(photo))
+                emails = SpiderFootHelpers.extractEmailsFromText(str(photo))
                 for email in emails:
                     if email in self.results:
                         continue
@@ -224,7 +224,7 @@ class sfp_flickr(SpiderFootPlugin):
                     self.notifyListeners(evt)
                     self.results[email] = True
 
-                links = self.sf.extractUrls(str(photo))
+                links = SpiderFootHelpers.extractUrlsFromText(str(photo))
                 for link in links:
                     if link in self.results:
                         continue

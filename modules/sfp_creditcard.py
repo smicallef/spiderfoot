@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_creditcard(SpiderFootPlugin):
@@ -58,7 +58,7 @@ class sfp_creditcard(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        creditCards = self.sf.parseCreditCards(eventData)
+        creditCards = SpiderFootHelpers.extractCreditCardsFromText(eventData)
 
         for creditCard in set(creditCards):
             self.info(f"Found credit card number: {creditCard}")

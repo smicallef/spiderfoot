@@ -13,7 +13,7 @@
 
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_pastebin(SpiderFootPlugin):
@@ -124,7 +124,7 @@ class sfp_pastebin(SpiderFootPlugin):
                 self.results[link] = True
 
             relevant_links = [
-                link for link in new_links if self.sf.urlBaseUrl(link).endswith(target)
+                link for link in new_links if SpiderFootHelpers.urlBaseUrl(link).endswith(target)
             ]
 
             for link in relevant_links:

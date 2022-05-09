@@ -157,7 +157,7 @@ class sfp_spider(SpiderFootPlugin):
         returnLinks = dict()
 
         for link in links:
-            linkBase = self.sf.urlBaseUrl(link)
+            linkBase = SpiderFootHelpers.urlBaseUrl(link)
             linkFQDN = self.sf.urlFQDN(link)
 
             # Skip external sites (typical behaviour..)
@@ -318,7 +318,7 @@ class sfp_spider(SpiderFootPlugin):
         totalFetched = 0
         levelsTraversed = 0
         nextLinks = dict()
-        targetBase = self.sf.urlBaseUrl(startingPoint)
+        targetBase = SpiderFootHelpers.urlBaseUrl(startingPoint)
 
         # Are we respecting robots.txt?
         if self.opts['robotsonly'] and targetBase not in self.robotsRules:
@@ -328,7 +328,7 @@ class sfp_spider(SpiderFootPlugin):
                                          verify=False)
             if robotsTxt['content'] is not None:
                 self.debug('robots.txt contents: ' + robotsTxt['content'])
-                self.robotsRules[targetBase] = SpiderFootHelpers.parseRobotsTxt(robotsTxt['content'])
+                self.robotsRules[targetBase] = SpiderFootHelpers.extractUrlsFromRobotsTxt(robotsTxt['content'])
 
         if self.checkForStop():
             return

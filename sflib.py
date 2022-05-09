@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import hashlib
-import html
 import inspect
 import io
 import json
@@ -33,7 +32,6 @@ from datetime import datetime
 import cryptography
 import dns.resolver
 import netaddr
-import phonenumbers
 import OpenSSL
 import requests
 import urllib3
@@ -604,95 +602,6 @@ class SpiderFoot:
 
         return evtlist
 
-    def urlRelativeToAbsolute(self, url: str) -> str:
-        """Turn a relative path into an absolute path
-
-        Args:
-            url (str): URL
-
-        Returns:
-            str: URL relative path
-        """
-        if not url:
-            self.error(f"Invalid URL: {url}")
-            return None
-
-        finalBits = list()
-
-        if '..' not in url:
-            return url
-
-        bits = url.split('/')
-
-        for chunk in bits:
-            if chunk == '..':
-                # Don't pop the last item off if we're at the top
-                if len(finalBits) <= 1:
-                    continue
-
-                # Don't pop the last item off if the first bits are not the path
-                if '://' in url and len(finalBits) <= 3:
-                    continue
-
-                finalBits.pop()
-                continue
-
-            finalBits.append(chunk)
-
-        return '/'.join(finalBits)
-
-    def urlBaseDir(self, url: str) -> str:
-        """Extract the top level directory from a URL
-
-        Args:
-            url (str): URL
-
-        Returns:
-            str: base directory
-        """
-        if not url:
-            self.error(f"Invalid URL: {url}")
-            return None
-
-        bits = url.split('/')
-
-        # For cases like 'www.somesite.com'
-        if len(bits) == 0:
-            return url + '/'
-
-        # For cases like 'http://www.blah.com'
-        if '://' in url and url.count('/') < 3:
-            return url + '/'
-
-        base = '/'.join(bits[:-1])
-
-        return base + '/'
-
-    def urlBaseUrl(self, url: str) -> str:
-        """Extract the scheme and domain from a URL
-
-        Does not return the trailing slash! So you can do .endswith() checks.
-
-        Args:
-            url (str): URL
-
-        Returns:
-            str: base URL without trailing slash
-        """
-        if not url:
-            self.error(f"Invalid URL: {url}")
-            return None
-
-        if '://' in url:
-            bits = re.match(r'(\w+://.[^/:\?]*)[:/\?].*', url)
-        else:
-            bits = re.match(r'(.[^/:\?]*)[:/\?]', url)
-
-        if bits is None:
-            return url.lower()
-
-        return bits.group(1).lower()
-
     def urlFQDN(self, url: str) -> str:
         """Extract the FQDN from a URL.
 
@@ -706,7 +615,7 @@ class SpiderFoot:
             self.error(f"Invalid URL: {url}")
             return None
 
-        baseurl = self.urlBaseUrl(url)
+        baseurl = SpiderFootHelpers.urlBaseUrl(url)
         if '://' in baseurl:
             count = 2
         else:
@@ -930,54 +839,6 @@ class SpiderFoot:
                     ret.append(host)
         return ret
 
-    def validEmail(self, email: str) -> bool:
-        """Check if the provided string is a valid email address.
-
-        Args:
-            email (str): The email address to check.
-
-        Returns:
-            bool: email is a valid email address
-        """
-        if not isinstance(email, str):
-            return False
-
-        if "@" not in email:
-            return False
-
-        if not re.match(r'^([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', email):
-            return False
-
-        if len(email) < 6:
-            return False
-
-        # Skip strings with messed up URL encoding
-        if "%" in email:
-            return False
-
-        # Skip strings which may have been truncated
-        if "..." in email:
-            return False
-
-        return True
-
-    def validPhoneNumber(self, phone: str) -> bool:
-        """Check if the provided string is a valid phone number.
-
-        Args:
-            phone (str): The phone number to check.
-
-        Returns:
-            bool: string is a valid phone number
-        """
-        if not isinstance(phone, str):
-            return False
-
-        try:
-            return phonenumbers.is_valid_number(phonenumbers.parse(phone))
-        except Exception:
-            return False
-
     def dictwords(self) -> set:
         """Return dictionary words from several language dictionaries.
 
@@ -1173,530 +1034,6 @@ class SpiderFoot:
         sock.do_handshake()
         return sock
 
-    def parseRobotsTxt(self, robotsTxtData: str) -> list:
-        """Parse the contents of robots.txt.
-
-        Args:
-            robotsTxtData (str): robots.txt file contents
-
-        Returns:
-            list: list of patterns which should not be followed
-
-        Todo:
-            We don't check the User-Agent rule yet.. probably should at some stage
-
-            fix whitespace parsing; ie, " " is not a valid disallowed path
-        """
-        returnArr = list()
-
-        if not isinstance(robotsTxtData, str):
-            return returnArr
-
-        for line in robotsTxtData.splitlines():
-            if line.lower().startswith('disallow:'):
-                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
-                if m:
-                    self.debug('robots.txt parsing found disallow: ' + m.group(1))
-                    returnArr.append(m.group(1))
-
-        return returnArr
-
-    def parseHashes(self, data: str) -> list:
-        """Extract all hashes within the supplied content.
-
-        Args:
-            data (str): text to search for hashes
-
-        Returns:
-            list: list of hashes
-        """
-        ret = list()
-
-        if not isinstance(data, str):
-            return ret
-
-        hashes = {
-            "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
-            "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
-            "SHA256": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{64})(?:[^a-fA-F\d]|\b)"),
-            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)")
-        }
-
-        for h in hashes:
-            matches = re.findall(hashes[h], data)
-            for match in matches:
-                self.debug("Found hash: " + match)
-                ret.append((h, match))
-
-        return ret
-
-    def parseEmails(self, data: str) -> list:
-        """Extract all email addresses within the supplied content.
-
-        Args:
-            data (str): text to search for email addresses
-
-        Returns:
-            list: list of email addresses
-        """
-        if not isinstance(data, str):
-            return list()
-
-        emails = set()
-        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
-
-        for match in matches:
-            if self.validEmail(match):
-                emails.add(match)
-
-        return list(emails)
-
-    def parseCreditCards(self, data: str) -> list:
-        """Find all credit card numbers with the supplied content.
-
-        Extracts numbers with lengths ranging from 13 - 19 digits
-
-        Checks the numbers using Luhn's algorithm to verify
-        if the number is a valid credit card number or not
-
-        Args:
-            data (str): text to search for credit card numbers
-
-        Returns:
-            list: list of credit card numbers
-        """
-        if not isinstance(data, str):
-            return list()
-
-        creditCards = set()
-
-        # Remove whitespace from data.
-        # Credit cards might contain spaces between them
-        # which will cause regex mismatch
-        data = data.replace(" ", "")
-
-        # Extract all numbers with lengths ranging from 13 - 19 digits
-        matches = re.findall(r"[0-9]{13,19}", data)
-
-        # Verify each extracted number using Luhn's algorithm
-        for match in matches:
-            if int(match) == 0:
-                continue
-
-            ccNumber = match
-
-            ccNumberTotal = 0
-            isSecondDigit = False
-
-            for digit in ccNumber[::-1]:
-                d = int(digit)
-                if isSecondDigit:
-                    d *= 2
-                ccNumberTotal += int(d / 10)
-                ccNumberTotal += d % 10
-
-                isSecondDigit = not isSecondDigit
-            if ccNumberTotal % 10 == 0:
-                self.debug("Found credit card number: " + match)
-                creditCards.add(match)
-        return list(creditCards)
-
-    def getCountryCodeDict(self) -> dict:
-        """Dictionary of country codes and associated country names.
-
-        Returns:
-            dict: country codes and associated country names
-        """
-
-        return {
-            "AF": "Afghanistan",
-            "AX": "Aland Islands",
-            "AL": "Albania",
-            "DZ": "Algeria",
-            "AS": "American Samoa",
-            "AD": "Andorra",
-            "AO": "Angola",
-            "AI": "Anguilla",
-            "AQ": "Antarctica",
-            "AG": "Antigua and Barbuda",
-            "AR": "Argentina",
-            "AM": "Armenia",
-            "AW": "Aruba",
-            "AU": "Australia",
-            "AT": "Austria",
-            "AZ": "Azerbaijan",
-            "BS": "Bahamas",
-            "BH": "Bahrain",
-            "BD": "Bangladesh",
-            "BB": "Barbados",
-            "BY": "Belarus",
-            "BE": "Belgium",
-            "BZ": "Belize",
-            "BJ": "Benin",
-            "BM": "Bermuda",
-            "BT": "Bhutan",
-            "BO": "Bolivia",
-            "BQ": "Bonaire, Saint Eustatius and Saba",
-            "BA": "Bosnia and Herzegovina",
-            "BW": "Botswana",
-            "BV": "Bouvet Island",
-            "BR": "Brazil",
-            "IO": "British Indian Ocean Territory",
-            "VG": "British Virgin Islands",
-            "BN": "Brunei",
-            "BG": "Bulgaria",
-            "BF": "Burkina Faso",
-            "BI": "Burundi",
-            "KH": "Cambodia",
-            "CM": "Cameroon",
-            "CA": "Canada",
-            "CV": "Cape Verde",
-            "KY": "Cayman Islands",
-            "CF": "Central African Republic",
-            "TD": "Chad",
-            "CL": "Chile",
-            "CN": "China",
-            "CX": "Christmas Island",
-            "CC": "Cocos Islands",
-            "CO": "Colombia",
-            "KM": "Comoros",
-            "CK": "Cook Islands",
-            "CR": "Costa Rica",
-            "HR": "Croatia",
-            "CU": "Cuba",
-            "CW": "Curacao",
-            "CY": "Cyprus",
-            "CZ": "Czech Republic",
-            "CD": "Democratic Republic of the Congo",
-            "DK": "Denmark",
-            "DJ": "Djibouti",
-            "DM": "Dominica",
-            "DO": "Dominican Republic",
-            "TL": "East Timor",
-            "EC": "Ecuador",
-            "EG": "Egypt",
-            "SV": "El Salvador",
-            "GQ": "Equatorial Guinea",
-            "ER": "Eritrea",
-            "EE": "Estonia",
-            "ET": "Ethiopia",
-            "FK": "Falkland Islands",
-            "FO": "Faroe Islands",
-            "FJ": "Fiji",
-            "FI": "Finland",
-            "FR": "France",
-            "GF": "French Guiana",
-            "PF": "French Polynesia",
-            "TF": "French Southern Territories",
-            "GA": "Gabon",
-            "GM": "Gambia",
-            "GE": "Georgia",
-            "DE": "Germany",
-            "GH": "Ghana",
-            "GI": "Gibraltar",
-            "GR": "Greece",
-            "GL": "Greenland",
-            "GD": "Grenada",
-            "GP": "Guadeloupe",
-            "GU": "Guam",
-            "GT": "Guatemala",
-            "GG": "Guernsey",
-            "GN": "Guinea",
-            "GW": "Guinea-Bissau",
-            "GY": "Guyana",
-            "HT": "Haiti",
-            "HM": "Heard Island and McDonald Islands",
-            "HN": "Honduras",
-            "HK": "Hong Kong",
-            "HU": "Hungary",
-            "IS": "Iceland",
-            "IN": "India",
-            "ID": "Indonesia",
-            "IR": "Iran",
-            "IQ": "Iraq",
-            "IE": "Ireland",
-            "IM": "Isle of Man",
-            "IL": "Israel",
-            "IT": "Italy",
-            "CI": "Ivory Coast",
-            "JM": "Jamaica",
-            "JP": "Japan",
-            "JE": "Jersey",
-            "JO": "Jordan",
-            "KZ": "Kazakhstan",
-            "KE": "Kenya",
-            "KI": "Kiribati",
-            "XK": "Kosovo",
-            "KW": "Kuwait",
-            "KG": "Kyrgyzstan",
-            "LA": "Laos",
-            "LV": "Latvia",
-            "LB": "Lebanon",
-            "LS": "Lesotho",
-            "LR": "Liberia",
-            "LY": "Libya",
-            "LI": "Liechtenstein",
-            "LT": "Lithuania",
-            "LU": "Luxembourg",
-            "MO": "Macao",
-            "MK": "Macedonia",
-            "MG": "Madagascar",
-            "MW": "Malawi",
-            "MY": "Malaysia",
-            "MV": "Maldives",
-            "ML": "Mali",
-            "MT": "Malta",
-            "MH": "Marshall Islands",
-            "MQ": "Martinique",
-            "MR": "Mauritania",
-            "MU": "Mauritius",
-            "YT": "Mayotte",
-            "MX": "Mexico",
-            "FM": "Micronesia",
-            "MD": "Moldova",
-            "MC": "Monaco",
-            "MN": "Mongolia",
-            "ME": "Montenegro",
-            "MS": "Montserrat",
-            "MA": "Morocco",
-            "MZ": "Mozambique",
-            "MM": "Myanmar",
-            "NA": "Namibia",
-            "NR": "Nauru",
-            "NP": "Nepal",
-            "NL": "Netherlands",
-            "AN": "Netherlands Antilles",
-            "NC": "New Caledonia",
-            "NZ": "New Zealand",
-            "NI": "Nicaragua",
-            "NE": "Niger",
-            "NG": "Nigeria",
-            "NU": "Niue",
-            "NF": "Norfolk Island",
-            "KP": "North Korea",
-            "MP": "Northern Mariana Islands",
-            "NO": "Norway",
-            "OM": "Oman",
-            "PK": "Pakistan",
-            "PW": "Palau",
-            "PS": "Palestinian Territory",
-            "PA": "Panama",
-            "PG": "Papua New Guinea",
-            "PY": "Paraguay",
-            "PE": "Peru",
-            "PH": "Philippines",
-            "PN": "Pitcairn",
-            "PL": "Poland",
-            "PT": "Portugal",
-            "PR": "Puerto Rico",
-            "QA": "Qatar",
-            "CG": "Republic of the Congo",
-            "RE": "Reunion",
-            "RO": "Romania",
-            "RU": "Russia",
-            "RW": "Rwanda",
-            "BL": "Saint Barthelemy",
-            "SH": "Saint Helena",
-            "KN": "Saint Kitts and Nevis",
-            "LC": "Saint Lucia",
-            "MF": "Saint Martin",
-            "PM": "Saint Pierre and Miquelon",
-            "VC": "Saint Vincent and the Grenadines",
-            "WS": "Samoa",
-            "SM": "San Marino",
-            "ST": "Sao Tome and Principe",
-            "SA": "Saudi Arabia",
-            "SN": "Senegal",
-            "RS": "Serbia",
-            "CS": "Serbia and Montenegro",
-            "SC": "Seychelles",
-            "SL": "Sierra Leone",
-            "SG": "Singapore",
-            "SX": "Sint Maarten",
-            "SK": "Slovakia",
-            "SI": "Slovenia",
-            "SB": "Solomon Islands",
-            "SO": "Somalia",
-            "ZA": "South Africa",
-            "GS": "South Georgia and the South Sandwich Islands",
-            "KR": "South Korea",
-            "SS": "South Sudan",
-            "ES": "Spain",
-            "LK": "Sri Lanka",
-            "SD": "Sudan",
-            "SR": "Suriname",
-            "SJ": "Svalbard and Jan Mayen",
-            "SZ": "Swaziland",
-            "SE": "Sweden",
-            "CH": "Switzerland",
-            "SY": "Syria",
-            "TW": "Taiwan",
-            "TJ": "Tajikistan",
-            "TZ": "Tanzania",
-            "TH": "Thailand",
-            "TG": "Togo",
-            "TK": "Tokelau",
-            "TO": "Tonga",
-            "TT": "Trinidad and Tobago",
-            "TN": "Tunisia",
-            "TR": "Turkey",
-            "TM": "Turkmenistan",
-            "TC": "Turks and Caicos Islands",
-            "TV": "Tuvalu",
-            "VI": "U.S. Virgin Islands",
-            "UG": "Uganda",
-            "UA": "Ukraine",
-            "AE": "United Arab Emirates",
-            "GB": "United Kingdom",
-            "US": "United States",
-            "UM": "United States Minor Outlying Islands",
-            "UY": "Uruguay",
-            "UZ": "Uzbekistan",
-            "VU": "Vanuatu",
-            "VA": "Vatican",
-            "VE": "Venezuela",
-            "VN": "Vietnam",
-            "WF": "Wallis and Futuna",
-            "EH": "Western Sahara",
-            "YE": "Yemen",
-            "ZM": "Zambia",
-            "ZW": "Zimbabwe",
-            # Below are not country codes but recognized as regions / TLDs
-            "AC": "Ascension Island",
-            "EU": "European Union",
-            "SU": "Soviet Union",
-            "UK": "United Kingdom"
-        }
-
-    def countryNameFromCountryCode(self, countryCode: str) -> str:
-        """Convert a country code to full country name
-
-        Args:
-            countryCode (str): country code
-
-        Returns:
-            str: country name
-        """
-        if not isinstance(countryCode, str):
-            return None
-
-        return self.getCountryCodeDict().get(countryCode.upper())
-
-    def countryNameFromTld(self, tld: str) -> str:
-        """Retrieve the country name associated with a TLD.
-
-        Args:
-            tld (str): Top level domain
-
-        Returns:
-            str: country name
-        """
-        if not isinstance(tld, str):
-            return None
-
-        country_name = self.getCountryCodeDict().get(tld.upper())
-
-        if country_name:
-            return country_name
-
-        country_tlds = {
-            # List of TLD not associated with any country
-            "COM": "United States",
-            "NET": "United States",
-            "ORG": "United States",
-            "GOV": "United States",
-            "MIL": "United States"
-        }
-
-        country_name = country_tlds.get(tld.upper())
-
-        if country_name:
-            return country_name
-
-        return None
-
-    def parseIBANNumbers(self, data: str) -> list:
-        """Find all International Bank Account Numbers (IBANs) within the supplied content.
-
-        Extracts possible IBANs using a generic regex.
-
-        Checks whether possible IBANs are valid or not
-        using country-wise length check and Mod 97 algorithm.
-
-        Args:
-            data (str): text to search for IBANs
-
-        Returns:
-            list: list of IBAN
-        """
-        if not isinstance(data, str):
-            return list()
-
-        ibans = set()
-
-        # Dictionary of country codes and their respective IBAN lengths
-        ibanCountryLengths = {
-            "AL": 28, "AD": 24, "AT": 20, "AZ": 28,
-            "ME": 22, "BH": 22, "BY": 28, "BE": 16,
-            "BA": 20, "BR": 29, "BG": 22, "CR": 22,
-            "HR": 21, "CY": 28, "CZ": 24, "DK": 18,
-            "DO": 28, "EG": 29, "SV": 28, "FO": 18,
-            "FI": 18, "FR": 27, "GE": 22, "DE": 22,
-            "GI": 23, "GR": 27, "GL": 18, "GT": 28,
-            "VA": 22, "HU": 28, "IS": 26, "IQ": 23,
-            "IE": 22, "IL": 23, "JO": 30, "KZ": 20,
-            "XK": 20, "KW": 30, "LV": 21, "LB": 28,
-            "LI": 21, "LT": 20, "LU": 20, "MT": 31,
-            "MR": 27, "MU": 30, "MD": 24, "MC": 27,
-            "DZ": 24, "AO": 25, "BJ": 28, "VG": 24,
-            "BF": 27, "BI": 16, "CM": 27, "CV": 25,
-            "CG": 27, "EE": 20, "GA": 27, "GG": 22,
-            "IR": 26, "IM": 22, "IT": 27, "CI": 28,
-            "JE": 22, "MK": 19, "MG": 27, "ML": 28,
-            "MZ": 25, "NL": 18, "NO": 15, "PK": 24,
-            "PS": 29, "PL": 28, "PT": 25, "QA": 29,
-            "RO": 24, "LC": 32, "SM": 27, "ST": 25,
-            "SA": 24, "SN": 28, "RS": 22, "SC": 31,
-            "SK": 24, "SI": 19, "ES": 24, "CH": 21,
-            "TL": 23, "TN": 24, "TR": 26, "UA": 29,
-            "AE": 23, "GB": 22, "SE": 24
-        }
-
-        # Normalize input data to remove whitespace
-        data = data.replace(" ", "")
-
-        # Extract alphanumeric characters of lengths ranging from 15 to 32
-        # and starting with two characters
-        matches = re.findall("[A-Za-z]{2}[A-Za-z0-9]{13,30}", data)
-
-        for match in matches:
-            iban = match.upper()
-
-            countryCode = iban[0:2]
-
-            if countryCode not in ibanCountryLengths.keys():
-                continue
-
-            if len(iban) != ibanCountryLengths[countryCode]:
-                continue
-
-            # Convert IBAN to integer format.
-            # Move the first 4 characters to the end of the string,
-            # then convert all characters to integers; where A = 10, B = 11, ...., Z = 35
-            iban_int = iban[4:] + iban[0:4]
-            for character in iban_int:
-                if character.isalpha():
-                    iban_int = iban_int.replace(character, str((ord(character) - 65) + 10))
-
-            # Check IBAN integer mod 97 for remainder
-            if int(iban_int) % 97 != 1:
-                continue
-
-            self.debug("Found IBAN: %s" % iban)
-            ibans.add(iban)
-
-        return list(ibans)
-
     def sslDerToPem(self, der_cert: bytes) -> str:
         """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
 
@@ -1822,19 +1159,6 @@ class SpiderFoot:
 
         return ret
 
-    def extractUrls(self, content: str) -> list:
-        """Extract all URLs from a string.
-
-        Args:
-            content (str): text to search for URLs
-
-        Returns:
-            list: list of identified URLs
-        """
-
-        # https://tools.ietf.org/html/rfc3986#section-3.3
-        return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
-
     def parseLinks(self, url: str, data: str, domains: list) -> dict:
         """Find all URLs within the supplied content.
 
@@ -1934,7 +1258,7 @@ class SpiderFoot:
 
             # If the link starts with a /, the absolute link is off the base URL
             if link.startswith('/'):
-                absLink = self.urlBaseUrl(url) + link
+                absLink = SpiderFootHelpers.urlBaseUrl(url) + link
 
             # Protocol relative URLs
             if link.startswith('//'):
@@ -1947,10 +1271,10 @@ class SpiderFoot:
 
             # Otherwise, it's a flat link within the current directory
             if absLink is None:
-                absLink = self.urlBaseDir(url) + link
+                absLink = SpiderFootHelpers.urlBaseDir(url) + link
 
             # Translate any relative pathing (../)
-            absLink = self.urlRelativeToAbsolute(absLink)
+            absLink = SpiderFootHelpers.urlRelativeToAbsolute(absLink)
             returnLinks[absLink] = {'source': url, 'original': link}
 
         return returnLinks
@@ -2077,7 +1401,6 @@ class SpiderFoot:
     def fetchUrl(
         self,
         url: str,
-        fatal: bool = False,
         cookies: str = None,
         timeout: int = 30,
         useragent: str = "SpiderFoot",
@@ -2093,7 +1416,6 @@ class SpiderFoot:
 
         Args:
             url (str): URL to fetch
-            fatal (bool): raise an exception upon request error
             cookies (str): cookies
             timeout (int): timeout
             useragent (str): user agent header
@@ -2159,7 +1481,9 @@ class SpiderFoot:
         request_log.append(f"cookies={cookies}")
 
         if sizeLimit or headOnly:
-            if not noLog:
+            if noLog:
+                self.debug(f"Fetching (HEAD): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
+            else:
                 self.info(f"Fetching (HEAD): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
 
             try:
@@ -2171,12 +1495,12 @@ class SpiderFoot:
                     timeout=timeout
                 )
             except Exception as e:
-                if not noLog:
+                if noLog:
+                    self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}")
+                    self.debug(traceback.format_exc())
+                else:
                     self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}")
                     self.error(traceback.format_exc())
-
-                if fatal:
-                    self.fatal(f"URL could not be fetched ({e})")
 
                 return result
 
@@ -2185,7 +1509,7 @@ class SpiderFoot:
 
             # Relative re-direct
             if newloc.startswith("/") or newloc.startswith("../"):
-                newloc = self.urlBaseUrl(url) + newloc
+                newloc = SpiderFootHelpers.urlBaseUrl(url) + newloc
             result['realurl'] = newloc
             result['code'] = str(hdr.status_code)
 
@@ -2196,7 +1520,9 @@ class SpiderFoot:
                 return result
 
             if result['realurl'] != url:
-                if not noLog:
+                if noLog:
+                    self.debug(f"Fetching (HEAD): {self.removeUrlCreds(result['realurl'])} ({', '.join(request_log)})")
+                else:
                     self.info(f"Fetching (HEAD): {self.removeUrlCreds(result['realurl'])} ({', '.join(request_log)})")
 
                 try:
@@ -2215,18 +1541,20 @@ class SpiderFoot:
                         return result
 
                 except Exception as e:
-                    if not noLog:
+                    if noLog:
+                        self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}")
+                        self.debug(traceback.format_exc())
+                    else:
                         self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}")
                         self.error(traceback.format_exc())
-
-                    if fatal:
-                        self.fatal(f"URL could not be fetched ({e})")
 
                     return result
 
         try:
             if postData:
-                if not noLog:
+                if noLog:
+                    self.debug(f"Fetching (POST): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
+                else:
                     self.info(f"Fetching (POST): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
                 res = self.getSession().post(
                     url,
@@ -2239,7 +1567,9 @@ class SpiderFoot:
                     verify=verify
                 )
             else:
-                if not noLog:
+                if noLog:
+                    self.debug(f"Fetching (GET): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
+                else:
                     self.info(f"Fetching (GET): {self.removeUrlCreds(url)} ({', '.join(request_log)})")
                 res = self.getSession().get(
                     url,
@@ -2254,12 +1584,12 @@ class SpiderFoot:
             self.error(f"Failed to connect to {url}")
             return result
         except Exception as e:
-            if not noLog:
+            if noLog:
+                self.debug(f"Unexpected exception ({e}) occurred fetching URL: {url}")
+                self.debug(traceback.format_exc())
+            else:
                 self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}")
                 self.error(traceback.format_exc())
-
-            if fatal:
-                self.fatal(f"URL could not be fetched ({e})")
 
             return result
 
@@ -2288,7 +1618,6 @@ class SpiderFoot:
 
                 return self.fetchUrl(
                     newurl,
-                    fatal,
                     cookies,
                     timeout,
                     useragent,
@@ -2313,18 +1642,9 @@ class SpiderFoot:
                 else:
                     result["content"] = res.content
 
-            if fatal:
-                try:
-                    res.raise_for_status()
-                except requests.exceptions.HTTPError:
-                    self.fatal(f"URL could not be fetched ({res.status_code}) / {res.content})")
-
         except Exception as e:
             self.error(f"Unexpected exception ({e}) occurred parsing response for URL: {url}")
             self.error(traceback.format_exc())
-
-            if fatal:
-                self.fatal(f"URL could not be fetched ({e})")
 
             result['content'] = None
             result['status'] = str(e)
@@ -2457,8 +1777,12 @@ class SpiderFoot:
         Returns:
             dict: Search results as {"webSearchUrl": "URL", "urls": [results]}
         """
+        if not searchString:
+            return None
+
         if opts is None:
             opts = {}
+
         search_string = searchString.replace(" ", "%20")
         params = urllib.parse.urlencode({
             "cx": opts["cse_id"],
@@ -2518,6 +1842,9 @@ class SpiderFoot:
         Returns:
             dict: Search results as {"webSearchUrl": "URL", "urls": [results]}
         """
+        if not searchString:
+            return None
+
         if opts is None:
             opts = {}
 

@@ -1,17 +1,27 @@
+#  -*- coding: utf-8 -*-
+import html
 import json
 import os
 import os.path
 import random
 import re
 import uuid
+from pathlib import Path
 
 import networkx as nx
 from networkx.readwrite.gexf import GEXFWriter
-from pathlib import Path
+import phonenumbers
 
 
 class SpiderFootHelpers():
-    """SpiderFoot helper functions."""
+    """SpiderFoot helper functions.
+
+    This class is used to store static helper functions which are
+    designed to function independent of scan config or global config.
+
+    Todo:
+       Eventually split this class into separate files.
+    """
 
     @staticmethod
     def dataPath() -> str:
@@ -56,7 +66,7 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
-    def loadModulesAsDict(path: str, ignore_files: list = ['sfp_template.py']) -> dict:
+    def loadModulesAsDict(path: str, ignore_files: list = None) -> dict:
         """Load modules from modules directory.
 
         Args:
@@ -71,6 +81,9 @@ class SpiderFootHelpers():
             ValueError: module path does not exist
             SyntaxError: module data is malformed
         """
+        if not ignore_files:
+            ignore_files = []
+
         if not isinstance(ignore_files, list):
             raise TypeError(f"ignore_files is {type(ignore_files)}; expected list()")
 
@@ -107,7 +120,7 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
-    def loadCorrelationRulesRaw(path: str, ignore_files: list = ['template.yaml']) -> dict:
+    def loadCorrelationRulesRaw(path: str, ignore_files: list = None) -> dict:
         """Load correlation rules from correlations directory.
 
         Args:
@@ -121,6 +134,9 @@ class SpiderFootHelpers():
             TypeError: ignore file list was invalid
             ValueError: module path does not exist
         """
+        if not ignore_files:
+            ignore_files = []
+
         if not isinstance(ignore_files, list):
             raise TypeError(f"ignore_files is {type(ignore_files)}; expected list()")
 
@@ -177,7 +193,103 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def buildGraphGexf(root: str, title: str, data: list, flt: list = []) -> str:
+    def urlRelativeToAbsolute(url: str) -> str:
+        """Turn a relative URL path into an absolute path.
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: URL relative path
+        """
+        if not url:
+            return None
+
+        if not isinstance(url, str):
+            return None
+
+        if '..' not in url:
+            return url
+
+        finalBits = list()
+
+        for chunk in url.split('/'):
+            if chunk != '..':
+                finalBits.append(chunk)
+                continue
+
+            # Don't pop the last item off if we're at the top
+            if len(finalBits) <= 1:
+                continue
+
+            # Don't pop the last item off if the first bits are not the path
+            if '://' in url and len(finalBits) <= 3:
+                continue
+
+            finalBits.pop()
+
+        return '/'.join(finalBits)
+
+    @staticmethod
+    def urlBaseDir(url: str) -> str:
+        """Extract the top level directory from a URL
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: base directory
+        """
+        if not url:
+            return None
+
+        if not isinstance(url, str):
+            return None
+
+        bits = url.split('/')
+
+        # For cases like 'www.somesite.com'
+        if len(bits) == 0:
+            return url + '/'
+
+        # For cases like 'http://www.blah.com'
+        if '://' in url and url.count('/') < 3:
+            return url + '/'
+
+        base = '/'.join(bits[:-1])
+
+        return base + '/'
+
+    @staticmethod
+    def urlBaseUrl(url: str) -> str:
+        """Extract the scheme and domain from a URL.
+
+        Note: Does not return the trailing slash! So you can do .endswith() checks.
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: base URL without trailing slash
+        """
+        if not url:
+            return None
+
+        if not isinstance(url, str):
+            return None
+
+        if '://' in url:
+            bits = re.match(r'(\w+://.[^/:\?]*)[:/\?].*', url)
+        else:
+            bits = re.match(r'(.[^/:\?]*)[:/\?]', url)
+
+        if bits is None:
+            return url.lower()
+
+        return bits.group(1).lower()
+
+    @staticmethod
+    def buildGraphGexf(root: str, title: str, data: list, flt: list = None) -> str:
         """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
@@ -189,6 +301,9 @@ class SpiderFootHelpers():
         Returns:
             str: GEXF formatted XML
         """
+        if not flt:
+            flt = []
+
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         graph = nx.Graph()
 
@@ -229,7 +344,7 @@ class SpiderFootHelpers():
         return str(gexf).encode('utf-8')
 
     @staticmethod
-    def buildGraphJson(root: str, data: list, flt: list = []) -> str:
+    def buildGraphJson(root: str, data: list, flt: list = None) -> str:
         """Convert supplied raw data into JSON format for SigmaJS.
 
         Args:
@@ -240,6 +355,9 @@ class SpiderFootHelpers():
         Returns:
             str: TBD
         """
+        if not flt:
+            flt = []
+
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         ret = dict()
         ret['nodes'] = list()
@@ -301,7 +419,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data: list, flt: list = []) -> set:
+    def buildGraphData(data: list, flt: list = None) -> set:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -316,13 +434,19 @@ class SpiderFootHelpers():
             ValueError: data value was invalid
             TypeError: data type was invalid
         """
+        if not flt:
+            flt = []
+
         if not isinstance(data, list):
             raise TypeError(f"data is {type(data)}; expected list()")
 
         if not data:
             raise ValueError("data is empty")
 
-        def get_next_parent_entities(item: str, pids: list = []) -> list:
+        def get_next_parent_entities(item: str, pids: list = None) -> list:
+            if not pids:
+                pids = []
+
             ret = list()
 
             for [parent, entity_id] in parents[item]:
@@ -451,6 +575,56 @@ class SpiderFootHelpers():
         return True
 
     @staticmethod
+    def validEmail(email: str) -> bool:
+        """Check if the provided string is a valid email address.
+
+        Args:
+            email (str): The email address to check.
+
+        Returns:
+            bool: email is a valid email address
+        """
+        if not isinstance(email, str):
+            return False
+
+        if "@" not in email:
+            return False
+
+        if not re.match(r'^([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', email):
+            return False
+
+        if len(email) < 6:
+            return False
+
+        # Skip strings with messed up URL encoding
+        if "%" in email:
+            return False
+
+        # Skip strings which may have been truncated
+        if "..." in email:
+            return False
+
+        return True
+
+    @staticmethod
+    def validPhoneNumber(phone: str) -> bool:
+        """Check if the provided string is a valid phone number.
+
+        Args:
+            phone (str): The phone number to check.
+
+        Returns:
+            bool: string is a valid phone number
+        """
+        if not isinstance(phone, str):
+            return False
+
+        try:
+            return phonenumbers.is_valid_number(phonenumbers.parse(phone))
+        except Exception:
+            return False
+
+    @staticmethod
     def genScanInstanceId() -> str:
         """Generate an globally unique ID for this scan.
 
@@ -460,7 +634,36 @@ class SpiderFootHelpers():
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def parseRobotsTxt(robotsTxtData: str) -> list:
+    def extractHashesFromText(data: str) -> list:
+        """Extract all hashes within the supplied content.
+
+        Args:
+            data (str): text to search for hashes
+
+        Returns:
+            list: list of hashes
+        """
+        ret = list()
+
+        if not isinstance(data, str):
+            return ret
+
+        hashes = {
+            "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
+            "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
+            "SHA256": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{64})(?:[^a-fA-F\d]|\b)"),
+            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)")
+        }
+
+        for h in hashes:
+            matches = re.findall(hashes[h], data)
+            for m in matches:
+                ret.append((h, m))
+
+        return ret
+
+    @staticmethod
+    def extractUrlsFromRobotsTxt(robotsTxtData: str) -> list:
         """Parse the contents of robots.txt.
 
         Args:
@@ -488,7 +691,494 @@ class SpiderFootHelpers():
         return returnArr
 
     @staticmethod
-    def sanitiseInput(cmd: str, extra: list = []) -> bool:
+    def extractEmailsFromText(data: str) -> list:
+        """Extract all email addresses within the supplied content.
+
+        Args:
+            data (str): text to search for email addresses
+
+        Returns:
+            list: list of email addresses
+        """
+        if not isinstance(data, str):
+            return list()
+
+        emails = set()
+        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
+
+        for match in matches:
+            if SpiderFootHelpers.validEmail(match):
+                emails.add(match)
+
+        return list(emails)
+
+    @staticmethod
+    def extractIbansFromText(data: str) -> list:
+        """Find all International Bank Account Numbers (IBANs) within the supplied content.
+
+        Extracts possible IBANs using a generic regex.
+
+        Checks whether possible IBANs are valid or not
+        using country-wise length check and Mod 97 algorithm.
+
+        Args:
+            data (str): text to search for IBANs
+
+        Returns:
+            list: list of IBAN
+        """
+        if not isinstance(data, str):
+            return list()
+
+        ibans = set()
+
+        # Dictionary of country codes and their respective IBAN lengths
+        ibanCountryLengths = {
+            "AL": 28, "AD": 24, "AT": 20, "AZ": 28,
+            "ME": 22, "BH": 22, "BY": 28, "BE": 16,
+            "BA": 20, "BR": 29, "BG": 22, "CR": 22,
+            "HR": 21, "CY": 28, "CZ": 24, "DK": 18,
+            "DO": 28, "EG": 29, "SV": 28, "FO": 18,
+            "FI": 18, "FR": 27, "GE": 22, "DE": 22,
+            "GI": 23, "GR": 27, "GL": 18, "GT": 28,
+            "VA": 22, "HU": 28, "IS": 26, "IQ": 23,
+            "IE": 22, "IL": 23, "JO": 30, "KZ": 20,
+            "XK": 20, "KW": 30, "LV": 21, "LB": 28,
+            "LI": 21, "LT": 20, "LU": 20, "MT": 31,
+            "MR": 27, "MU": 30, "MD": 24, "MC": 27,
+            "DZ": 24, "AO": 25, "BJ": 28, "VG": 24,
+            "BF": 27, "BI": 16, "CM": 27, "CV": 25,
+            "CG": 27, "EE": 20, "GA": 27, "GG": 22,
+            "IR": 26, "IM": 22, "IT": 27, "CI": 28,
+            "JE": 22, "MK": 19, "MG": 27, "ML": 28,
+            "MZ": 25, "NL": 18, "NO": 15, "PK": 24,
+            "PS": 29, "PL": 28, "PT": 25, "QA": 29,
+            "RO": 24, "LC": 32, "SM": 27, "ST": 25,
+            "SA": 24, "SN": 28, "RS": 22, "SC": 31,
+            "SK": 24, "SI": 19, "ES": 24, "CH": 21,
+            "TL": 23, "TN": 24, "TR": 26, "UA": 29,
+            "AE": 23, "GB": 22, "SE": 24
+        }
+
+        # Normalize input data to remove whitespace
+        data = data.replace(" ", "")
+
+        # Extract alphanumeric characters of lengths ranging from 15 to 32
+        # and starting with two characters
+        matches = re.findall("[A-Za-z]{2}[A-Za-z0-9]{13,30}", data)
+
+        for match in matches:
+            iban = match.upper()
+
+            countryCode = iban[0:2]
+
+            if countryCode not in ibanCountryLengths.keys():
+                continue
+
+            if len(iban) != ibanCountryLengths[countryCode]:
+                continue
+
+            # Convert IBAN to integer format.
+            # Move the first 4 characters to the end of the string,
+            # then convert all characters to integers; where A = 10, B = 11, ...., Z = 35
+            iban_int = iban[4:] + iban[0:4]
+            for character in iban_int:
+                if character.isalpha():
+                    iban_int = iban_int.replace(character, str((ord(character) - 65) + 10))
+
+            # Check IBAN integer mod 97 for remainder
+            if int(iban_int) % 97 != 1:
+                continue
+
+            ibans.add(iban)
+
+        return list(ibans)
+
+    @staticmethod
+    def extractCreditCardsFromText(data: str) -> list:
+        """Find all credit card numbers with the supplied content.
+
+        Extracts numbers with lengths ranging from 13 - 19 digits
+
+        Checks the numbers using Luhn's algorithm to verify
+        if the number is a valid credit card number or not
+
+        Args:
+            data (str): text to search for credit card numbers
+
+        Returns:
+            list: list of credit card numbers
+        """
+        if not isinstance(data, str):
+            return list()
+
+        creditCards = set()
+
+        # Remove whitespace from data.
+        # Credit cards might contain spaces between them
+        # which will cause regex mismatch
+        data = data.replace(" ", "")
+
+        # Extract all numbers with lengths ranging from 13 - 19 digits
+        matches = re.findall(r"[0-9]{13,19}", data)
+
+        # Verify each extracted number using Luhn's algorithm
+        for match in matches:
+            if int(match) == 0:
+                continue
+
+            ccNumber = match
+
+            ccNumberTotal = 0
+            isSecondDigit = False
+
+            for digit in ccNumber[::-1]:
+                d = int(digit)
+                if isSecondDigit:
+                    d *= 2
+                ccNumberTotal += int(d / 10)
+                ccNumberTotal += d % 10
+
+                isSecondDigit = not isSecondDigit
+            if ccNumberTotal % 10 == 0:
+                creditCards.add(match)
+        return list(creditCards)
+
+    @staticmethod
+    def extractUrlsFromText(content: str) -> list:
+        """Extract all URLs from a string.
+
+        Args:
+            content (str): text to search for URLs
+
+        Returns:
+            list: list of identified URLs
+        """
+        if not isinstance(content, str):
+            return []
+
+        # https://tools.ietf.org/html/rfc3986#section-3.3
+        return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+
+    @staticmethod
+    def countryNameFromCountryCode(countryCode: str) -> str:
+        """Convert a country code to full country name.
+
+        Args:
+            countryCode (str): country code
+
+        Returns:
+            str: country name
+        """
+        if not isinstance(countryCode, str):
+            return None
+
+        return SpiderFootHelpers.countryCodes().get(countryCode.upper())
+
+    @staticmethod
+    def countryNameFromTld(tld: str) -> str:
+        """Retrieve the country name associated with a TLD.
+
+        Args:
+            tld (str): Top level domain
+
+        Returns:
+            str: country name
+        """
+        if not isinstance(tld, str):
+            return None
+
+        country_name = SpiderFootHelpers.countryCodes().get(tld.upper())
+
+        if country_name:
+            return country_name
+
+        country_tlds = {
+            # List of TLD not associated with any country
+            "COM": "United States",
+            "NET": "United States",
+            "ORG": "United States",
+            "GOV": "United States",
+            "MIL": "United States"
+        }
+
+        country_name = country_tlds.get(tld.upper())
+
+        if country_name:
+            return country_name
+
+        return None
+
+    @staticmethod
+    def countryCodes() -> dict:
+        """Dictionary of country codes and associated country names.
+
+        Returns:
+            dict: country codes and associated country names
+        """
+
+        return {
+            "AF": "Afghanistan",
+            "AX": "Aland Islands",
+            "AL": "Albania",
+            "DZ": "Algeria",
+            "AS": "American Samoa",
+            "AD": "Andorra",
+            "AO": "Angola",
+            "AI": "Anguilla",
+            "AQ": "Antarctica",
+            "AG": "Antigua and Barbuda",
+            "AR": "Argentina",
+            "AM": "Armenia",
+            "AW": "Aruba",
+            "AU": "Australia",
+            "AT": "Austria",
+            "AZ": "Azerbaijan",
+            "BS": "Bahamas",
+            "BH": "Bahrain",
+            "BD": "Bangladesh",
+            "BB": "Barbados",
+            "BY": "Belarus",
+            "BE": "Belgium",
+            "BZ": "Belize",
+            "BJ": "Benin",
+            "BM": "Bermuda",
+            "BT": "Bhutan",
+            "BO": "Bolivia",
+            "BQ": "Bonaire, Saint Eustatius and Saba",
+            "BA": "Bosnia and Herzegovina",
+            "BW": "Botswana",
+            "BV": "Bouvet Island",
+            "BR": "Brazil",
+            "IO": "British Indian Ocean Territory",
+            "VG": "British Virgin Islands",
+            "BN": "Brunei",
+            "BG": "Bulgaria",
+            "BF": "Burkina Faso",
+            "BI": "Burundi",
+            "KH": "Cambodia",
+            "CM": "Cameroon",
+            "CA": "Canada",
+            "CV": "Cape Verde",
+            "KY": "Cayman Islands",
+            "CF": "Central African Republic",
+            "TD": "Chad",
+            "CL": "Chile",
+            "CN": "China",
+            "CX": "Christmas Island",
+            "CC": "Cocos Islands",
+            "CO": "Colombia",
+            "KM": "Comoros",
+            "CK": "Cook Islands",
+            "CR": "Costa Rica",
+            "HR": "Croatia",
+            "CU": "Cuba",
+            "CW": "Curacao",
+            "CY": "Cyprus",
+            "CZ": "Czech Republic",
+            "CD": "Democratic Republic of the Congo",
+            "DK": "Denmark",
+            "DJ": "Djibouti",
+            "DM": "Dominica",
+            "DO": "Dominican Republic",
+            "TL": "East Timor",
+            "EC": "Ecuador",
+            "EG": "Egypt",
+            "SV": "El Salvador",
+            "GQ": "Equatorial Guinea",
+            "ER": "Eritrea",
+            "EE": "Estonia",
+            "ET": "Ethiopia",
+            "FK": "Falkland Islands",
+            "FO": "Faroe Islands",
+            "FJ": "Fiji",
+            "FI": "Finland",
+            "FR": "France",
+            "GF": "French Guiana",
+            "PF": "French Polynesia",
+            "TF": "French Southern Territories",
+            "GA": "Gabon",
+            "GM": "Gambia",
+            "GE": "Georgia",
+            "DE": "Germany",
+            "GH": "Ghana",
+            "GI": "Gibraltar",
+            "GR": "Greece",
+            "GL": "Greenland",
+            "GD": "Grenada",
+            "GP": "Guadeloupe",
+            "GU": "Guam",
+            "GT": "Guatemala",
+            "GG": "Guernsey",
+            "GN": "Guinea",
+            "GW": "Guinea-Bissau",
+            "GY": "Guyana",
+            "HT": "Haiti",
+            "HM": "Heard Island and McDonald Islands",
+            "HN": "Honduras",
+            "HK": "Hong Kong",
+            "HU": "Hungary",
+            "IS": "Iceland",
+            "IN": "India",
+            "ID": "Indonesia",
+            "IR": "Iran",
+            "IQ": "Iraq",
+            "IE": "Ireland",
+            "IM": "Isle of Man",
+            "IL": "Israel",
+            "IT": "Italy",
+            "CI": "Ivory Coast",
+            "JM": "Jamaica",
+            "JP": "Japan",
+            "JE": "Jersey",
+            "JO": "Jordan",
+            "KZ": "Kazakhstan",
+            "KE": "Kenya",
+            "KI": "Kiribati",
+            "XK": "Kosovo",
+            "KW": "Kuwait",
+            "KG": "Kyrgyzstan",
+            "LA": "Laos",
+            "LV": "Latvia",
+            "LB": "Lebanon",
+            "LS": "Lesotho",
+            "LR": "Liberia",
+            "LY": "Libya",
+            "LI": "Liechtenstein",
+            "LT": "Lithuania",
+            "LU": "Luxembourg",
+            "MO": "Macao",
+            "MK": "Macedonia",
+            "MG": "Madagascar",
+            "MW": "Malawi",
+            "MY": "Malaysia",
+            "MV": "Maldives",
+            "ML": "Mali",
+            "MT": "Malta",
+            "MH": "Marshall Islands",
+            "MQ": "Martinique",
+            "MR": "Mauritania",
+            "MU": "Mauritius",
+            "YT": "Mayotte",
+            "MX": "Mexico",
+            "FM": "Micronesia",
+            "MD": "Moldova",
+            "MC": "Monaco",
+            "MN": "Mongolia",
+            "ME": "Montenegro",
+            "MS": "Montserrat",
+            "MA": "Morocco",
+            "MZ": "Mozambique",
+            "MM": "Myanmar",
+            "NA": "Namibia",
+            "NR": "Nauru",
+            "NP": "Nepal",
+            "NL": "Netherlands",
+            "AN": "Netherlands Antilles",
+            "NC": "New Caledonia",
+            "NZ": "New Zealand",
+            "NI": "Nicaragua",
+            "NE": "Niger",
+            "NG": "Nigeria",
+            "NU": "Niue",
+            "NF": "Norfolk Island",
+            "KP": "North Korea",
+            "MP": "Northern Mariana Islands",
+            "NO": "Norway",
+            "OM": "Oman",
+            "PK": "Pakistan",
+            "PW": "Palau",
+            "PS": "Palestinian Territory",
+            "PA": "Panama",
+            "PG": "Papua New Guinea",
+            "PY": "Paraguay",
+            "PE": "Peru",
+            "PH": "Philippines",
+            "PN": "Pitcairn",
+            "PL": "Poland",
+            "PT": "Portugal",
+            "PR": "Puerto Rico",
+            "QA": "Qatar",
+            "CG": "Republic of the Congo",
+            "RE": "Reunion",
+            "RO": "Romania",
+            "RU": "Russia",
+            "RW": "Rwanda",
+            "BL": "Saint Barthelemy",
+            "SH": "Saint Helena",
+            "KN": "Saint Kitts and Nevis",
+            "LC": "Saint Lucia",
+            "MF": "Saint Martin",
+            "PM": "Saint Pierre and Miquelon",
+            "VC": "Saint Vincent and the Grenadines",
+            "WS": "Samoa",
+            "SM": "San Marino",
+            "ST": "Sao Tome and Principe",
+            "SA": "Saudi Arabia",
+            "SN": "Senegal",
+            "RS": "Serbia",
+            "CS": "Serbia and Montenegro",
+            "SC": "Seychelles",
+            "SL": "Sierra Leone",
+            "SG": "Singapore",
+            "SX": "Sint Maarten",
+            "SK": "Slovakia",
+            "SI": "Slovenia",
+            "SB": "Solomon Islands",
+            "SO": "Somalia",
+            "ZA": "South Africa",
+            "GS": "South Georgia and the South Sandwich Islands",
+            "KR": "South Korea",
+            "SS": "South Sudan",
+            "ES": "Spain",
+            "LK": "Sri Lanka",
+            "SD": "Sudan",
+            "SR": "Suriname",
+            "SJ": "Svalbard and Jan Mayen",
+            "SZ": "Swaziland",
+            "SE": "Sweden",
+            "CH": "Switzerland",
+            "SY": "Syria",
+            "TW": "Taiwan",
+            "TJ": "Tajikistan",
+            "TZ": "Tanzania",
+            "TH": "Thailand",
+            "TG": "Togo",
+            "TK": "Tokelau",
+            "TO": "Tonga",
+            "TT": "Trinidad and Tobago",
+            "TN": "Tunisia",
+            "TR": "Turkey",
+            "TM": "Turkmenistan",
+            "TC": "Turks and Caicos Islands",
+            "TV": "Tuvalu",
+            "VI": "U.S. Virgin Islands",
+            "UG": "Uganda",
+            "UA": "Ukraine",
+            "AE": "United Arab Emirates",
+            "GB": "United Kingdom",
+            "US": "United States",
+            "UM": "United States Minor Outlying Islands",
+            "UY": "Uruguay",
+            "UZ": "Uzbekistan",
+            "VU": "Vanuatu",
+            "VA": "Vatican",
+            "VE": "Venezuela",
+            "VN": "Vietnam",
+            "WF": "Wallis and Futuna",
+            "EH": "Western Sahara",
+            "YE": "Yemen",
+            "ZM": "Zambia",
+            "ZW": "Zimbabwe",
+            # Below are not country codes but recognized as regions / TLDs
+            "AC": "Ascension Island",
+            "EU": "European Union",
+            "SU": "Soviet Union",
+            "UK": "United Kingdom"
+        }
+
+    @staticmethod
+    def sanitiseInput(cmd: str, extra: list = None) -> bool:
         """Verify input command is safe to execute
 
         Args:
@@ -498,6 +1188,9 @@ class SpiderFootHelpers():
         Returns:
             bool: command is "safe"
         """
+        if not extra:
+            extra = []
+
         chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']

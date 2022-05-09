@@ -70,6 +70,21 @@ class TestSpiderFootHelpers(unittest.TestCase):
         target_type = SpiderFootHelpers.targetTypeFromString('""')
         self.assertEqual(None, target_type)
 
+    def test_urlRelativeToAbsolute_argument_url_relative_path_should_return_an_absolute_path(self):
+        relative_url = SpiderFootHelpers.urlRelativeToAbsolute('/somewhere/else/../../path?param=value#fragment')
+        self.assertIsInstance(relative_url, str)
+        self.assertEqual('/path?param=value#fragment', relative_url)
+
+    def test_url_base_dir_should_return_a_string(self):
+        base_dir = SpiderFootHelpers.urlBaseDir('http://localhost.local/path?param=value#fragment')
+        self.assertIsInstance(base_dir, str)
+        self.assertEqual('http://localhost.local/', base_dir)
+
+    def test_url_base_url_should_return_a_string(self):
+        base_url = SpiderFootHelpers.urlBaseUrl('http://localhost.local/path?param=value#fragment')
+        self.assertIsInstance(base_url, str)
+        self.assertEqual('http://localhost.local', base_url)
+
     def test_buildGraphData_invalid_data_type_should_raise_TypeError(self):
         """
         Test buildGraphData(data, flt=list())
@@ -157,10 +172,76 @@ class TestSpiderFootHelpers(unittest.TestCase):
         scan_instance_id = SpiderFootHelpers.genScanInstanceId()
         self.assertIsInstance(scan_instance_id, str)
 
+    def test_extractHashesFromText_should_return_a_list(self):
+        invalid_types = [None, list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                hashes = SpiderFootHelpers.extractHashesFromText(invalid_type)
+                self.assertIsInstance(hashes, list)
+
+    def test_extractHashesFromText_argument_data_should_return_hahes(self):
+        md5_hash = "e17cff4eb3e8fbe6ca3b83fb47532dba"
+        sha1_hash = "f81efbe70f8116fcf3dc4e9b37725dcb949719f5"
+        sha256_hash = "7cd444af3d8de9e195b1f1cb55e7b7d9409dcd4648247c853a2f64b7578dc9b7"
+        sha512_hash = "a55a2fe120d7d7d6e2ba930e6c56faa30b9d24a3178a0aff1d89312a89d61d8a9d5b7743e3af6b1a318d99974a1145ed76f85aa8c6574074dfb347613ccd3249"
+
+        hashes = SpiderFootHelpers.extractHashesFromText(f"spiderfoot{md5_hash}spiderfoot{sha1_hash}spiderfoot{sha256_hash}spiderfoot{sha512_hash}spiderfoot")
+
+        self.assertIsInstance(hashes, list)
+        self.assertIn(("MD5", md5_hash), hashes)
+        self.assertIn(("SHA1", sha1_hash), hashes)
+        self.assertIn(("SHA256", sha256_hash), hashes)
+        self.assertIn(("SHA512", sha512_hash), hashes)
+
+    def test_valid_email_should_return_a_boolean(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                valid_email = SpiderFootHelpers.validEmail(invalid_type)
+                self.assertIsInstance(valid_email, bool)
+                self.assertFalse(valid_email)
+
+        valid_email = SpiderFootHelpers.validEmail('%@localhost.local')
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = SpiderFootHelpers.validEmail('...@localhost.local')
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = SpiderFootHelpers.validEmail('root@localhost.local\n.com')
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = SpiderFootHelpers.validEmail('root@localhost')
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = SpiderFootHelpers.validEmail('root@localhost.local')
+        self.assertIsInstance(valid_email, bool)
+        self.assertTrue(valid_email)
+
+    def test_validPhoneNumber_should_return_a_boolean(self):
+        invalid_types = [None, "", list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                valid_phone = SpiderFootHelpers.validPhoneNumber(invalid_type)
+                self.assertIsInstance(valid_phone, bool)
+                self.assertFalse(valid_phone)
+
+        valid_phone = SpiderFootHelpers.validPhoneNumber('+1234567890')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertFalse(valid_phone)
+
+        valid_phone = SpiderFootHelpers.validPhoneNumber('+12345678901234567890')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertFalse(valid_phone)
+
+        valid_phone = SpiderFootHelpers.validPhoneNumber('+12345678901')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertTrue(valid_phone)
+
     def test_validLEI_should_return_a_boolean(self):
-        """
-        Test validLEI(lei)
-        """
         invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
@@ -176,21 +257,179 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIsInstance(valid_lei, bool)
         self.assertTrue(valid_lei)
 
-    def test_parse_robots_txt_should_return_list(self):
-        """
-        Test parseRobotsTxt(robotsTxtData)
-        """
+    def test_countryCodes_should_return_a_dict(self):
+        country_code_dict = SpiderFootHelpers.countryCodes()
+        self.assertIsInstance(country_code_dict, dict)
+
+    def test_countryNameFromCountryCode_argument_countryCode_should_return_country_as_a_string(self):
+        country_name = SpiderFootHelpers.countryNameFromCountryCode('US')
+        self.assertIsInstance(country_name, str)
+        self.assertEqual(country_name, "United States")
+
+    def test_countryNameFromTld_argument_tld_should_return_country_as_a_string(self):
+        tlds = ['com', 'net', 'org', 'gov', 'mil']
+        for tld in tlds:
+            with self.subTest(tld=tld):
+                country_name = SpiderFootHelpers.countryNameFromTld(tld)
+                self.assertIsInstance(country_name, str)
+                self.assertEqual(country_name, "United States")
+
+    def test_extractEmailsFromText_should_return_list_of_emails_from_string(self):
+        emails = SpiderFootHelpers.extractEmailsFromText("<html><body><p>From:noreply@spiderfoot.net</p><p>Subject:Hello user@spiderfoot.net, here's some text</p></body></html>")
+        self.assertIsInstance(emails, list)
+        self.assertIn('noreply@spiderfoot.net', emails)
+        self.assertIn('user@spiderfoot.net', emails)
+
+    def test_extractEmailsFromText_invalid_data_should_return_list(self):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                robots_txt = SpiderFootHelpers.parseRobotsTxt(invalid_type)
+                emails = SpiderFootHelpers.extractEmailsFromText(invalid_type)
+                self.assertIsInstance(emails, list)
+
+    def test_extractIbansFromText_should_return_a_list(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                ibans = SpiderFootHelpers.extractIbansFromText(invalid_type)
+                self.assertIsInstance(ibans, list)
+
+        # Example IBANS from https://www.iban.com/structure
+        ibans = [
+            "AL35202111090000000001234567",
+            "AD1400080001001234567890",
+            "AT483200000012345864",
+            "AZ96AZEJ00000000001234567890",
+            "BH02CITI00001077181611",
+            "BY86AKBB10100000002966000000",
+            "BE71096123456769",
+            "BA393385804800211234",
+            "BR1500000000000010932840814P2",
+            "BG18RZBB91550123456789",
+            "CR23015108410026012345",
+            "HR1723600001101234565",
+            "CY21002001950000357001234567",
+            "CZ5508000000001234567899",
+            "DK9520000123456789",
+            "DO22ACAU00000000000123456789",
+            "EG800002000156789012345180002",
+            "SV43ACAT00000000000000123123",
+            "EE471000001020145685",
+            "FO9264600123456789",
+            "FI1410093000123458",
+            "FR7630006000011234567890189",
+            "GE60NB0000000123456789",
+            "DE75512108001245126199",
+            "GI04BARC000001234567890",
+            "GR9608100010000001234567890",
+            "GL8964710123456789",
+            "GT20AGRO00000000001234567890",
+            "VA59001123000012345678",
+            "HU93116000060000000012345676",
+            "IS750001121234563108962099",
+            "IQ20CBIQ861800101010500",
+            "IE64IRCE92050112345678",
+            "IL170108000000012612345",
+            "IT60X0542811101000000123456",
+            "JO71CBJO0000000000001234567890",
+            "KZ563190000012344567",
+            "XK051212012345678906",
+            "KW81CBKU0000000000001234560101",
+            "LV97HABA0012345678910",
+            "LB92000700000000123123456123",
+            "LI7408806123456789012",
+            "LT601010012345678901",
+            "LU120010001234567891",
+            "MT31MALT01100000000000000000123",
+            "MR1300020001010000123456753",
+            "MU43BOMM0101123456789101000MUR",
+            "MD21EX000000000001234567",
+            "MC5810096180790123456789085",
+            "ME25505000012345678951",
+            "NL02ABNA0123456789",
+            "MK07200002785123453",
+            "NO8330001234567",
+            "PK36SCBL0000001123456702",
+            "PS92PALS000000000400123456702",
+            "PL10105000997603123456789123",
+            "PT50002700000001234567833",
+            "QA54QNBA000000000000693123456",
+            "RO09BCYP0000001234567890",
+            "LC14BOSL123456789012345678901234",
+            "SM76P0854009812123456789123",
+            "ST23000200000289355710148",
+            "SA4420000001234567891234",
+            "RS35105008123123123173",
+            "SC52BAHL01031234567890123456USD",
+            "SK8975000000000012345671",
+            "SI56192001234567892",
+            "ES7921000813610123456789",
+            "SE7280000810340009783242",
+            "CH5604835012345678009",
+            "TL380010012345678910106",
+            "TN5904018104004942712345",
+            "TR320010009999901234567890",
+            "UA903052992990004149123456789",
+            "AE460090000000123456789",
+            "GB33BUKB20201555555555",
+            "VG21PACG0000000123456789"
+        ]
+        for iban in ibans:
+            with self.subTest(iban=iban):
+                extract_ibans = SpiderFootHelpers.extractIbansFromText(iban)
+                self.assertIsInstance(extract_ibans, list)
+                self.assertIn(iban, extract_ibans)
+
+        # Invalid IBANs
+        ibans = [
+            # Invalid country code
+            "ZZ21PACG0000000123456789",
+            # Invalid length for country code
+            "VG123456789012345",
+            # Invalid mod 97 remainder
+            "VG21PACG0000000123456111"
+        ]
+        for iban in ibans:
+            with self.subTest(iban=iban):
+                extract_ibans = SpiderFootHelpers.extractIbansFromText(iban)
+                self.assertIsInstance(extract_ibans, list)
+                self.assertNotIn(iban, extract_ibans)
+
+    def test_extractCreditCardsFromText_should_return_a_list(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                cards = SpiderFootHelpers.extractCreditCardsFromText(invalid_type)
+                self.assertIsInstance(cards, list)
+
+        cards = SpiderFootHelpers.extractCreditCardsFromText("spiderfoot4111 1111 1111 1111spiderfoot")
+        self.assertIsInstance(cards, list)
+        self.assertEqual(["4111111111111111"], cards)
+
+    def test_extractUrlsFromText_should_extract_urls_from_string(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                cards = SpiderFootHelpers.extractUrlsFromText(invalid_type)
+                self.assertIsInstance(cards, list)
+
+        urls = SpiderFootHelpers.extractUrlsFromText("abchttps://example.spiderfoot.net/path\rabchttp://example.spiderfoot.net:1337/path\rabc")
+        self.assertIsInstance(urls, list)
+        self.assertIn("https://example.spiderfoot.net/path", urls)
+        self.assertIn("http://example.spiderfoot.net:1337/path", urls)
+
+    def test_extractUrlsFromRobotsTxt_should_return_list(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt(invalid_type)
                 self.assertIsInstance(robots_txt, list)
 
-        robots_txt = SpiderFootHelpers.parseRobotsTxt("disallow:")
+        robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt("disallow:")
         self.assertIsInstance(robots_txt, list)
         self.assertFalse(robots_txt)
 
-        robots_txt = SpiderFootHelpers.parseRobotsTxt("disallow: /disallowed/path\n")
+        robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt("disallow: /disallowed/path\n")
         self.assertIsInstance(robots_txt, list)
         self.assertIn("/disallowed/path", robots_txt)
 
