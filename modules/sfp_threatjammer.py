@@ -7,7 +7,7 @@
 #
 # Created:     2022-05-03
 # Copyright:   (c) Diego Parrilla 2022
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -114,6 +114,14 @@ class sfp_threatjammer(SpiderFootPlugin):
 
         time.sleep(1)
 
+        if res['code'] == '400':
+            self.error("ThreatJammer.com rejected the IP address. Use only public IP addresses.")
+            return None
+
+        if res['code'] == '422':
+            self.error("ThreatJammer.com could not process the IP address. Check the format.")
+            return None
+
         if res['code'] == '429':
             self.error("You are being rate-limited by ThreatJammer.com")
             self.errorState = True
@@ -121,16 +129,6 @@ class sfp_threatjammer(SpiderFootPlugin):
 
         if res['code'] == '401':
             self.error("You are not authorized by ThreatJammer.com. Check your API key.")
-            self.errorState = True
-            return None
-
-        if res['code'] == '400':
-            self.error("ThreatJammer.com rejected the IP address. Use only public IP addresses.")
-            self.errorState = True
-            return None
-
-        if res['code'] == '422':
-            self.error("ThreatJammer.com could not process the IP address. Check the format.")
             self.errorState = True
             return None
 
@@ -205,7 +203,7 @@ class sfp_threatjammer(SpiderFootPlugin):
             return
         risk_score = int(score)
 
-        risk = ip_info["risk"]
+        risk = ip_info.get("risk")
         if not risk:
             self.sf.error(f"No risk type found for {eventData} from ThreatJammer.com. Skipping.")
             return
