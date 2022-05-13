@@ -191,18 +191,29 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertIsInstance(m.get('consumes'), list)
             self.assertIsInstance(m.get('meta'), dict)
 
-            # not all modules will have a data source (sfp_dnsresolve, sfp_dnscommonsrv, etc)
-            if m.get('dataSource'):
-                self.assertIsInstance(m.get('dataSource'), dict)
-                self.assertTrue(m.get('dataSource').get('website'))
-                self.assertTrue(m.get('dataSource').get('references'))
-                self.assertTrue(m.get('dataSource').get('model'))
-                self.assertTrue(m.get('dataSource').get('description'))
-
-            # output modules do not have use cases, categories, produced events or data source
+            # output modules do not have use cases, categories, produced events, data source, etc
             if module in ["sfp__stor_db", "sfp__stor_stdout"]:
                 continue
 
             self.assertTrue(m.get('cats'))
             self.assertTrue(m.get('group'))
             self.assertTrue(m.get('provides'))
+
+            meta = m.get('meta')
+
+            # not all modules will have a data source (sfp_dnsresolve, sfp_dnscommonsrv, etc)
+            if meta.get('dataSource'):
+                self.assertIsInstance(meta.get('dataSource'), dict)
+                self.assertTrue(meta.get('dataSource').get('website'))
+                self.assertTrue(meta.get('dataSource').get('model'))
+                # self.assertTrue(meta.get('dataSource').get('favIcon'))
+                # self.assertTrue(meta.get('dataSource').get('logo'))
+                # self.assertTrue(meta.get('dataSource').get('references'))
+                # self.assertTrue(meta.get('dataSource').get('description'))
+
+            if module.startswith('sfp_tool_'):
+                self.assertIsInstance(meta.get('toolDetails'), dict)
+                self.assertTrue(meta.get('toolDetails').get('name'))
+                self.assertTrue(meta.get('toolDetails').get('description'))
+                self.assertTrue(meta.get('toolDetails').get('website'))
+                self.assertTrue(meta.get('toolDetails').get('repository'))
