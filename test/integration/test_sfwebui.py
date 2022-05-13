@@ -38,7 +38,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
 
         sf = SpiderFoot(default_config)
         mod_dir = sf.myPath() + '/modules/'
-        default_config['__modules__'] = SpiderFootHelpers.loadModulesAsDict(mod_dir)
+        default_config['__modules__'] = SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
 
         conf = {
             '/query': {

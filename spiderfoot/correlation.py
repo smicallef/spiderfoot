@@ -197,7 +197,7 @@ class SpiderFootCorrelator:
                 criterias['srcModule'] = list()
 
             if matchrule['method'] == 'exact':
-                if type(matchrule['value']) == list:
+                if isinstance(matchrule['value'], list):
                     criterias['srcModule'].extend(matchrule['value'])
                 else:
                     criterias['srcModule'].append(matchrule['value'])
@@ -207,7 +207,7 @@ class SpiderFootCorrelator:
             if 'data' not in criterias:
                 criterias['data'] = list()
 
-            if type(matchrule['value']) == list:
+            if isinstance(matchrule['value'], list):
                 for v in matchrule['value']:
                     criterias['data'].append(v.encode('raw_unicode_escape'))
             else:
@@ -472,7 +472,7 @@ class SpiderFootCorrelator:
         """
         patterns = list()
 
-        if type(matchrule['value']) == list:
+        if isinstance(matchrule['value'], list):
             for r in matchrule['value']:
                 patterns.append(str(r))
         else:
@@ -667,8 +667,7 @@ class SpiderFootCorrelator:
             for event in buckets[bucket][:]:
                 if event['_collection'] == 0:
                     continue
-                else:
-                    pluszerocount += 1
+                pluszerocount += 1
 
                 if not check_event(self.event_extract(event, rule['field']), reference):
                     buckets[bucket].remove(event)
@@ -928,7 +927,6 @@ class SpiderFootCorrelator:
                 v = self.event_extract(data[0], m)[0]
             except Exception:
                 self.log.error(f"Field requested was not available: {m}")
-                pass
             title = title.replace("{" + m + "}", v.replace("\r", "").split("\n")[0])
         return title
 
@@ -1055,14 +1053,14 @@ class SpiderFootCorrelator:
             alloptions = set(strictoptions).union(otheroptions)
 
             for opt in strictoptions:
-                if type(rule[field]) == list:
+                if isinstance(rule[field], list):
                     for item, optelement in enumerate(rule[field]):
                         if not optelement.get(opt):
                             self.log.error(f"Required field for {field} missing in {rule['id']}, item {item}: {opt}")
                             ok = False
                     continue
 
-                elif type(rule[field]) == dict:
+                if isinstance(rule[field], dict):
                     if not rule[field].get(opt):
                         self.log.error(f"Required field for {field} missing in {rule['id']}: {opt}")
                         ok = False

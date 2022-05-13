@@ -142,7 +142,7 @@ def main() -> None:
     # Load each module in the modules directory with a .py extension
     try:
         mod_dir = sft.myPath() + '/modules/'
-        sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir)
+        sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
     except BaseException as e:
         log.critical(f"Failed to load modules: {e}", exc_info=True)
         sys.exit(-1)
@@ -155,7 +155,7 @@ def main() -> None:
     # a .yaml extension
     try:
         correlations_dir = sft.myPath() + '/correlations/'
-        correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(correlations_dir)
+        correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(correlations_dir, ['template.yaml'])
     except BaseException as e:
         log.critical(f"Failed to load correlation rules: {e}", exc_info=True)
         sys.exit(-1)

@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_hashes(SpiderFootPlugin):
@@ -59,11 +59,11 @@ class sfp_hashes(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        hashes = self.sf.parseHashes(eventData)
+        hashes = SpiderFootHelpers.extractHashesFromText(eventData)
         for hashtup in hashes:
             hashalgo, hashval = hashtup
 
-            evt = SpiderFootEvent("HASH", "[" + hashalgo + "] " + hashval, self.__name__, event)
+            evt = SpiderFootEvent("HASH", f"[{hashalgo}] {hashval}", self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:

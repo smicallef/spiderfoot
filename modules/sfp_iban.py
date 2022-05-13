@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_iban(SpiderFootPlugin):
@@ -59,8 +59,8 @@ class sfp_iban(SpiderFootPlugin):
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        ibanNumbers = self.sf.parseIBANNumbers(eventData)
-        for ibanNumber in set(ibanNumbers):
+        ibans = SpiderFootHelpers.extractIbansFromText(eventData)
+        for ibanNumber in set(ibans):
             self.info(f"Found IBAN number: {ibanNumber}")
             evt = SpiderFootEvent("IBAN_NUMBER", ibanNumber, self.__name__, event)
             if event.moduleDataSource:

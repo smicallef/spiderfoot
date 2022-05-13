@@ -14,7 +14,7 @@
 
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_pgp(SpiderFootPlugin):
@@ -88,7 +88,7 @@ class sfp_pgp(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
             if res['content'] is not None and res['code'] != "503":
-                emails = self.sf.parseEmails(res['content'])
+                emails = SpiderFootHelpers.extractEmailsFromText(res['content'])
                 for email in emails:
                     if email.split("@")[0] in self.opts['_genericusers'].split(","):
                         evttype = "EMAILADDR_GENERIC"

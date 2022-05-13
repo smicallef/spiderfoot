@@ -16,7 +16,7 @@ import re
 import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_countryname(SpiderFootPlugin):
@@ -55,7 +55,7 @@ class sfp_countryname(SpiderFootPlugin):
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-    def detectCountryFromPhone(self, srcPhoneNumber):
+    def detectCountryFromPhone(self, srcPhoneNumber: str) -> str:
         """Lookup name of country from phone number region code.
 
         Args:
@@ -83,9 +83,9 @@ class sfp_countryname(SpiderFootPlugin):
         if not countryCode:
             return None
 
-        return self.sf.countryNameFromCountryCode(countryCode.upper())
+        return SpiderFootHelpers.countryNameFromCountryCode(countryCode.upper())
 
-    def detectCountryFromDomainName(self, srcDomain):
+    def detectCountryFromDomainName(self, srcDomain: str) -> str:
         """Lookup name of country from TLD of domain name.
 
         Args:
@@ -103,13 +103,13 @@ class sfp_countryname(SpiderFootPlugin):
 
         # Search for country TLD in the domain parts - reversed
         for part in domainParts[::-1]:
-            country_name = self.sf.countryNameFromTld(part)
+            country_name = SpiderFootHelpers.countryNameFromTld(part)
             if country_name:
                 return country_name
 
         return None
 
-    def detectCountryFromIBAN(self, srcIBAN):
+    def detectCountryFromIBAN(self, srcIBAN: str) -> str:
         """Detect name of country from IBAN.
 
         Args:
@@ -121,9 +121,9 @@ class sfp_countryname(SpiderFootPlugin):
         if not isinstance(srcIBAN, str):
             return None
 
-        return self.sf.countryNameFromCountryCode(srcIBAN[0:2])
+        return SpiderFootHelpers.countryNameFromCountryCode(srcIBAN[0:2])
 
-    def detectCountryFromData(self, srcData):
+    def detectCountryFromData(self, srcData: str) -> list:
         """Detect name of country from event data (WHOIS lookup, Geo Info, Physical Address, etc)
 
         Args:
@@ -138,7 +138,7 @@ class sfp_countryname(SpiderFootPlugin):
             return countries
 
         # Get dictionary of country codes and  country names
-        abbvCountryCodes = self.sf.getCountryCodeDict()
+        abbvCountryCodes = SpiderFootHelpers.countryCodes()
 
         # Look for countrycodes and country in source data
         for countryName in abbvCountryCodes.values():

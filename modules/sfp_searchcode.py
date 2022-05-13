@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_searchcode(SpiderFootPlugin):
@@ -146,7 +146,7 @@ class sfp_searchcode(SpiderFootPlugin):
             if not results:
                 return
 
-            emails = self.sf.parseEmails(str(results))
+            emails = SpiderFootHelpers.extractEmailsFromText(str(results))
             for email in emails:
                 if email in self.results:
                     continue
@@ -170,7 +170,7 @@ class sfp_searchcode(SpiderFootPlugin):
                 lines = result.get('lines')
                 if lines:
                     for line in lines:
-                        links.update(self.sf.extractUrls(lines[line]))
+                        links.update(SpiderFootHelpers.extractUrlsFromText(lines[line]))
 
             for link in links:
                 if link in self.results:

@@ -15,7 +15,7 @@
 import json
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_spyse(SpiderFootPlugin):
@@ -635,7 +635,7 @@ class sfp_spyse(SpiderFootPlugin):
             domain_emails = domain_http_extract.get("emails")
             if domain_emails:
                 for email in domain_emails:
-                    if self.sf.validEmail(email):
+                    if SpiderFootHelpers.validEmail(email):
                         evt = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                         self.notifyListeners(evt)
 

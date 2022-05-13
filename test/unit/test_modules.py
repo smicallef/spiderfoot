@@ -16,7 +16,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
     @staticmethod
     def load_modules(sf):
         mod_dir = sf.myPath() + '/modules/'
-        return SpiderFootHelpers.loadModulesAsDict(mod_dir)
+        return SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
 
     def test_module_use_cases_are_valid(self):
         sf = SpiderFoot(self.default_options)
