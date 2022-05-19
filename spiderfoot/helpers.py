@@ -691,6 +691,28 @@ class SpiderFootHelpers():
         return returnArr
 
     @staticmethod
+    def extractPgpKeysFromText(data: str) -> list:
+        """Extract all PGP keys within the supplied content.
+
+        Args:
+            data (str): text to search for PGP keys
+
+        Returns:
+            list: list of PGP keys
+        """
+        if not isinstance(data, str):
+            return list()
+
+        keys = set()
+
+        pattern = re.compile("(-----BEGIN.*?END.*?BLOCK-----)", re.MULTILINE | re.DOTALL)
+        for key in re.findall(pattern, data):
+            if len(key) >= 300:
+                keys.add(key)
+
+        return list(keys)
+
+    @staticmethod
     def extractEmailsFromText(data: str) -> list:
         """Extract all email addresses within the supplied content.
 

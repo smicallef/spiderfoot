@@ -287,6 +287,15 @@ class TestSpiderFootHelpers(unittest.TestCase):
                 emails = SpiderFootHelpers.extractEmailsFromText(invalid_type)
                 self.assertIsInstance(emails, list)
 
+    def test_extractPgpKeysFromText_should_return_list_of_pgp_keys_from_string(self):
+        key1 = "-----BEGIN PGP PUBLIC KEY BLOCK-----Version: software v1.2.3\nComment: sample comment\n\nmQINBFRUAGoBEACuk6ze2V2pZtScf1Ul25N2CX19AeL7sVYwnyrTYuWdG2FmJx4x\nDLTLVUazp2AEm/JhskulL/7VCZPyg7ynf+o20Tu9/6zUD7p0rnQA2k3Dz+7dKHHh\neEsIl5EZyFy1XodhUnEIjel2nGe6f1OO7Dr3UIEQw5JnkZyqMcbLCu9sM2twFyfa\na8JNghfjltLJs3/UjJ8ZnGGByMmWxrWQUItMpQjGr99nZf4L+IPxy2i8O8WQewB5\nfvfidBGruUYC+mTw7CusaCOQbBuZBiYduFgH8hRW97KLmHn0xzB1FV++KI7syo8q\nXGo8Un24WP40IT78XjKO\n=nUop\n-----END PGP PUBLIC KEY BLOCK-----"
+        key2 = "-----BEGIN PGP PRIVATE KEY BLOCK-----Version: software v1.2.3\nComment: sample comment\n\nmQINBFRUAGoBEACuk6ze2V2pZtScf1Ul25N2CX19AeL7sVYwnyrTYuWdG2FmJx4x\nDLTLVUazp2AEm/JhskulL/7VCZPyg7ynf+o20Tu9/6zUD7p0rnQA2k3Dz+7dKHHh\neEsIl5EZyFy1XodhUnEIjel2nGe6f1OO7Dr3UIEQw5JnkZyqMcbLCu9sM2twFyfa\na8JNghfjltLJs3/UjJ8ZnGGByMmWxrWQUItMpQjGr99nZf4L+IPxy2i8O8WQewB5\nfvfidBGruUYC+mTw7CusaCOQbBuZBiYduFgH8hRW97KLmHn0xzB1FV++KI7syo8q\nXGo8Un24WP40IT78XjKO\n=nUop\n-----END PGP PRIVATE KEY BLOCK-----"
+        keys = SpiderFootHelpers.extractPgpKeysFromText(f"<html><body><p>sample{key1}sample</p><p>sample{key2}sample</p></body></html>")
+        self.assertIsInstance(keys, list)
+        self.assertIn(key1, keys)
+        self.assertIn(key2, keys)
+        self.assertEqual(len(keys), 2)
+
     def test_extractIbansFromText_should_return_a_list(self):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
