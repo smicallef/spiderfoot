@@ -132,8 +132,11 @@ class sfp_spider(SpiderFootPlugin):
             url = fetched['realurl']  # override the URL if we had a redirect
 
         # Extract links from the content
-        links = self.sf.parseLinks(url, fetched['content'],
-                                   self.getTarget().getNames())
+        links = SpiderFootHelpers.extractLinksFromHtml(
+            url,
+            fetched['content'],
+            self.getTarget().getNames()
+        )
 
         if not links:
             self.debug(f"No links found at {url}")

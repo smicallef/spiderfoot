@@ -5,10 +5,12 @@ import os
 import os.path
 import random
 import re
+import urllib.parse
 import uuid
 from pathlib import Path
 
 import networkx as nx
+from bs4 import BeautifulSoup, SoupStrainer
 from networkx.readwrite.gexf import GEXFWriter
 import phonenumbers
 
@@ -632,6 +634,126 @@ class SpiderFootHelpers():
             str: scan instance unique ID
         """
         return str(uuid.uuid4()).split("-")[0].upper()
+
+    @staticmethod
+    def extractLinksFromHtml(url: str, data: str, domains: list) -> dict:
+        """Find all URLs within the supplied content.
+
+        This function does not fetch any URLs.
+
+        A dictionary will be returned, where each link will have the keys:
+          'source': The URL where the link was obtained from
+          'original': What the link looked like in the content it was obtained from
+
+        The key will be the *absolute* URL of the link obtained, so for example if
+        the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
+        be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
+
+        Args:
+            url (str): base URL used to construct absolute URLs from relative URLs
+            data (str): data to examine for links
+            domains: TBD
+
+        Returns:
+            dict: links
+
+        Raises:
+            TypeError: argument was invalid type
+        """
+        returnLinks = dict()
+
+        if not isinstance(url, str):
+            raise TypeError(f"url {type(url)}; expected str()")
+
+        if not isinstance(data, str):
+            raise TypeError(f"data {type(data)}; expected str()")
+
+        if isinstance(domains, str):
+            domains = [domains]
+
+        tags = {
+            'a': 'href',
+            'img': 'src',
+            'script': 'src',
+            'link': 'href',
+            'area': 'href',
+            'base': 'href',
+            'form': 'action'
+        }
+
+        links = []
+
+        try:
+            for t in list(tags.keys()):
+                for lnk in BeautifulSoup(data, features="xml", parse_only=SoupStrainer(t)).find_all(t):
+                    if lnk.has_attr(tags[t]):
+                        links.append(lnk[tags[t]])
+        except BaseException:
+            return returnLinks
+
+        try:
+            proto = url.split(":")[0]
+        except BaseException:
+            proto = "http"
+        if proto is None:
+            proto = "http"
+
+        # Loop through all the URLs/links found
+        for link in links:
+            if not isinstance(link, str):
+                link = str(link)
+
+            link = link.strip()
+
+            if len(link) < 1:
+                continue
+
+            # Don't include stuff likely part of some dynamically built incomplete
+            # URL found in Javascript code (character is part of some logic)
+            if link[len(link) - 1] in ['.', '#'] or link[0] == '+' or 'javascript:' in link.lower() or '()' in link:
+                continue
+
+            # Filter in-page links
+            if re.match('.*#.[^/]+', link):
+                continue
+
+            # Ignore mail links
+            if 'mailto:' in link.lower():
+                continue
+
+            # URL decode links
+            if '%2f' in link.lower():
+                link = urllib.parse.unquote(link)
+
+            absLink = None
+
+            # Capture the absolute link:
+            # If the link contains ://, it is already an absolute link
+            if '://' in link:
+                absLink = link
+
+            # If the link starts with //, it is likely a protocol relative URL
+            elif link.startswith('//'):
+                absLink = proto + ':' + link
+
+            # If the link starts with a /, the absolute link is off the base URL
+            elif link.startswith('/'):
+                absLink = SpiderFootHelpers.urlBaseUrl(url) + link
+
+            # Maybe the domain was just mentioned and not a link, so we make it one
+            for domain in domains:
+                if absLink is None and domain.lower() in link.lower():
+                    absLink = proto + '://' + link
+
+            # Otherwise, it's a flat link within the current directory
+            if absLink is None:
+                absLink = SpiderFootHelpers.urlBaseDir(url) + link
+
+            # Translate any relative pathing (../)
+            absLink = SpiderFootHelpers.urlRelativeToAbsolute(absLink)
+            returnLinks[absLink] = {'source': url, 'original': link}
+
+        return returnLinks
 
     @staticmethod
     def extractHashesFromText(data: str) -> list:

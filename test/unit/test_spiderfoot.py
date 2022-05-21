@@ -812,56 +812,6 @@ class TestSpiderFoot(unittest.TestCase):
                 parse_cert = sf.parseCert(None, 'spiderfoot.net', invalid_type)
                 self.assertEqual(None, parse_cert)
 
-    def test_parse_links_should_return_a_dict_of_urls_from_string(self):
-        """
-        Test parseLinks(self, url, data, domains)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        parse_links = sf.parseLinks('url', 'example html content', 'domains')
-        self.assertIsInstance(parse_links, dict)
-
-        parse_links = sf.parseLinks('http://spiderfoot.net/', 'example html content<a href="http://spiderfoot.net/path"></a>', 'domains')
-        self.assertIsInstance(parse_links, dict)
-
-        self.assertEqual('TBD', 'TBD')
-
-    def test_parse_links_invalid_url_should_return_a_dict(self):
-        """
-        Test parseLinks(self, url, data, domains)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                parse_links = sf.parseLinks(invalid_type, 'example html content', 'domains')
-                self.assertIsInstance(parse_links, dict)
-
-    def test_parse_links_invalid_data_should_return_a_dict(self):
-        """
-        Test parseLinks(self, url, data, domains)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                parse_links = sf.parseLinks("", invalid_type, 'domains')
-                self.assertIsInstance(parse_links, dict)
-
-    def test_parse_links_invalid_domains_should_return_a_dict(self):
-        """
-        Test parseLinks(self, url, data, domains)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                parse_links = sf.parseLinks('url', 'example html content', invalid_type)
-                self.assertIsInstance(parse_links, dict)
-
     def test_url_encode_unicode_should_return_a_string(self):
         """
         Test urlEncodeUnicode(self, url)

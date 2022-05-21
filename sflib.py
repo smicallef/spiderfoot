@@ -35,7 +35,6 @@ import netaddr
 import OpenSSL
 import requests
 import urllib3
-from bs4 import BeautifulSoup, SoupStrainer
 from publicsuffixlist import PublicSuffixList
 from spiderfoot import SpiderFootHelpers
 
@@ -1159,126 +1158,6 @@ class SpiderFoot:
 
         return ret
 
-    def parseLinks(self, url: str, data: str, domains: list) -> dict:
-        """Find all URLs within the supplied content.
-
-        This function does not fetch any URLs.
-
-        A dictionary will be returned, where each link will have the keys
-        'source': The URL where the link was obtained from
-        'original': What the link looked like in the content it was obtained from
-        The key will be the *absolute* URL of the link obtained, so for example if
-        the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
-        be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-
-        Args:
-            url (str): base URL used to construct absolute URLs from relative URLs
-            data (str): data to examine for links
-            domains: TBD
-
-        Returns:
-            dict: links
-        """
-        returnLinks = dict()
-
-        if not isinstance(data, str):
-            self.debug(f"parseLinks() data is {type(data)}; expected str()")
-            return returnLinks
-
-        if not data:
-            self.debug("parseLinks() called with no data to parse.")
-            return returnLinks
-
-        if isinstance(domains, str):
-            domains = [domains]
-
-        tags = {
-            'a': 'href',
-            'img': 'src',
-            'script': 'src',
-            'link': 'href',
-            'area': 'href',
-            'base': 'href',
-            'form': 'action'
-        }
-
-        try:
-            proto = url.split(":")[0]
-        except BaseException:
-            proto = "http"
-        if proto is None:
-            proto = "http"
-
-        urlsRel = []
-
-        try:
-            for t in list(tags.keys()):
-                for lnk in BeautifulSoup(data, features="xml", parse_only=SoupStrainer(t)).find_all(t):
-                    if lnk.has_attr(tags[t]):
-                        urlsRel.append(lnk[tags[t]])
-        except BaseException as e:
-            self.error(f"Error parsing with BeautifulSoup: {e}")
-            return returnLinks
-
-        # Loop through all the URLs/links found
-        for link in urlsRel:
-            if not isinstance(link, str):
-                link = str(link)
-            link = link.strip()
-            linkl = link.lower()
-            absLink = None
-
-            if len(link) < 1:
-                continue
-
-            # Don't include stuff likely part of some dynamically built incomplete
-            # URL found in Javascript code (character is part of some logic)
-            if link[len(link) - 1] in ['.', '#'] or link[0] == '+' or 'javascript:' in linkl or '()' in link:
-                self.debug('unlikely link: ' + link)
-                continue
-
-            # Filter in-page links
-            if re.match('.*#.[^/]+', link):
-                self.debug('in-page link: ' + link)
-                continue
-
-            # Ignore mail links
-            if 'mailto:' in linkl:
-                self.debug("Ignoring mail link: " + link)
-                continue
-
-            # URL decode links
-            if '%2f' in linkl:
-                link = urllib.parse.unquote(link)
-
-            # Capture the absolute link:
-            # If the link contains ://, it is already an absolute link
-            if '://' in link:
-                absLink = link
-
-            # If the link starts with a /, the absolute link is off the base URL
-            if link.startswith('/'):
-                absLink = SpiderFootHelpers.urlBaseUrl(url) + link
-
-            # Protocol relative URLs
-            if link.startswith('//'):
-                absLink = proto + ':' + link
-
-            # Maybe the domain was just mentioned and not a link, so we make it one
-            for domain in domains:
-                if absLink is None and domain.lower() in link.lower():
-                    absLink = proto + '://' + link
-
-            # Otherwise, it's a flat link within the current directory
-            if absLink is None:
-                absLink = SpiderFootHelpers.urlBaseDir(url) + link
-
-            # Translate any relative pathing (../)
-            absLink = SpiderFootHelpers.urlRelativeToAbsolute(absLink)
-            returnLinks[absLink] = {'source': url, 'original': link}
-
-        return returnLinks
-
     def urlEncodeUnicode(self, url: str) -> str:
         """Encode a string as unicode.
 
@@ -1580,8 +1459,8 @@ class SpiderFoot:
                     timeout=timeout,
                     verify=verify
                 )
-        except requests.exceptions.RequestException:
-            self.error(f"Failed to connect to {url}")
+        except requests.exceptions.RequestException as e:
+            self.error(f"Failed to connect to {url}: {e}")
             return result
         except Exception as e:
             if noLog:
