@@ -172,6 +172,49 @@ class TestSpiderFootHelpers(unittest.TestCase):
         scan_instance_id = SpiderFootHelpers.genScanInstanceId()
         self.assertIsInstance(scan_instance_id, str)
 
+    def test_extractLinksFromHtml_argument_data_not_containing_links_should_return_an_empty_dict(self):
+        parse_links = SpiderFootHelpers.extractLinksFromHtml('url', '<html>example html content</html>', 'domains')
+        self.assertIsInstance(parse_links, dict)
+        self.assertFalse(parse_links)
+
+    def test_extractLinksFromHtml_argument_data_containing_links_should_return_a_dict_of_urls(self):
+        url = 'http://spiderfoot.net/'
+        parse_links = SpiderFootHelpers.extractLinksFromHtml(
+            url,
+            '<html>example html content<a href="http://spiderfoot.net/path"></a><a href="/relative-path"></a></html>',
+            'domains'
+        )
+        self.assertIsInstance(parse_links, dict)
+
+        self.assertEqual(
+            parse_links,
+            {
+                'http://spiderfoot.net/path': {'source': url, 'original': 'http://spiderfoot.net/path'},
+                'http://spiderfoot.net/relative-path': {'source': url, 'original': '/relative-path'},
+            }
+        )
+
+    def test_extractLinksFromHtml_invalid_url_should_raise_TypeError(self):
+        invalid_types = [None,  list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError):
+                    SpiderFootHelpers.extractLinksFromHtml(invalid_type, 'example html content', 'domains')
+
+    def test_extractLinksFromHtml_invalid_data_should_raise_TypeError(self):
+        invalid_types = [None, list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError):
+                    SpiderFootHelpers.extractLinksFromHtml("", invalid_type, 'domains')
+
+    def test_extractLinksFromHtml_invalid_domains_should_return_a_dict(self):
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                parse_links = SpiderFootHelpers.extractLinksFromHtml('url', 'example html content', invalid_type)
+                self.assertIsInstance(parse_links, dict)
+
     def test_extractHashesFromText_should_return_a_list(self):
         invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
