@@ -44,11 +44,12 @@ RUN apt remove -y cmdtest \
     && apt-get install -y nodejs \
     && npm install -g retire
 
-# Install Wappalyzer (and Chrome)
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add - \
-    && echo "\ndeb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list \
-    && apt-get -y update && apt-get install --allow-unauthenticated -y google-chrome-stable
+# Install Google Chrome the New Way (Not via apt-key)
+RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
+    && apt -y update && apt install --allow-unauthenticated -y google-chrome-stable
 
+# Install Wappalyzer
 RUN git clone https://github.com/AliasIO/wappalyzer.git \
     && cd wappalyzer \
     && yarn install && yarn run link
