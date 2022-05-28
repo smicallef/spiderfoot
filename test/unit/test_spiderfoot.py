@@ -153,15 +153,6 @@ class TestSpiderFoot(unittest.TestCase):
         sf.debug(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_my_path_should_return_a_string(self):
-        """
-        Test myPath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        path = sf.myPath()
-        self.assertIsInstance(path, str)
-
     def test_hash_string_should_return_a_string(self):
         """
         Test hashstring(self, string)
@@ -633,16 +624,6 @@ class TestSpiderFoot(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 dns = sf.normalizeDNS(invalid_type)
                 self.assertIsInstance(dns, list)
-
-    def test_dictwords_should_return_a_set(self):
-        sf = SpiderFoot(dict())
-        dict_words = sf.dictwords()
-        self.assertIsInstance(dict_words, set)
-
-    def test_dictnames_should_return_a_set(self):
-        sf = SpiderFoot(dict())
-        dict_names = sf.dictnames()
-        self.assertIsInstance(dict_names, set)
 
     def test_resolve_host_should_return_list(self):
         """

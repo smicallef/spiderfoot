@@ -238,19 +238,6 @@ class SpiderFoot:
 
         self.log.debug(f"{message}", extra={'scanId': self._scanId})
 
-    @staticmethod
-    def myPath() -> str:
-        """This will get us the program's directory, even if we are frozen using py2exe.
-
-        Returns:
-            str: Program root directory
-        """
-        # Determine whether we've been compiled by py2exe
-        if hasattr(sys, "frozen"):
-            return os.path.dirname(sys.executable)
-
-        return os.path.dirname(__file__)
-
     def hashstring(self, string: str) -> str:
         """Returns a SHA256 hash of the specified input.
 
@@ -837,48 +824,6 @@ class SpiderFoot:
                 if host:
                     ret.append(host)
         return ret
-
-    def dictwords(self) -> set:
-        """Return dictionary words from several language dictionaries.
-
-        Returns:
-            set: words from dictionaries
-        """
-        words = set()
-
-        dicts = ["english", "german", "french", "spanish"]
-
-        for d in dicts:
-            try:
-                with io.open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r', encoding='utf8', errors='ignore') as dict_file:
-                    for w in dict_file.readlines():
-                        words.add(w.strip().lower().split('/')[0])
-            except BaseException as e:
-                self.debug(f"Could not read dictionary: {e}")
-                continue
-
-        return words
-
-    def dictnames(self) -> set:
-        """Return list of human names.
-
-        Returns:
-            set: human names
-        """
-        words = set()
-
-        dicts = ["names"]
-
-        for d in dicts:
-            try:
-                with open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r') as dict_file:
-                    for w in dict_file.readlines():
-                        words.add(w.strip().lower().split('/')[0])
-            except BaseException as e:
-                self.debug(f"Could not read dictionary: {e}")
-                continue
-
-        return words
 
     def resolveHost(self, host: str) -> list:
         """Return a normalised IPv4 resolution of a hostname.

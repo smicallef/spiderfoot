@@ -1,11 +1,11 @@
 # test_sfwebui.py
+import os
 import unittest
 
 import cherrypy
 from cherrypy.test import helper
 
 from spiderfoot import SpiderFootHelpers
-from sflib import SpiderFoot
 from sfwebui import SpiderFootWebUi
 
 
@@ -21,9 +21,10 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
             '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
             '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
             '_internettlds_cache': 72,
-            '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+            '_genericusers': ",".join(SpiderFootHelpers.usernamesFromWordlists(['generic-usernames'])),
             '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.test.db",  # note: test database file
             '__modules__': None,  # List of modules. Will be set after start-up.
+            '__correlationrules__': None,  # List of correlation rules. Will be set after start-up.
             '_socks1type': '',
             '_socks2addr': '',
             '_socks3port': '',
@@ -36,8 +37,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
             'root': '/'
         }
 
-        sf = SpiderFoot(default_config)
-        mod_dir = sf.myPath() + '/modules/'
+        mod_dir = os.path.dirname(os.path.abspath(__file__)) + '/../../modules/'
         default_config['__modules__'] = SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
 
         conf = {
@@ -48,7 +48,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
             '/static': {
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': 'static',
-                'tools.staticdir.root': f"{sf.myPath()}/spiderfoot",
+                'tools.staticdir.root': f"{os.path.dirname(os.path.abspath(__file__))}/../../spiderfoot",
             }
         }
 

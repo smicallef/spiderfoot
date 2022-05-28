@@ -61,7 +61,7 @@ def main() -> None:
         '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
-        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+        '_genericusers': ",".join(SpiderFootHelpers.usernamesFromWordlists(['generic-usernames'])),
         '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.db",
         '__modules__': None,  # List of modules. Will be set after start-up.
         '__correlationrules__': None,  # List of correlation rules. Will be set after start-up.
@@ -134,14 +134,13 @@ def main() -> None:
     logListenerSetup(loggingQueue, sfConfig)
     logWorkerSetup(loggingQueue)
     log = logging.getLogger(f"spiderfoot.{__name__}")
-    sft = SpiderFoot(sfConfig)
 
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
 
     # Load each module in the modules directory with a .py extension
     try:
-        mod_dir = sft.myPath() + '/modules/'
+        mod_dir = os.path.dirname(os.path.abspath(__file__)) + '/modules/'
         sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
     except BaseException as e:
         log.critical(f"Failed to load modules: {e}", exc_info=True)
@@ -154,7 +153,7 @@ def main() -> None:
     # Load each correlation rule in the correlations directory with
     # a .yaml extension
     try:
-        correlations_dir = sft.myPath() + '/correlations/'
+        correlations_dir = os.path.dirname(os.path.abspath(__file__)) + '/correlations/'
         correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(correlations_dir, ['template.yaml'])
     except BaseException as e:
         log.critical(f"Failed to load correlation rules: {e}", exc_info=True)
@@ -475,8 +474,6 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
 
     log.info(f"Starting web server at {web_host}:{web_port} ...")
 
-    sf = SpiderFoot(sfConfig)
-
     # Enable access to static files via the web directory
     conf = {
         '/query': {
@@ -486,7 +483,7 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
         '/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': 'static',
-            'tools.staticdir.root': f"{sf.myPath()}/spiderfoot"
+            'tools.staticdir.root': f"{os.path.dirname(os.path.abspath(__file__))}/spiderfoot"
         }
     }
 

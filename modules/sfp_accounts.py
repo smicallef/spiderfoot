@@ -18,7 +18,7 @@ import time
 from queue import Empty as QueueEmpty
 from queue import Queue
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_accounts(SpiderFootPlugin):
@@ -73,8 +73,8 @@ class sfp_accounts(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-        self.commonNames = set(self.sf.dictnames())
-        self.words = set(self.sf.dictwords())
+        self.commonNames = SpiderFootHelpers.humanNamesFromWordlists()
+        self.words = SpiderFootHelpers.dictionaryWordsFromWordlists()
 
         content = self.sf.cacheGet("sfaccounts", 48)
         if content is None:
