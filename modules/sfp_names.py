@@ -12,7 +12,7 @@
 
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_names(SpiderFootPlugin):
@@ -46,22 +46,19 @@ class sfp_names(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.d = set(self.sf.dictwords())
-        self.n = set(self.sf.dictnames())
+        self.d = SpiderFootHelpers.dictionaryWordsFromWordlists()
+        self.n = SpiderFootHelpers.humanNamesFromWordlists()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # * = be notified about all events.
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT", "EMAILADDR",
                 "DOMAIN_WHOIS", "NETBLOCK_WHOIS",
                 "RAW_RIR_DATA", "RAW_FILE_META_DATA"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["HUMAN_NAME"]
 

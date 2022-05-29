@@ -85,6 +85,33 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIsInstance(base_url, str)
         self.assertEqual('http://localhost.local', base_url)
 
+    def test_dictionaryWordsFromWordlists_should_return_a_set(self):
+        words = SpiderFootHelpers.dictionaryWordsFromWordlists()
+        self.assertIsInstance(words, set)
+        self.assertTrue(len(words))
+
+    def test_dictionaryWordsFromWordlists_argument_wordlists_missing_wordlist_should_raise_IOError(self):
+        with self.assertRaises(IOError):
+            SpiderFootHelpers.dictionaryWordsFromWordlists(['does not exist'])
+
+    def test_humanNamesFromWordlists_should_return_a_set(self):
+        names = SpiderFootHelpers.humanNamesFromWordlists()
+        self.assertIsInstance(names, set)
+        self.assertTrue(len(names))
+
+    def test_humanNamesFromWordlists_argument_wordlists_missing_wordlist_should_raise_IOError(self):
+        with self.assertRaises(IOError):
+            SpiderFootHelpers.humanNamesFromWordlists(['does not exist'])
+
+    def test_usernamesFromWordlists_should_return_a_set(self):
+        users = SpiderFootHelpers.usernamesFromWordlists()
+        self.assertIsInstance(users, set)
+        self.assertTrue(len(users))
+
+    def test_usernamesFromWordlists_argument_wordlists_missing_wordlist_should_raise_IOError(self):
+        with self.assertRaises(IOError):
+            SpiderFootHelpers.usernamesFromWordlists(['does not exist'])
+
     def test_buildGraphData_invalid_data_type_should_raise_TypeError(self):
         """
         Test buildGraphData(data, flt=list())

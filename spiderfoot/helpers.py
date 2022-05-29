@@ -8,6 +8,7 @@ import re
 import urllib.parse
 import uuid
 from pathlib import Path
+from importlib import resources
 
 import networkx as nx
 from bs4 import BeautifulSoup, SoupStrainer
@@ -289,6 +290,90 @@ class SpiderFootHelpers():
             return url.lower()
 
         return bits.group(1).lower()
+
+    @staticmethod
+    def dictionaryWordsFromWordlists(wordlists: list = None) -> set:
+        """Return dictionary words from several language dictionaries.
+
+        Args:
+            wordlists (list): list of wordlist file names to read (excluding file extension).
+
+        Returns:
+            set: words from dictionaries
+
+        Raises:
+            IOError: Error reading wordlist file
+        """
+        words = set()
+
+        if wordlists is None:
+            wordlists = ["english", "german", "french", "spanish"]
+
+        for d in wordlists:
+            try:
+                with resources.open_text('spiderfoot.dicts.ispell', f"{d}.dict", errors='ignore') as dict_file:
+                    for w in dict_file.readlines():
+                        words.add(w.strip().lower().split('/')[0])
+            except BaseException as e:
+                raise IOError(f"Could not read wordlist file '{d}.dict'") from e
+
+        return words
+
+    @staticmethod
+    def humanNamesFromWordlists(wordlists: list = None) -> set:
+        """Return list of human names from wordlist file.
+
+        Args:
+            wordlists (list): list of wordlist file names to read (excluding file extension).
+
+        Returns:
+            set: human names from wordlists
+
+        Raises:
+            IOError: Error reading wordlist file
+        """
+        words = set()
+
+        if wordlists is None:
+            wordlists = ["names"]
+
+        for d in wordlists:
+            try:
+                with resources.open_text('spiderfoot.dicts.ispell', f"{d}.dict", errors='ignore') as dict_file:
+                    for w in dict_file.readlines():
+                        words.add(w.strip().lower().split('/')[0])
+            except BaseException as e:
+                raise IOError(f"Could not read wordlist file '{d}.dict'") from e
+
+        return words
+
+    @staticmethod
+    def usernamesFromWordlists(wordlists: list = None) -> set:
+        """Return list of usernames from wordlist file.
+
+        Args:
+            wordlists (list): list of wordlist file names to read (excluding file extension).
+
+        Returns:
+            set: usernames from wordlists
+
+        Raises:
+            IOError: Error reading wordlist file
+        """
+        words = set()
+
+        if wordlists is None:
+            wordlists = ["generic-usernames"]
+
+        for d in wordlists:
+            try:
+                with resources.open_text('spiderfoot.dicts', f"{d}.txt", errors='ignore') as dict_file:
+                    for w in dict_file.readlines():
+                        words.add(w.strip().lower().split('/')[0])
+            except BaseException as e:
+                raise IOError(f"Could not read wordlist file '{d}.txt'") from e
+
+        return words
 
     @staticmethod
     def buildGraphGexf(root: str, title: str, data: list, flt: list = None) -> str:
