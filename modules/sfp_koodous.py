@@ -25,24 +25,34 @@ class sfp_koodous(SpiderFootPlugin):
     meta = {
         'name': "Koodous",
         'summary': "Search Koodous for mobile apps.",
-        'flags': [],
+        'flags': ["apikey"],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "FREE_AUTH_LIMITED",
+            "apiKeyInstructions": [
+                "Visit https://koodous.com/apks",
+                "Register a free account",
+                "Visit https://koodous.com/settings/developers and use the authentication token provided",
+            ],
             'references': [
-                "https://docs.koodous.com/rest-api/apks/",
+                "https://docs.koodous.com/api/apks.html",
+                "https://docs.koodous.com/apks.html#apks-search-system"
             ],
             'website': "https://koodous.com/apks/",
+            'favIcon': "https://koodous.com/favicon.ico",
             'logo': "https://koodous.com/assets/img/koodous-logo.png",
+            "description": "The Collaborative Platform for Android Malware Analysts."
         }
     }
 
     opts = {
+        "api_key": "",
         'max_pages': 10,
     }
 
     optdescs = {
+        "api_key": "Koodous API key.",
         'max_pages': "Maximum number of pages of results to fetch.",
     }
 
@@ -51,6 +61,7 @@ class sfp_koodous(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.errorState = False
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
@@ -71,59 +82,91 @@ class sfp_koodous(SpiderFootPlugin):
 
         params = urllib.parse.urlencode({
             'cursor': cursor,
-            'search': f"package_name:*{package_name}.*"
+            'search': f"package:{package_name}.*"
         })
 
         res = self.sf.fetchUrl(
-            f"https://api.koodous.com/apks?{params}",
+            f"https://developer.koodous.com/apks/?{params}",
+            headers={"Authorization": f"Token {self.opts['api_key']}"},
             useragent=self.opts['_useragent'],
             timeout=self.opts['_fetchtimeout']
         )
 
+        # 100 requests per minute
         time.sleep(1)
 
-        if res['content'] is None:
+        return self.parseApiResponse(res)
+
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from Koodous.")
             return None
 
+        if res['code'] == '404':
+            self.debug("No results from Koodous.")
+            return None
+
+        if res['code'] == "401":
+            self.error("Invalid Koodous API key.")
+            self.errorState = True
+            return None
+
+        if res['code'] == '429':
+            self.error("You are being rate-limited by Koodous.")
+            self.errorState = True
+            return None
+
+        if res['code'] == '500' or res['code'] == '502' or res['code'] == '503':
+            self.error("Koodous service is unavailable")
+            self.errorState = True
+            return None
+
+        # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
             self.error(f"Unexpected reply from Koodous: {res['code']}")
             self.errorState = True
+            return None
+
+        if res['content'] is None:
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
             self.debug(f"Error processing JSON response from Koodous: {e}")
-            return None
 
         return None
 
     def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
-        eventData = event.data
-
         if self.errorState:
             return
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {event.eventType}, from {event.module}")
+
+        if self.opts["api_key"] == "":
+            self.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
+            )
+            self.errorState = True
+            return
+
+        eventData = event.data
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
             return
 
-        if eventName not in self.watchedEvents():
-            return
-
         self.results[eventData] = True
 
+        # Reverse domain name to create potential package name
         domain_reversed = '.'.join(list(reversed(eventData.lower().split('.'))))
 
         max_pages = int(self.opts['max_pages'])
         page = 1
         cursor = ''
-        found = False
         while page <= max_pages:
+            found = False
+
             if self.checkForStop():
                 return
 
@@ -145,15 +188,19 @@ class sfp_koodous(SpiderFootPlugin):
 
                 app = result.get('app')
 
+                # results can have a null app name, but it is probably a duplicate
                 if not app:
                     continue
 
-                displayed_version = result.get('displayed_version')
+                # TODO: compare company name with target
+                # company = result.get('company')
 
-                if not displayed_version:
-                    continue
+                version = result.get('version')
 
-                app_full_name = f"{app} {displayed_version} ({package_name})"
+                if version:
+                    app_full_name = f"{app} {version} ({package_name})"
+                else:
+                    app_full_name = f"{app} ({package_name})"
 
                 if (
                     domain_reversed != package_name.lower()
