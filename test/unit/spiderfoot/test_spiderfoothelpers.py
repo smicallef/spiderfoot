@@ -7,35 +7,20 @@ from spiderfoot import SpiderFootHelpers
 
 @pytest.mark.usefixtures
 class TestSpiderFootHelpers(unittest.TestCase):
-    """
-    Test SpiderFootHelpers
-    """
 
     def test_data_path_should_return_a_string(self):
-        """
-        Test dataPath()
-        """
         data_path = SpiderFootHelpers.dataPath()
         self.assertIsInstance(data_path, str)
 
     def test_cache_path_should_return_a_string(self):
-        """
-        Test cachePath()
-        """
         cache_path = SpiderFootHelpers.cachePath()
         self.assertIsInstance(cache_path, str)
 
     def test_log_path_should_return_a_string(self):
-        """
-        Test logPath()
-        """
         log_path = SpiderFootHelpers.logPath()
         self.assertIsInstance(log_path, str)
 
     def test_target_type(self):
-        """
-        Test targetType(target)
-        """
         target_type = SpiderFootHelpers.targetTypeFromString("0.0.0.0")
         self.assertEqual('IP_ADDRESS', target_type)
         target_type = SpiderFootHelpers.targetTypeFromString("noreply@spiderfoot.net")
@@ -58,9 +43,6 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertEqual('BITCOIN_ADDRESS', target_type)
 
     def test_target_type_invalid_seed_should_return_none(self):
-        """
-        Test targetType(target)
-        """
         target_type = SpiderFootHelpers.targetTypeFromString(None)
         self.assertEqual(None, target_type)
 
@@ -113,26 +95,17 @@ class TestSpiderFootHelpers(unittest.TestCase):
             SpiderFootHelpers.usernamesFromWordlists(['does not exist'])
 
     def test_buildGraphData_invalid_data_type_should_raise_TypeError(self):
-        """
-        Test buildGraphData(data, flt=list())
-        """
-        invalid_types = [None, "", dict(), int()]
+        invalid_types = [None, "", bytes(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     SpiderFootHelpers.buildGraphData(invalid_type)
 
     def test_buildGraphData_empty_data_should_raise_ValueError(self):
-        """
-        Test buildGraphData(data, flt=list())
-        """
         with self.assertRaises(ValueError):
             SpiderFootHelpers.buildGraphData([])
 
     def test_buildGraphData_data_row_with_invalid_number_of_columns_should_raise_ValueError(self):
-        """
-        Test buildGraphData(data, flt=list())
-        """
         with self.assertRaises(ValueError):
             SpiderFootHelpers.buildGraphData(
                 [
@@ -151,51 +124,33 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertEqual('TBD', 'TBD')
 
     def test_buildGraphGexf_should_return_bytes(self):
-        """
-        Test buildGraphGexf(root, title, data, flt=[])
-        """
         gexf = SpiderFootHelpers.buildGraphGexf('test root', 'test title', [["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "ENTITY", "test", "test", "test"]])
         self.assertIsInstance(gexf, bytes)
 
         self.assertEqual('TBD', 'TBD')
 
     def test_buildGraphJson_should_return_a_string(self):
-        """
-        Test buildGraphJson(root, data, flt=list())
-        """
         json = SpiderFootHelpers.buildGraphJson('test root', [["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "ENTITY", "test", "test", "test"]])
         self.assertIsInstance(json, str)
 
         self.assertEqual('TBD', 'TBD')
 
     def test_dataParentChildToTree_invalid_data_type_should_return_TypeError(self):
-        """
-        Test dataParentChildToTree(data)
-        """
-        invalid_types = [None, "", list(), int()]
+        invalid_types = [None, "", bytes(), list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     SpiderFootHelpers.dataParentChildToTree(invalid_type)
 
     def test_dataParentChildToTree_empty_data_should_return_ValueError(self):
-        """
-        Test dataParentChildToTree(data)
-        """
         with self.assertRaises(ValueError):
             SpiderFootHelpers.dataParentChildToTree(dict())
 
     def test_dataParentChildToTree_should_return_dict(self):
-        """
-        Test dataParentChildToTree(data)
-        """
         tree = SpiderFootHelpers.dataParentChildToTree({"test": {"123": "456"}})
         self.assertIsInstance(tree, dict)
 
     def test_genScanInstanceId_should_return_a_string(self):
-        """
-        Test genScanInstanceId()
-        """
         scan_instance_id = SpiderFootHelpers.genScanInstanceId()
         self.assertIsInstance(scan_instance_id, str)
 
@@ -222,28 +177,28 @@ class TestSpiderFootHelpers(unittest.TestCase):
         )
 
     def test_extractLinksFromHtml_invalid_url_should_raise_TypeError(self):
-        invalid_types = [None,  list(), dict()]
+        invalid_types = [None,  bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     SpiderFootHelpers.extractLinksFromHtml(invalid_type, 'example html content', 'domains')
 
     def test_extractLinksFromHtml_invalid_data_should_raise_TypeError(self):
-        invalid_types = [None, list(), dict()]
+        invalid_types = [None, bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     SpiderFootHelpers.extractLinksFromHtml("", invalid_type, 'domains')
 
     def test_extractLinksFromHtml_invalid_domains_should_return_a_dict(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 parse_links = SpiderFootHelpers.extractLinksFromHtml('url', 'example html content', invalid_type)
                 self.assertIsInstance(parse_links, dict)
 
     def test_extractHashesFromText_should_return_a_list(self):
-        invalid_types = [None, list(), dict(), int()]
+        invalid_types = [None, list(), bytes(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 hashes = SpiderFootHelpers.extractHashesFromText(invalid_type)
@@ -264,7 +219,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIn(("SHA512", sha512_hash), hashes)
 
     def test_valid_email_should_return_a_boolean(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 valid_email = SpiderFootHelpers.validEmail(invalid_type)
@@ -292,7 +247,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertTrue(valid_email)
 
     def test_validPhoneNumber_should_return_a_boolean(self):
-        invalid_types = [None, "", list(), dict(), int()]
+        invalid_types = [None, "", bytes(), list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 valid_phone = SpiderFootHelpers.validPhoneNumber(invalid_type)
@@ -312,7 +267,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertTrue(valid_phone)
 
     def test_validLEI_should_return_a_boolean(self):
-        invalid_types = [None, "", list(), dict(), int()]
+        invalid_types = [None, "", bytes(), list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 valid_phone = SpiderFootHelpers.validLEI(invalid_type)
@@ -351,7 +306,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIn('user@spiderfoot.net', emails)
 
     def test_extractEmailsFromText_invalid_data_should_return_list(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 emails = SpiderFootHelpers.extractEmailsFromText(invalid_type)
@@ -367,7 +322,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertEqual(len(keys), 2)
 
     def test_extractIbansFromText_should_return_a_list(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 ibans = SpiderFootHelpers.extractIbansFromText(invalid_type)
@@ -475,7 +430,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
                 self.assertNotIn(iban, extract_ibans)
 
     def test_extractCreditCardsFromText_should_return_a_list(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 cards = SpiderFootHelpers.extractCreditCardsFromText(invalid_type)
@@ -486,7 +441,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertEqual(["4111111111111111"], cards)
 
     def test_extractUrlsFromText_should_extract_urls_from_string(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 cards = SpiderFootHelpers.extractUrlsFromText(invalid_type)
@@ -498,7 +453,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIn("http://example.spiderfoot.net:1337/path", urls)
 
     def test_extractUrlsFromRobotsTxt_should_return_list(self):
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt(invalid_type)
@@ -513,9 +468,6 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIn("/disallowed/path", robots_txt)
 
     def test_sanitise_input(self):
-        """
-        Test sanitiseInput(self, cmd)
-        """
         safe = SpiderFootHelpers.sanitiseInput("example-string")
         self.assertIsInstance(safe, bool)
         self.assertTrue(safe)
