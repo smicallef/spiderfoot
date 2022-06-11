@@ -22,7 +22,6 @@ import socket
 import ssl
 import sys
 import time
-import traceback
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -253,7 +252,7 @@ class SpiderFoot:
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
     def cachePut(self, label: str, data: str) -> None:
-        """Store data to the cache
+        """Store data to the cache.
 
         Args:
             label (str): Name of the cached data to be used when retrieving the cached data.
@@ -275,7 +274,7 @@ class SpiderFoot:
                 fp.write(data)
 
     def cacheGet(self, label: str, timeoutHrs: int) -> str:
-        """Retreive data from the cache
+        """Retreive data from the cache.
 
         Args:
             label (str): Name of the cached data to retrieve
@@ -285,7 +284,7 @@ class SpiderFoot:
         Returns:
             str: cached data
         """
-        if label is None:
+        if not label:
             return None
 
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
@@ -1320,11 +1319,9 @@ class SpiderFoot:
                 )
             except Exception as e:
                 if noLog:
-                    self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}")
-                    self.debug(traceback.format_exc())
+                    self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}", exc_info=True)
                 else:
-                    self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}")
-                    self.error(traceback.format_exc())
+                    self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}", exc_info=True)
 
                 return result
 
@@ -1366,11 +1363,9 @@ class SpiderFoot:
 
                 except Exception as e:
                     if noLog:
-                        self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}")
-                        self.debug(traceback.format_exc())
+                        self.debug(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}", exc_info=True)
                     else:
-                        self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}")
-                        self.error(traceback.format_exc())
+                        self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}", exc_info=True)
 
                     return result
 
@@ -1409,11 +1404,9 @@ class SpiderFoot:
             return result
         except Exception as e:
             if noLog:
-                self.debug(f"Unexpected exception ({e}) occurred fetching URL: {url}")
-                self.debug(traceback.format_exc())
+                self.debug(f"Unexpected exception ({e}) occurred fetching URL: {url}", exc_info=True)
             else:
-                self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}")
-                self.error(traceback.format_exc())
+                self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}", exc_info=True)
 
             return result
 
@@ -1467,9 +1460,7 @@ class SpiderFoot:
                     result["content"] = res.content
 
         except Exception as e:
-            self.error(f"Unexpected exception ({e}) occurred parsing response for URL: {url}")
-            self.error(traceback.format_exc())
-
+            self.error(f"Unexpected exception ({e}) occurred parsing response for URL: {url}", exc_info=True)
             result['content'] = None
             result['status'] = str(e)
 

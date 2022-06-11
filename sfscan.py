@@ -10,10 +10,8 @@
 # License:      MIT
 # -----------------------------------------------------------------
 import socket
-import sys
 import time
 import queue
-import traceback
 from time import sleep
 from copy import deepcopy
 from contextlib import suppress
@@ -296,7 +294,7 @@ class SpiderFootScanner():
                     mod = getattr(module, modName)()
                     mod.__name__ = modName
                 except Exception:
-                    self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                    self.__sf.error(f"Module {modName} initialization failed", exc_info=True)
                     continue
 
                 # Set up the module options, scan ID, database handle and listeners
@@ -313,7 +311,7 @@ class SpiderFootScanner():
                     mod.setDbh(self.__dbh)
                     mod.setup(self.__sf, self.__modconfig[modName])
                 except Exception:
-                    self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                    self.__sf.error(f"Module {modName} initialization failed", exc_info=True)
                     mod.errorState = True
                     continue
 
@@ -415,11 +413,9 @@ class SpiderFootScanner():
             self.__setStatus("ABORTED", None, time.time() * 1000)
 
         except BaseException as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
             self.__sf.error(
-                f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
-                + "Please report this as a bug: " +
-                + repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+                f"Unhandled exception ({e.__class__.__name__}) encountered during scan. Please report this as a bug",
+                exc_info=True
             )
             self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
@@ -434,7 +430,7 @@ class SpiderFootScanner():
     def runCorrelations(self) -> None:
         """Run correlation rules."""
 
-        self.__sf.status(f"Running {len(self.__config['__correlationrules__'])} correlation rules.")
+        self.__sf.status(f"Running {len(self.__config['__correlationrules__'])} correlation rules on scan {self.__scanId}.")
         ruleset = dict()
         for rule in self.__config['__correlationrules__']:
             ruleset[rule['id']] = rule['rawYaml']
@@ -448,13 +444,12 @@ class SpiderFootScanner():
             TypeError: queue tried to process a malformed event
             AssertionError: scan halted for some reason
         """
+        if not self.eventQueue:
+            return
 
         counter = 0
 
         try:
-            if not self.eventQueue:
-                return
-
             # start one thread for each module
             for mod in self.__moduleInstances.values():
                 mod.start()
