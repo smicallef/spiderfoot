@@ -16,4 +16,4 @@ pytest-flake8==1.1.1
 pytest-mock==3.7.0
 pytest-xdist==2.5.0
 pycodestyle==2.8.0
-responses==0.20.0
+responses==0.21.0
