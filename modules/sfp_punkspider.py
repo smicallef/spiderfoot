@@ -44,6 +44,7 @@ class sfp_punkspider(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -63,29 +64,48 @@ class sfp_punkspider(SpiderFootPlugin):
     def producedEvents(self):
         return ["VULNERABILITY_GENERAL"]
 
-    def query(self, qry):
-        qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
-        url = f"https://api.punkspider.org/api/partial-hash/{qryhash}"
-
+    def query(self, domain: str):
+        domain_hash = hashlib.md5(domain.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
+        url = f"https://api.punkspider.org/api/partial-hash/{domain_hash}"
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
+
+        return self.parseApiResponse(res)
+
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from PunkSpider.")
+            return None
+
+        if res['code'] == '404':
+            self.debug("No results from PunkSpider.")
+            return None
+
+        if res['code'] == '500' or res['code'] == '502' or res['code'] == '503':
+            self.error("PunkSpider service is unavailable.")
+            self.errorState = True
+            return None
+
+        # Catch all non-200 status codes, and presume something went wrong
+        if res['code'] != '200':
+            self.error(f"Unexpected reply from PunkSpider: {res['code']}")
+            self.errorState = True
+            return None
+
         if res['content'] is None:
-            self.debug("No content returned from PunkSpider")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.error(f"Error processing response from PunkSpider: {e}")
+            self.debug(f"Error processing JSON response from PunkSpider: {e}")
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
