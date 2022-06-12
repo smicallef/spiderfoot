@@ -27,14 +27,11 @@ class sfp_psbdmp(SpiderFootPlugin):
             'website': "https://psbdmp.cc/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://psbdmp.cc/"
+                "https://psbdmp.cc/api"
             ],
             'favIcon': "",
-            'logo': "",
-            'description': "Search dump(s) by some word.\n"
-            "Search dump(s) by email.\n"
-            "Search dump(s) by domain.\n"
-            "Search dump(s) from specific date.",
+            'logo': "https://psbdmp.cc/logo.png",
+            'description': "Pastebin dump security monitor."
         }
     }
 
