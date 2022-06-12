@@ -29,6 +29,10 @@ class sfp_s3bucket(SpiderFootPlugin):
         'dataSource': {
             'website': "https://aws.amazon.com/s3/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://a0.awsstatic.com/libra-css/images/site/fav/favicon.ico',
+            'logo': 'https://a0.awsstatic.com/libra-css/images/site/touch-icon-ipad-144-smile.png',
+            'description': "Amazon S3 is cloud object storage with industry-leading scalability, data availability, security, and performance. "
+            "S3 is ideal for data lakes, mobile applications, backup and restore, archival, IoT devices, ML, AI, and analytics."
         }
     }
 
