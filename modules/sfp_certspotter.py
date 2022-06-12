@@ -39,6 +39,10 @@ class sfp_certspotter(SpiderFootPlugin):
                 "Navigate to https://sslmate.com/account/",
                 "The API key is listed under 'API Credentials'",
             ],
+            "favIcon": "https://sslmate.com/assets/@faafe50b54dfb91476c01374043f217c.png",
+            "logo": "https://sslmate.com/assets/@995de4b3fc64525a0c960b570432bcaf.png",
+            "description": "Cert Spotter monitors your domains for expiring, unauthorized, "
+            "and invalid SSL certificates, so you can act before an incident, not after."
         }
     }
 
