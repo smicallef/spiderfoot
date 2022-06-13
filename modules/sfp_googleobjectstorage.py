@@ -28,7 +28,12 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
         'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://cloud.google.com/storage",
-            'model': "FREE_NOAUTH_UNLIMITED"
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://www.gstatic.com/devrel-devsite/prod/v4c1e9ea53f4457a5de1027b4eeb4608c1000a427e20261ba1771dd3fc26d5df8/cloud/images/favicons/onecloud/favicon.ico',
+            'logo': 'https://www.gstatic.com/devrel-devsite/prod/v4c1e9ea53f4457a5de1027b4eeb4608c1000a427e20261ba1771dd3fc26d5df8/cloud/images/cloud-logo.svg',
+            'description': "Object storage for companies of all sizes."
+            "Secure, durable, and with low latency. Store any amount of data."
+            "Retrieve it as often as you'd like."
         }
     }
 
