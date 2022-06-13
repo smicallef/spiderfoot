@@ -187,7 +187,6 @@ class sfp_fraudguard(SpiderFootPlugin):
             else:
                 max_netblock = self.opts['maxnetblock']
 
-            max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
                 self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
@@ -246,7 +245,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             if eventName == 'NETBLOCK_OWNER':
                 pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(pevent)
-            if eventName == 'NETBLOCKV6_OWNER':
+            elif eventName == 'NETBLOCKV6_OWNER':
                 pevent = SpiderFootEvent("IPV6_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(pevent)
             elif eventName == 'NETBLOCK_MEMBER':
