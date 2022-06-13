@@ -120,6 +120,17 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(search_results, list)
 
     @unittest.skip("todo")
+    def test_scan_correlations_export(self):
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        scan_id = ""
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scancorrelationsexport(scan_id, "csv", "excel")
+        self.assertIsInstance(search_results, bytes)
+        search_results = sfwebui.scancorrelationsexport(scan_id, "xlxs", "excel")
+        self.assertIsInstance(search_results, bytes)
+
+    @unittest.skip("todo")
     def test_scan_event_result_export_should_return_bytes(self):
         """
         Test scaneventresultexport(self, id, type, filetype="csv", dialect="excel")

@@ -367,6 +367,77 @@ class SpiderFootWebUi:
         return fileobj.getvalue().encode('utf-8')
 
     @cherrypy.expose
+    def scancorrelationsexport(self: 'SpiderFootWebUi', id: str, filetype: str = "csv", dialect: str = "excel") -> str:
+        """Get scan correlation data in CSV or Excel format.
+
+        Args:
+            id (str): scan ID
+            filetype (str): type of file ("xlsx|excel" or "csv")
+            dialect (str): CSV dialect (default: excel)
+
+        Returns:
+            str: results in CSV or Excel format
+        """
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            scaninfo = dbh.scanInstanceGet(id)
+            scan_name = scaninfo[0]
+        except Exception:
+            return json.dumps(["ERROR", "Could not retrieve info for scan."]).encode('utf-8')
+
+        try:
+            correlations = dbh.scanCorrelationList(id)
+        except Exception:
+            return json.dumps(["ERROR", "Could not retrieve correlations for scan."]).encode('utf-8')
+
+        headings = ["Rule Name", "Correlation", "Risk", "Description"]
+
+        if filetype.lower() in ["xlsx", "excel"]:
+            rows = []
+            for row in correlations:
+                correlation = row[1]
+                rule_name = row[2]
+                rule_risk = row[3]
+                rule_description = row[5]
+                rows.append([rule_name, correlation, rule_risk, rule_description])
+
+            if scan_name:
+                fname = f"{scan_name}-SpiderFoot-correlations.xlxs"
+            else:
+                fname = "SpiderFoot-correlations.xlxs"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
+            cherrypy.response.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return self.buildExcel(rows, headings, sheetNameIndex=0)
+
+        elif filetype.lower() == 'csv':
+            fileobj = StringIO()
+            parser = csv.writer(fileobj, dialect=dialect)
+            parser.writerow(headings)
+
+            for row in correlations:
+                correlation = row[1]
+                rule_name = row[2]
+                rule_risk = row[3]
+                rule_description = row[5]
+                parser.writerow([rule_name, correlation, rule_risk, rule_description])
+
+            if scan_name:
+                fname = f"{scan_name}-SpiderFoot-correlations.csv"
+            else:
+                fname = "SpiderFoot-correlations.csv"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
+            cherrypy.response.headers['Content-Type'] = "application/csv"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return fileobj.getvalue().encode('utf-8')
+
+        else:
+            return self.error("Invalid export filetype.")
+
+    @cherrypy.expose
     def scaneventresultexport(self: 'SpiderFootWebUi', id: str, type: str, filetype: str = "csv", dialect: str = "excel") -> str:
         """Get scan event result data in CSV or Excel format
 
