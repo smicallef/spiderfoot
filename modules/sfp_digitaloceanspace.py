@@ -28,7 +28,11 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://www.digitalocean.com/products/spaces/",
-            'model': "FREE_NOAUTH_UNLIMITED"
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://www.digitalocean.com/_next/static/media/favicon-32x32.b7ef9ede.png',
+            'logo': 'https://www.digitalocean.com/_next/static/media/logo.87a8f3b8.svg',
+            'description': "Store and deliver vast amounts of content."
+            "S3-compatible object storage with a built-in CDN that makes scaling easy, reliable, and affordable."
         }
     }
 
