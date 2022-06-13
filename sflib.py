@@ -1102,17 +1102,6 @@ class SpiderFoot:
 
         return ret
 
-    def urlEncodeUnicode(self, url: str) -> str:
-        """Encode a string as unicode.
-
-        Args:
-            url (str): URL to encode
-
-        Returns:
-            str: unicode string
-        """
-        return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), url)
-
     def getSession(self) -> 'requests.sessions.Session':
         """Return requests session object.
 
