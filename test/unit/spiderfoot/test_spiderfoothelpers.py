@@ -159,11 +159,11 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIsInstance(parse_links, dict)
         self.assertFalse(parse_links)
 
-    def test_extractLinksFromHtml_argument_data_containing_links_should_return_a_dict_of_urls(self):
+    def test_extractLinksFromHtml_argument_data_containing_malformed_html_with_links_should_return_a_dict_of_urls(self):
         url = 'http://spiderfoot.net/'
         parse_links = SpiderFootHelpers.extractLinksFromHtml(
             url,
-            '<html>example html content<a href="http://spiderfoot.net/path"></a><a href="/relative-path"></a></html>',
+            '<!DOCTYPE html><html lang="en-US"><meta charset="UTF-8" /><link rel="pingback" href="http://spiderfoot.net/xmlrpc.php">example html content<unclosed tag><a href="http://spiderfoot.net/path"></a><a href="/relative-path"></a></html>',
             'domains'
         )
         self.assertIsInstance(parse_links, dict)
@@ -171,6 +171,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertEqual(
             parse_links,
             {
+                'http://spiderfoot.net/xmlrpc.php': {'source': url, 'original': 'http://spiderfoot.net/xmlrpc.php'},
                 'http://spiderfoot.net/path': {'source': url, 'original': 'http://spiderfoot.net/path'},
                 'http://spiderfoot.net/relative-path': {'source': url, 'original': '/relative-path'},
             }
