@@ -770,7 +770,7 @@ class SpiderFootHelpers():
 
         try:
             for t in list(tags.keys()):
-                for lnk in BeautifulSoup(data, features="xml", parse_only=SoupStrainer(t)).find_all(t):
+                for lnk in BeautifulSoup(data, features="lxml", parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
                         links.append(lnk[tags[t]])
         except BaseException:
