@@ -26,6 +26,30 @@ class TestModuleBitcoinAbuse(unittest.TestCase):
         module = sfp_bitcoinabuse()
         self.assertIsInstance(module.producedEvents(), list)
 
+    def test_parseApiResponse_nonfatal_http_response_code_should_not_set_errorState(self):
+        sf = SpiderFoot(self.default_options)
+
+        http_codes = ["200", "404"]
+        for code in http_codes:
+            with self.subTest(code=code):
+                module = sfp_bitcoinabuse()
+                module.setup(sf, dict())
+                result = module.parseApiResponse({"code": code, "content": None})
+                self.assertIsNone(result)
+                self.assertFalse(module.errorState)
+
+    def test_parseApiResponse_fatal_http_response_error_code_should_set_errorState(self):
+        sf = SpiderFoot(self.default_options)
+
+        http_codes = ["401", "402", "403", "429", "500", "502", "503"]
+        for code in http_codes:
+            with self.subTest(code=code):
+                module = sfp_bitcoinabuse()
+                module.setup(sf, dict())
+                result = module.parseApiResponse({"code": code, "content": None})
+                self.assertIsNone(result)
+                self.assertTrue(module.errorState)
+
     def test_handleEvent_no_api_key_should_set_errorState(self):
         sf = SpiderFoot(self.default_options)
 
