@@ -285,12 +285,10 @@ Port Scanner - TCP|Scans for commonly open TCP ports on Internet-facing systems.
 [Pulsedive](https://pulsedive.com/)|Obtain information from Pulsedive's API.|Tiered API
 [PunkSpider](https://punkspider.io/)|Check the QOMPLX punkspider.io service to see if the target is listed as vulnerable.|Free API
 [Quad9](https://quad9.net/)|Check if a host would be blocked by Quad9 DNS.|Free API
-[Recon.dev](https://recon.dev)|Search Recon.dev for subdomains.|Free API
 [ReverseWhois](https://www.reversewhois.io/)|Reverse Whois lookups using reversewhois.io.|Free API
 [RIPE](https://www.ripe.net/)|Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.|Free API
 [RiskIQ](https://community.riskiq.com/)|Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.|Tiered API
 [Robtex](https://www.robtex.com/)|Search Robtex.com for hosts sharing the same IP.|Free API
-[Scylla](https://scylla.so/)|Gather breach data from Scylla API.|Free API
 [searchcode](https://searchcode.com/)|Search searchcode for code repositories mentioning the target domain.|Free API
 [SecurityTrails](https://securitytrails.com/)|Obtain Passive DNS and other information from SecurityTrails|Tiered API
 [Seon](https://seon.io/)|Queries seon.io to gather intelligence about IP Addresses, email addresses, and phone numbers|Commercial API
@@ -307,7 +305,6 @@ Social Network Identifier|Identify presence on social media networks such as Lin
 [Spamhaus Zen](https://www.spamhaus.org/)|Check if a netblock or IP address is in the Spamhaus Zen database.|Free API
 [spur.us](https://spur.us/)|Obtain information about any malicious activities involving IP addresses found|Commercial API
 [SpyOnWeb](http://spyonweb.com/)|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|Tiered API
-[Spyse](https://spyse.com)|Search Spyse.com Internet assets registry for information about domains, IP addresses, host info, potential vulnerabilities, passive DNS, etc.|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|Internal
 [StackOverflow](https://www.stackexchange.com)|Search StackOverflow for any mentions of a target domain. Returns potentially related information.|Tiered API
 [Steven Black Hosts](https://github.com/StevenBlack/hosts)|Check if a domain is malicious (malware or adware) according to Steven Black Hosts list.|Free API
