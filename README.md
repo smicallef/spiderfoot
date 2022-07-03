@@ -266,7 +266,6 @@ Junk File Finder|Looks for old/temporary and other similar files.|Internal
 [Onionsearchengine.com](https://as.onionsearchengine.com)|Search Tor onionsearchengine.com for mentions of the target domain.|Free API
 [Onyphe](https://www.onyphe.io)|Check Onyphe data (threat list, geo-location, pastries, vulnerabilities)  about a given IP.|Tiered API
 [Open Bug Bounty](https://www.openbugbounty.org/)|Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.|Free API
-[Open Passive DNS Database](http://pdns.daloo.de/)|Obtain passive DNS information from pdns.daloo.de Open passive DNS database.|Free API
 [OpenCorporates](https://opencorporates.com)|Look up company information from OpenCorporates.|Tiered API
 [OpenDNS](https://www.opendns.com/)|Check if a host would be blocked by OpenDNS.|Free API
 [OpenNIC DNS](https://www.opennic.org/)|Resolves host names in the OpenNIC alternative DNS system.|Free API
