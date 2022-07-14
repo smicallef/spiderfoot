@@ -182,7 +182,6 @@ Cross-Referencer|Identify whether other domains are associated ('Affiliates') of
 [CRXcavator](https://crxcavator.io/)|Search CRXcavator for Chrome extensions.|Free API
 Custom Threat Feed|Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.|Internal
 [CyberCrime-Tracker.net](https://cybercrime-tracker.net/)|Check if a host/domain or IP address is malicious according to CyberCrime-Tracker.net.|Free API
-[Darksearch](https://darksearch.io/)|Search the Darksearch.io Tor search engine for mentions of the target domain.|Free API
 [Debounce](https://debounce.io/)|Check whether an email is disposable|Free API
 [Dehashed](https://www.dehashed.com/)|Gather breach data from Dehashed API.|Commercial API
 [Digital Ocean Space Finder](https://www.digitalocean.com/products/spaces/)|Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents.|Free API
