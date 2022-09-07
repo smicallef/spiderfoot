@@ -298,7 +298,7 @@ class SpiderFoot:
             return None
 
         if cache_stat.st_mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-            with open(cacheFile, "r") as fp:
+            with open(cacheFile, "r", encoding='utf-8') as fp:
                 return fp.read()
 
         return None
