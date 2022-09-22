@@ -120,6 +120,10 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         except Exception:
             sock.close()
             return
+        else:
+            if not self.portResults[peer]:
+                # No banner, but port is open
+                self.portResults[peer] = True
 
         sock.close()
 
