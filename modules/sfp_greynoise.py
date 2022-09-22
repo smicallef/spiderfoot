@@ -7,7 +7,7 @@
 # Updated By:   Brad Chiappetta, GreyNoise
 #
 # Created:      20/11/2018
-# Updated:      15-Nov-2021
+# Updated:      31-Aug-2022
 # Copyright:    (c) Steve Micallef
 # Licence:      MIT
 # -------------------------------------------------------------------------------
@@ -31,15 +31,15 @@ class sfp_greynoise(SpiderFootPlugin):
         "dataSource": {
             "website": "https://greynoise.io/",
             "model": "FREE_AUTH_LIMITED",
-            "references": ["https://docs.greynoise.io/", "https://www.greynoise.io/viz/signup"],
+            "references": ["https://docs.greynoise.io/", "https://viz.greynoise.io/signup"],
             "apiKeyInstructions": [
-                "Visit https://www.greynoise.io/viz/signup",
+                "Visit https://viz.greynoise.io/signup",
                 "Sign up for a free account",
-                "Navigate to https://www.greynoise.io/viz/account/",
+                "Navigate to https://viz.greynoise.io/account",
                 "The API key is listed under 'API Key'",
             ],
-            "favIcon": "https://www.greynoise.io/favicon.ico",
-            "logo": "https://www.greynoise.io/_nuxt/img/greynoise-logo.dccd59d.png",
+            "favIcon": "https://viz.greynoise.io/favicon.ico",
+            "logo": "https://viz.greynoise.io/_nuxt/img/greynoise-logo.dccd59d.png",
             "description": "At GreyNoise, we collect and analyze untargeted, widespread, "
             "and opportunistic scan and attack activity that reaches every server directly connected to the Internet. "
             "Mass scanners (such as Shodan and Censys), search engines, bots, worms, "
@@ -119,7 +119,7 @@ class sfp_greynoise(SpiderFootPlugin):
             ip_response = self.sf.fetchUrl(
                 gn_context_url + qry,
                 timeout=self.opts["_fetchtimeout"],
-                useragent="greynoise-spiderfoot-v1.1.0",
+                useragent="greynoise-spiderfoot-v1.2.0",
                 headers=headers,
             )
             if ip_response["code"] == "200":
@@ -127,7 +127,7 @@ class sfp_greynoise(SpiderFootPlugin):
             riot_response = self.sf.fetchUrl(
                 gn_riot_url + qry,
                 timeout=self.opts["_fetchtimeout"],
-                useragent="greynoise-spiderfoot-v1.1.0",
+                useragent="greynoise-spiderfoot-v1.2.0",
                 headers=headers,
             )
             if riot_response["code"] in ["200", "404"]:
@@ -272,7 +272,7 @@ class sfp_greynoise(SpiderFootPlugin):
                             descr += "\n - " + "Scans For CVEs: " + ", ".join(rec.get("cve"))
                         if rec.get("raw_data") and not (rec.get("tags") or ret.get("cve")):
                             descr += "\n - " + "Raw data: " + str(rec.get("raw_data"))
-                        descr += "\n<SFURL>https://www.greynoise.io/viz/ip/" + rec.get("ip") + "</SFURL>"
+                        descr += "\n<SFURL>https://viz.greynoise.io/ip/" + rec.get("ip") + "</SFURL>"
                         e = SpiderFootEvent(evtType, descr, self.__name__, event)
                         self.notifyListeners(e)
 
@@ -322,7 +322,7 @@ class sfp_greynoise(SpiderFootPlugin):
                         descr += "\n - " + "Scans For CVEs: " + ", ".join(ret.get("cve"))
                     if ret.get("raw_data") and not (ret.get("tags") or ret.get("cve")):
                         descr += "\n - " + "Raw data: " + str(ret.get("raw_data"))
-                    descr += "\n<SFURL>https://www.greynoise.io/viz/ip/" + ret.get("ip") + "</SFURL>"
+                    descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
                     e = SpiderFootEvent(evtType, descr, self.__name__, event)
                     self.notifyListeners(e)
 
@@ -348,7 +348,7 @@ class sfp_greynoise(SpiderFootPlugin):
                         descr += "\n - " + "Provider Name: " + ret.get("name")
                     if ret.get("category"):
                         descr += "\n - " + "Provider Category: " + ret.get("category")
-                    descr += "\n<SFURL>https://www.greynoise.io/viz/ip/" + ret.get("ip") + "</SFURL>"
+                    descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
                     e = SpiderFootEvent(evtType, descr, self.__name__, event)
                     self.notifyListeners(e)
 
