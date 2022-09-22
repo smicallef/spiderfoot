@@ -8,7 +8,7 @@
 #
 # Created:     14/07/2019
 # Copyright:   (c) Steve Micallef 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random
@@ -23,12 +23,16 @@ class sfp_azureblobstorage(SpiderFootPlugin):
     meta = {
         'name': "Azure Blob Finder",
         'summary': "Search for potential Azure blobs associated with the target and attempt to list their contents.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
-            'model': "FREE_NOAUTH_UNLIMITED"
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://azurecomcdn.azureedge.net/cvt-4fd6fa9ffb60246fd6387e4b34f89dc454cdf3df85d2b5d3215846066fceb0b6/images/icon/favicon.ico',
+            'logo': 'https://azurecomcdn.azureedge.net/cvt-4fd6fa9ffb60246fd6387e4b34f89dc454cdf3df85d2b5d3215846066fceb0b6/images/icon/favicon.ico',
+            'description': "Massively scalable and secure object storage for cloud-native workloads,"
+            "archives, data lakes, high-performance computing and machine learning."
         }
     }
 
@@ -83,7 +87,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            self.sf.info("Spawning thread to check bucket: " + site)
+            self.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + tname,
                                       target=self.checkSite, args=(site,)))
@@ -138,7 +142,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".blob.core.windows.net" in eventData:

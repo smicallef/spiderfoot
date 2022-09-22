@@ -7,18 +7,19 @@
 #
 # Created:     2020-08-27
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_c99(SpiderFootPlugin):
     meta = {
         "name": "C99",
         "summary": "Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Footprint", "Passive", "Investigate"],
         "categories": ["Search Engines"],
         "dataSource": {
@@ -102,24 +103,24 @@ class sfp_c99(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on C99 API")
+            self.error("Reaching rate limit on C99 API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on C99 API")
+            self.error("Invalid request or API key on C99 API")
             self.errorState = True
             return None
 
         if res["content"] is None:
-            self.sf.info(f"No C99 info found for {queryData}")
+            self.info(f"No C99 info found for {queryData}")
             return None
 
         try:
             info = json.loads(res["content"])
         except Exception as e:
             self.errorState = True
-            self.sf.error(f"Error processing response from C99: {e}")
+            self.error(f"Error processing response from C99: {e}")
             return None
 
         if not info.get('success', False):
@@ -132,13 +133,12 @@ class sfp_c99(SpiderFootPlugin):
         self.notifyListeners(evt)
 
     def emitPhoneData(self, phoneData, event):
-        self.emitRawRirData(phoneData, event)
-
         provider = phoneData.get("provider")
         carrier = phoneData.get("carrier")
         city = phoneData.get("city")
         countryName = phoneData.get("country_name")
         region = phoneData.get("region")
+        found = False
 
         if provider or carrier:
             evt = SpiderFootEvent(
@@ -148,6 +148,7 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+            found = True
 
         if city or countryName or region:
             evt = SpiderFootEvent(
@@ -157,25 +158,33 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+            found = True
+
+        if found:
+            self.emitRawRirData(phoneData, event)
 
     def emitSubDomainData(self, subDomainData, event):
-        self.emitRawRirData(subDomainData, event)
+        found = False
 
         for subDomainElem in subDomainData:
             if self.checkForStop():
-                return None
+                return
 
             subDomain = subDomainElem.get("subdomain", "").strip()
 
             if subDomain:
                 self.emitHostname(subDomain, event)
+                found = True
+
+        if found:
+            self.emitRawRirData(subDomainData, event)
 
     def emitDomainHistoryData(self, domainHistoryData, event):
-        self.emitRawRirData(domainHistoryData, event)
+        found = False
 
         for domainHistoryElem in domainHistoryData:
             if self.checkForStop():
-                return None
+                return
 
             ip = domainHistoryElem.get("ip_address")
 
@@ -187,10 +196,12 @@ class sfp_c99(SpiderFootPlugin):
                     event,
                 )
                 self.notifyListeners(evt)
+                found = True
+
+        if found:
+            self.emitRawRirData(domainHistoryData, event)
 
     def emitIpToSkypeData(self, data, event):
-        self.emitRawRirData(data, event)
-
         skype = data.get("skype")
 
         if skype:
@@ -210,22 +221,26 @@ class sfp_c99(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
 
-    def emitIpToDomainsData(self, data, event):
-        self.emitRawRirData(data, event)
+            self.emitRawRirData(data, event)
 
+    def emitIpToDomainsData(self, data, event):
         domains = data.get("domains")
+        found = False
 
         if isinstance(domains, list):
             for domain in domains:
                 if self.checkForStop():
-                    return None
+                    return
 
                 domain = domain.strip()
                 if domain:
                     self.emitHostname(domain, event)
+                    found = True
+
+        if found:
+            self.emitRawRirData(data, event)
 
     def emitProxyDetectionData(self, data, event):
-        self.emitRawRirData(data, event)
         isProxy = data.get("proxy")
 
         if isProxy:
@@ -236,13 +251,15 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+            self.emitRawRirData(data, event)
 
     def emitGeoIPData(self, data, event):
-        self.emitRawRirData(data, event)
+        found = False
 
         hostName = data.get("hostname", "").strip()
         if hostName:
             self.emitHostname(hostName, event)
+            found = True
 
         record = data.get("records")
 
@@ -263,6 +280,7 @@ class sfp_c99(SpiderFootPlugin):
                     event,
                 )
                 self.notifyListeners(evt)
+                found = True
 
             if latitude and longitude:
                 evt = SpiderFootEvent(
@@ -272,6 +290,7 @@ class sfp_c99(SpiderFootPlugin):
                     event,
                 )
                 self.notifyListeners(evt)
+                found = True
 
             if region or country or city or postalCode:
                 evt = SpiderFootEvent(
@@ -281,12 +300,15 @@ class sfp_c99(SpiderFootPlugin):
                     event,
                 )
                 self.notifyListeners(evt)
+                found = True
+
+        if found:
+            self.emitRawRirData(data, event)
 
     def emitSkypeResolverData(self, data, event):
-        self.emitRawRirData(data, event)
-
         ip = data.get("ip")
         ips = data.get("ips")
+        found = False
 
         if ip and ip not in ips:
             evt = SpiderFootEvent(
@@ -296,11 +318,13 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+            found = True
 
         if isinstance(ips, list):
+            found = True
             for ipElem in ips:
                 if self.checkForStop():
-                    return None
+                    return
 
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
@@ -310,8 +334,10 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
+        if found:
+            self.emitRawRirData(data, event)
+
     def emitWafDetectorData(self, data, event):
-        self.emitRawRirData(data, event)
         firewall = data.get("result")
 
         if firewall:
@@ -322,15 +348,14 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+            self.emitRawRirData(data, event)
 
     def emitHostname(self, data, event):
         if not self.sf.validHost(data, self.opts['_internettlds']):
-            return None
+            return
 
-        if self.opts["verify"] and not self.sf.resolveHost(data):
-            self.sf.debug(
-                "Host {data} could not be resolved."
-            )
+        if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
+            self.debug(f"Host {data} could not be resolved.")
             if self.getTarget().matches(data):
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 self.notifyListeners(evt)
@@ -346,12 +371,12 @@ class sfp_c99(SpiderFootPlugin):
 
         if self.cohostcount < self.opts['maxcohost']:
             if self.opts["verify"] and not self.sf.validateIP(data, event.data):
-                self.sf.debug("Host no longer resolves to our IP.")
+                self.debug("Host no longer resolves to our IP.")
                 return
 
             if not self.opts["cohostsamedomain"]:
                 if self.getTarget().matches(data, includeParents=True):
-                    self.sf.debug(
+                    self.debug(
                         f"Skipping {data} because it is on the same domain."
                     )
                     return
@@ -368,19 +393,19 @@ class sfp_c99(SpiderFootPlugin):
 
         # Once we are in this state, return immediately.
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_c99, but did not set an API key!")
+            self.error("You enabled sfp_c99, but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 

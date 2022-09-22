@@ -11,31 +11,30 @@ class SpiderFootTarget():
         targetAliases (list): target aliases
     """
 
-    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
+    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "NETBLOCKV6_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME",
                    "BITCOIN_ADDRESS"]
     _targetType = None
     _targetValue = None
     _targetAliases = list()
 
-    def __init__(self, targetValue, typeName):
+    def __init__(self, targetValue: str, typeName: str) -> None:
         """Initialize SpiderFoot target.
 
         Args:
             targetValue (str): target value
             typeName (str): target type
         """
-
         self.targetType = typeName
         self.targetValue = targetValue
         self.targetAliases = list()
 
     @property
-    def targetType(self):
+    def targetType(self) -> str:
         return self._targetType
 
     @targetType.setter
-    def targetType(self, targetType):
+    def targetType(self, targetType: str) -> None:
         if not isinstance(targetType, str):
             raise TypeError(f"targetType is {type(targetType)}; expected str()")
 
@@ -45,11 +44,11 @@ class SpiderFootTarget():
         self._targetType = targetType
 
     @property
-    def targetValue(self):
+    def targetValue(self) -> str:
         return self._targetValue
 
     @targetValue.setter
-    def targetValue(self, targetValue):
+    def targetValue(self, targetValue: str) -> None:
         if not isinstance(targetValue, str):
             raise TypeError(f"targetValue is {type(targetValue)}; expected str()")
         if not targetValue:
@@ -58,14 +57,14 @@ class SpiderFootTarget():
         self._targetValue = targetValue
 
     @property
-    def targetAliases(self):
+    def targetAliases(self) -> list:
         return self._targetAliases
 
     @targetAliases.setter
-    def targetAliases(self, value):
+    def targetAliases(self, value: list) -> None:
         self._targetAliases = value
 
-    def setAlias(self, value, typeName):
+    def setAlias(self, value: str, typeName: str) -> None:
         """Specify other hostnames, IPs, etc. that are aliases for this target.
 
         For instance, if the user searched for an ASN, a module
@@ -74,8 +73,8 @@ class SpiderFootTarget():
         might supply the hostname as an alias.
 
         Args:
-            value (str): TBD
-            typeName (str): TBD
+            value (str): Target alias value
+            typeName (str): Target alias data type
         """
         if not isinstance(value, (str, bytes)):
             return
@@ -86,36 +85,37 @@ class SpiderFootTarget():
         if not isinstance(typeName, (str, bytes)):
             return
 
-        if {'type': typeName, 'value': value} in self.targetAliases:
+        if not typeName:
             return
 
-        self.targetAliases.append(
-            {'type': typeName, 'value': value.lower()}
-        )
+        alias = {'type': typeName, 'value': value.lower()}
 
-    def _getEquivalents(self, typeName):
-        """TBD
+        if alias in self.targetAliases:
+            return
+
+        self.targetAliases.append(alias)
+
+    def _getEquivalents(self, typeName: str) -> list:
+        """Get all aliases of the specfied target data type.
 
         Args:
-            typeName (str): event type
+            typeName (str): Target data type
 
         Returns:
             list: target aliases
         """
-
         ret = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
         return ret
 
-    def getNames(self):
+    def getNames(self) -> list:
         """Get all domains associated with the target.
 
         Returns:
             list: domains associated with the target
         """
-
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
@@ -129,13 +129,12 @@ class SpiderFootTarget():
 
         return names
 
-    def getAddresses(self):
-        """Get all IP Subnets or IP Addresses associated with the target.
+    def getAddresses(self) -> list:
+        """Get all IP subnet or IP address aliases associated with the target.
 
         Returns:
-            list: TBD
+            list: List of IP subnets and addresses
         """
-
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
             e.append(self.targetValue)
@@ -146,9 +145,8 @@ class SpiderFootTarget():
 
         return e
 
-    def matches(self, value, includeParents=False, includeChildren=True):
-        """Check whether the supplied value is "tightly" related
-        to the original target.
+    def matches(self, value: str, includeParents: bool = False, includeChildren: bool = True) -> bool:
+        """Check whether the supplied value is "tightly" related to the original target.
 
         Tightly in this case means:
 
@@ -193,7 +191,7 @@ class SpiderFootTarget():
             if value in self.getAddresses():
                 return True
 
-            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_OWNER"]:
+            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_OWNER", "NETBLOCKV6_OWNER"]:
                 try:
                     if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                         return True

@@ -7,7 +7,7 @@
 #
 # Created:     2020-04-21
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -21,7 +21,7 @@ class sfp_zetalytics(SpiderFootPlugin):
     meta = {
         "name": "Zetalytics",
         "summary": "Query the Zetalytics database for hosts on your target domain(s).",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
         "dataSource": {
@@ -46,7 +46,6 @@ class sfp_zetalytics(SpiderFootPlugin):
     }
 
     results = None
-
     errorState = False
 
     def setup(self, sfc, userOpts=None):
@@ -71,17 +70,20 @@ class sfp_zetalytics(SpiderFootPlugin):
     def verify_emit_internet_name(self, hostname, pevent):
         if f"INTERNET_NAME:{hostname}" in self.results:
             return False
+
         if not self.getTarget().matches(hostname):
             return False
-        if self.opts["verify"] and not self.sf.resolveHost(hostname):
-            self.sf.debug(f"Host {hostname} could not be resolved")
+
+        if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
+            self.debug(f"Host {hostname} could not be resolved")
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
             return True
-        else:
-            self.emit("INTERNET_NAME", hostname, pevent)
-            if self.sf.isDomain(hostname, self.opts["_internettlds"]):
-                self.emit("DOMAIN_NAME", hostname, pevent)
-            return True
+
+        self.emit("INTERNET_NAME", hostname, pevent)
+        if self.sf.isDomain(hostname, self.opts["_internettlds"]):
+            self.emit("DOMAIN_NAME", hostname, pevent)
+
+        return True
 
     def request(self, path, params):
         params = {**params, "token": self.opts["api_key"]}
@@ -93,13 +95,13 @@ class sfp_zetalytics(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info(f"No Zetalytics info found for {path}?{qs}")
+            self.info(f"No Zetalytics info found for {path}?{qs}")
             return None
 
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Zetalytics: {e}")
+            self.error(f"Error processing JSON response from Zetalytics: {e}")
         return None
 
     def query_subdomains(self, domain):
@@ -115,56 +117,77 @@ class sfp_zetalytics(SpiderFootPlugin):
         return self.request("/email_address", {"q": email_address})
 
     def generate_subdomains_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results", [])
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results", [])
-            if isinstance(results, list):
-                for r in results:
-                    qname = r.get("qname")
-                    if not isinstance(qname, str):
-                        continue
-                    if self.verify_emit_internet_name(qname, pevent):
-                        events_generated = True
-        return events_generated
+        for r in results:
+            qname = r.get("qname")
+            if not isinstance(qname, str):
+                continue
+            if self.verify_emit_internet_name(qname, pevent):
+                events_generated = True
+
+        return events_generated # noqa R504
 
     def generate_hostname_events(self, data, pevent):
-        events_generated = False
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         hostnames = set()
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance("results", list):
-                for r in results:
-                    qname = r.get("qname")
-                    if isinstance("qname", str):
-                        hostnames.add(qname)
+        for r in results:
+            qname = r.get("qname")
+            if isinstance("qname", str):
+                hostnames.add(qname)
+
+        events_generated = False
         for hostname in hostnames:
             if self.verify_emit_internet_name(hostname, pevent):
                 events_generated = True
-        return events_generated
+
+        return events_generated # noqa R504
 
     def generate_email_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance(results, list):
-                for r in results:
-                    domain = r.get("d")
-                    if isinstance(domain, str):
-                        self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
-                        events_generated = True
-        return events_generated
+        for r in results:
+            domain = r.get("d")
+            if isinstance(domain, str):
+                self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
+                events_generated = True
+
+        return events_generated # noqa R504
 
     def generate_email_domain_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results")
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results")
-            if isinstance(results, list):
-                for r in results:
-                    domain = r.get("d")
-                    if isinstance(domain, str):
-                        self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
-                        events_generated = True
-        return events_generated
+        for r in results:
+            domain = r.get("d")
+            if isinstance(domain, str):
+                self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
+                events_generated = True
+
+        return events_generated # noqa R504
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -175,45 +198,37 @@ class sfp_zetalytics(SpiderFootPlugin):
             return
 
         if self.checkForStop():
-            return None
+            return
 
-        events_generated = False
-
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
-        if "{}:{}".format(eventName, eventData) in self.results:
-            self.sf.debug(f"Skipping {eventName}:{eventData}, already checked.")
+        if f"{eventName}:{eventData}" in self.results:
+            self.debug(f"Skipping {eventName}:{eventData}, already checked.")
             return
-        self.results["{}:{}".format(eventName, eventData)] = True
+        self.results[f"{eventName}:{eventData}"] = True
 
         if eventName == "INTERNET_NAME":
             data = self.query_hostname(eventData)
             if self.generate_hostname_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
         elif eventName == "DOMAIN_NAME":
             data = self.query_subdomains(eventData)
             if self.generate_subdomains_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
             data = self.query_email_domain(eventData)
             if self.generate_email_domain_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
         elif eventName == "EMAILADDR":
             data = self.query_email_address(eventData)
             if self.generate_email_events(data, event):
-                events_generated = True
-
-        else:
-            return
-
-        if events_generated and not self.checkForStop():
-            self.emit("RAW_RIR_DATA", json.dumps(data), event)
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)

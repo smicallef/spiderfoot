@@ -1,0 +1,11 @@
+#!/bin/bash
+# Run acceptance tests
+#
+# Must be run with ./test/acceptance as current working directory.
+#
+# Requires SpiderFoot web server to be running on default port.
+#
+# Requires robotframework:
+#   cd test/acceptance; pip3 install -r requirements.txt
+
+time robot --outputdir results scan.robot

@@ -1,192 +1,137 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_fortinet
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Purpose:      Check if an IP address is malicious according to FortiGuard Antispam.
 #
 # Author:       steve@binarypool.com
 #
 # Created:     14/12/2013
 # Copyright:   (c) Steve Micallef, 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-import re
-
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-
-malchecks = {
-    'Fortiguard Threat Lookup': {
-        'id': '_fortiguard',
-        'checks': ['ip'],
-        'url': 'https://fortiguard.com/search?q={0}&engine=8',
-        'badregex': ['.*Your signature is blacklisted.*'],
-        'goodregex': ['.*Your signature is not blacklisted.*']
-    }
-}
 
 
 class sfp_fortinet(SpiderFootPlugin):
 
     meta = {
-        'name': "Fortiguard.com",
-        'summary': "Check if an IP is malicious according to Fortiguard.com.",
-        'flags': [""],
+        'name': "FortiGuard Antispam",
+        'summary': "Check if an IP address is malicious according to FortiGuard Antispam.",
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "https://fortiguard.com/",
+            'website': "https://www.fortiguard.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://docs.fortinet.com/document/fortimail/6.0.4/rest-api-reference",
-                "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/d8d8ade1-2fd8-11e9-94bf-00505692583a/FortiMail_REST_API_Reference.pdf"
+                "https://www.fortiguard.com/learnmore#as",
             ],
-            'favIcon': "https://fortiguard.com/favicon.ico",
-            'logo': "https://fortiguard.com/static/images/Fortinet-logo%20white.png?v=880",
-            'description': " Fortinet empowers its customers with intelligent, seamless protection across the "
-            "expanding attack surface and the power to take on ever-increasing performance requirements of "
-            "the borderless network—today and into the future. "
-            "Only the Fortinet Security Fabric architecture can deliver security without compromise "
-            "to address the most critical security challenges, whether in networked, application, cloud, or mobile environments.",
+            'favIcon': "https://www.fortiguard.com/static/images/favicon.ico",
+            'logo': "https://www.fortiguard.com/static/images/Fortinet-logo%20white.png?v=880",
+            'description': "FortiGuard Antispam provides a comprehensive and multi-layered approach to detect and filter spam processed by organizations."
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?"
     }
 
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
-
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
-    # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "IPV6_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+        ]
 
-    # Check the regexps to see whether the content indicates maliciousness
-    def contentMalicious(self, content, goodregex, badregex):
-        # First, check for the bad indicators
-        if len(badregex) > 0:
-            for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad against bad regex: " + rx)
-                    return True
+    def query(self, ip):
+        if not ip:
+            return None
 
-        # Finally, check for good indicators
-        if len(goodregex) > 0:
-            for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good againt good regex: " + rx)
-                    return False
+        res = self.sf.fetchUrl(
+            f"https://www.fortiguard.com/search?q={ip}&engine=8",
+            timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent'],
+        )
 
-        # If nothing was matched, reply None
-        self.sf.debug("Neither good nor bad, unknown.")
-        return None
+        if res['code'] != "200":
+            self.error(f"Unexpected HTTP response code {res['code']} from FortiGuard Antispam.")
+            self.errorState = True
+            return None
 
-    # Look up 'query' type sources
-    def resourceQuery(self, id, target, targetType):
-        self.sf.debug(f"Querying {id} for maliciousness of {target}")
+        if res['content'] is None:
+            self.error("Received no content from FortiGuard Antispam")
+            self.errorState = True
+            return None
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid:
-                url = str(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        return res['content']
 
-                if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target))
-                    return None
-
-                if self.contentMalicious(res['content'], malchecks[check]['goodregex'], malchecks[check]['badregex']):
-                    return url.format(target)
-
-        return None
-
-    def lookupItem(self, resourceId, itemType, target):
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug(f"Checking maliciousness of {target} ({itemType}) with: {cid}")
-                return self.resourceQuery(cid, target, itemType)
-
-        return None
-
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        if self.errorState:
+            return
 
         self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
-        if eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts.get('checkaffiliates', False):
-            return None
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
+            malicious_type = 'MALICIOUS_IPADDR'
+            blacklist_type = 'BLACKLISTED_IPADDR'
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
+            if not self.opts.get('checkaffiliates', False):
+                return
+            malicious_type = 'MALICIOUS_AFFILIATE_IPADDR'
+            blacklist_type = 'BLACKLISTED_AFFILIATE_IPADDR'
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
+        data = self.query(eventData)
 
-            if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                typeId = 'ip'
-                if eventName == 'IP_ADDRESS':
-                    evtType = 'MALICIOUS_IPADDR'
-                else:
-                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        if not data:
+            return
 
-            if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                typeId = 'asn'
-                evtType = 'MALICIOUS_ASN'
+        if "Your signature is on the blocklist" not in data:
+            return
 
-            if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                             'AFFILIATE_INTERNET_NAME']:
-                typeId = 'domain'
-                if eventName == "INTERNET_NAME":
-                    evtType = "MALICIOUS_INTERNET_NAME"
-                if eventName == 'AFFILIATE_INTERNET_NAME':
-                    evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-                if eventName == 'CO_HOSTED_SITE':
-                    evtType = 'MALICIOUS_COHOST'
+        url = f"https://www.fortiguard.com/search?q={eventData}&engine=8"
+        text = f"FortiGuard Antispam [{eventData}]\n<SFURL>{url}</SFURL>"
 
-            url = self.lookupItem(cid, typeId, eventData)
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
-            if self.checkForStop():
-                return None
-
-            # Notify other modules of what you've found
-            if url is not None:
-                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
-                evt = SpiderFootEvent(evtType, text, self.__name__, event)
-                self.notifyListeners(evt)
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_fortinet class

@@ -7,7 +7,7 @@
 #
 # Created:     16/05/2020
 # Copyright:   (c) Steve Micallef, 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
@@ -20,7 +20,7 @@ class sfp_greensnow(SpiderFootPlugin):
     meta = {
         'name': "Greensnow",
         'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -39,7 +39,6 @@ class sfp_greensnow(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18,
@@ -47,7 +46,6 @@ class sfp_greensnow(SpiderFootPlugin):
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliate IP addresses?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -66,15 +64,25 @@ class sfp_greensnow(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
-                "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
+        return [
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
+            'NETBLOCK_OWNER',
+            'NETBLOCK_MEMBER',
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+        ]
 
     def query(self, qry, targetType):
         cid = "_greensnow"
@@ -87,12 +95,12 @@ class sfp_greensnow(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url)
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -104,66 +112,74 @@ class sfp_greensnow(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug("%s found within netblock/subnet %s in greensnow.co list." % (ip, qry))
-                        return url
+                        self.debug(f"{ip} found within netblock/subnet {qry} in greensnow.co list.")
+                        return f"https://greensnow.co/view/{ip}"
                 except Exception as e:
-                    self.sf.debug("Error encountered parsing: %s" % e)
+                    self.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug("%s found in greensnow.co list." % qry)
-                    return url
+                    self.debug(f"{qry} found in greensnow.co list.")
+                    return f"https://greensnow.co/view/{ip}"
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
-                return None
+                return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
-                return None
+                return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
-            return None
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
-        self.sf.debug("Checking maliciousness of %s with greensnow.co" % eventData)
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with greensnow.co")
 
         url = self.query(eventData, targetType)
 
         if not url:
-            return None
+            return
 
-        text = "greensnow.co [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
-        evt = SpiderFootEvent(evtType, text, self.__name__, event)
+        text = f"greensnow.co [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_greensnow class

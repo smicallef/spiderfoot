@@ -1,0 +1,25 @@
+id: strong_similardomain_crossref
+version: 1
+meta:
+  name: Similar domain with strong relationship to the target
+  description: >
+    A similar domain was found to be referenced by the target, and
+    references back, indicating a strong relationship.
+
+    Strong affiliates indicate potential targets that should be
+    included in the scope of scanning to ensure more complete coverage.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: module
+        value: sfp_crossref
+      - method: exact
+        field: type
+        value: AFFILIATE_INTERNET_NAME
+      - method: exact
+        field: source.type
+        value: SIMILARDOMAIN
+aggregation:
+  field: data
+headline: "Similar domain with strong target relationship: {data}"

@@ -7,7 +7,7 @@
 #
 # Created:     21/07/2015
 # Copyright:   (c) Steve Micallef 2015
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -20,7 +20,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
     meta = {
         'name': "DuckDuckGo",
         'summary': "Query DuckDuckGo's API for descriptive information about your target.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -77,11 +77,11 @@ class sfp_duckduckgo(SpiderFootPlugin):
         if self.opts['affiliatedomains'] and "AFFILIATE_" in eventName:
             eventData = self.sf.hostDomain(eventData, self.opts['_internettlds'])
             if not eventData:
-                return None
+                return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
@@ -90,18 +90,18 @@ class sfp_duckduckgo(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}")
-            return None
+            self.error(f"Unable to fetch {url}")
+            return
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}")
-            return None
+            self.error(f"Error processing JSON response from DuckDuckGo: {e}")
+            return
 
         if not ret['Heading']:
-            self.sf.debug(f"No DuckDuckGo information for {eventData}")
-            return None
+            self.debug(f"No DuckDuckGo information for {eventData}")
+            return
 
         # Submit the DuckDuckGo results for analysis
         evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
@@ -127,13 +127,13 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
             for topic in related_topics:
                 if not isinstance(topic, dict):
-                    self.sf.debug("No category text found from DuckDuckGo.")
+                    self.debug("No category text found from DuckDuckGo.")
                     continue
 
                 category = topic.get('Text')
 
                 if not category:
-                    self.sf.debug("No category text found from DuckDuckGo.")
+                    self.debug("No category text found from DuckDuckGo.")
                     continue
 
                 evt = SpiderFootEvent(event_type, category, self.__name__, event)

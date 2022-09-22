@@ -8,14 +8,15 @@
 #
 # Created:     12/11/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
-import os.path
+from pathlib import Path
+from shutil import which
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
@@ -46,7 +47,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it must be in your PATH.",
-        'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set."
+        'dnstwistpath': "Path to the where the dnstwist.py file lives. Optional."
     }
 
     results = None
@@ -77,67 +78,76 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
-        # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already scanned.")
+            self.debug("Skipping " + eventData + " as already scanned.")
             return
 
         self.results[eventData] = True
 
-        if not self.opts['dnstwistpath']:
-            self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
-            self.errorState = True
-            return
-
-        # Normalize path
-        if self.opts['dnstwistpath'].endswith('dnstwist.py'):
-            exe = self.opts['dnstwistpath']
-        elif self.opts['dnstwistpath'].endswith('/'):
-            exe = self.opts['dnstwistpath'] + "dnstwist.py"
+        dnstwistLocation = which('dnstwist')
+        if dnstwistLocation and Path(dnstwistLocation).is_file():
+            cmd = ['dnstwist']
         else:
-            exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+            if not self.opts['dnstwistpath']:
+                self.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
+                self.errorState = True
+                return
 
-        # If tool is not found, abort
-        if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe)
-            self.errorState = True
-            return
+            # Normalize path
+            if self.opts['dnstwistpath'].endswith('dnstwist.py'):
+                exe = self.opts['dnstwistpath']
+            elif self.opts['dnstwistpath'].endswith('/'):
+                exe = self.opts['dnstwistpath'] + "dnstwist.py"
+            else:
+                exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+
+            # If tool is not found, abort
+            if not Path(exe).is_file():
+                self.error("File does not exist: " + exe)
+                self.errorState = True
+                return
+
+            cmd = [self.opts['pythonpath'], exe]
 
         # Sanitize domain name.
-        if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.")
+        if not SpiderFootHelpers.sanitiseInput(eventData):
+            self.error("Invalid input, refusing to run.")
             return
 
         try:
-            p = Popen([self.opts['pythonpath'], exe, "-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen(cmd + ["-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
             if p.returncode == 0:
                 content = stdout
             else:
-                self.sf.error("Unable to read DNSTwist content.")
-                self.sf.debug("Error running DNSTwist: " + stderr + ", " + stdout)
+                self.error("Unable to read DNSTwist content.")
+                self.debug("Error running DNSTwist: " + stderr + ", " + stdout)
                 return
 
             # For each line in output, generate a SIMILARDOMAIN event
             try:
                 j = json.loads(content)
                 for r in j:
-                    if self.getTarget().matches(r['domain-name']):
+                    # Support different formats from DNStwist versions
+                    domain = r.get('domain-name')
+                    if not domain:
+                        domain = r.get('domain')
+                    if self.getTarget().matches(domain):
                         continue
 
-                    evt = SpiderFootEvent("SIMILARDOMAIN", r['domain-name'],
+                    evt = SpiderFootEvent("SIMILARDOMAIN", domain,
                                           self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.sf.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
+                self.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
                 return
         except Exception as e:
-            self.sf.error("Unable to run DNSTwist: " + str(e))
+            self.error("Unable to run DNSTwist: " + str(e))
             return
 
 # End of sfp_tool_dnstwist class

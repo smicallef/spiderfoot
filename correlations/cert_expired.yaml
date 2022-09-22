@@ -1,0 +1,18 @@
+id: cert_expired
+version: 1
+meta:
+  name: Expired SSL certificate found
+  description: >
+    A host was found with an expired SSL certificate. This may
+    pose a risk to the security of the service exposed and/or
+    cause connecting services to fail due to being unable to
+    verify the certificate.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: SSL_CERTIFICATE_EXPIRED
+aggregation:
+  field: source.data
+headline: "Expired SSL certificate found: {source.data}"

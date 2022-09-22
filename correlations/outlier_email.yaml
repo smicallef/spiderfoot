@@ -1,0 +1,20 @@
+id: outlier_email
+version: 1
+meta:
+  name: Outlier email address found
+  description: >
+    An email address that appeared in 10% or less of the
+    total email addresses found. Outliers can often reveal
+    entities that are rare and therefore interesting.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: EMAILADDR
+aggregation:
+  field: data
+analysis:
+  - method: outlier
+    maximum_percent: 10
+headline: "Outlier email address found: {data}"

@@ -1,0 +1,35 @@
+id: name_only_from_pasteleak_site
+version: 1
+meta:
+  name: Human name only from paste/leak site
+  description: >
+    A human name was found mentioned in a paste/leak site but
+    nowhere else.
+
+    Since the name was not found anywhere else, this may indicate
+    that the name is in some way special, perhaps not intended to
+    be publicly exposed/used or targeted in an attack.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      - method: exact
+        field: source.type
+        value:
+          - LEAKSITE_CONTENT
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      - method: exact
+        field: source.type
+        value:
+          - not LEAKSITE_CONTENT
+aggregation:
+  field: data
+analysis:
+  - method: first_collection_only
+    field: data
+headline: "Human name found only in paste/leak site: {data}"

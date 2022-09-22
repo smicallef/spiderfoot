@@ -1,0 +1,33 @@
+id: egress_ip_from_wikipedia
+version: 1
+meta:
+  name: Wikipedia page edit from target-owned network
+  description: >
+    A Wikipedia page edit was found to come from an IP address
+    within a network owned by the target. That IP address is
+    highly likely to be that of a VPN server or office egress
+    proxy/gateway.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: NETBLOCK_OWNER
+  - collect:
+      - method: exact
+        field: type
+        value: IP_ADDRESS
+      - method: exact
+        field: child.type
+        value: WIKIPEDIA_PAGE_EDIT
+aggregation:
+  field: data
+analysis:
+  - method: match_all_to_first_collection
+    field: data
+    # Could also be 'contains' or 'exact'
+    match_method: subnet
+headline:
+  text: "Wikipedia edit from IP within target-owned network: {data}"
+  publish_collections:
+    - 1

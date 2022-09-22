@@ -6,7 +6,7 @@
 #
 # Created:     2018-10-15
 # Copyright:   (c) bcoles 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -19,7 +19,7 @@ class sfp_slideshare(SpiderFootPlugin):
     meta = {
         'name': "SlideShare",
         'summary': "Gather name and location from SlideShare profiles.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {
@@ -73,23 +73,23 @@ class sfp_slideshare(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.results[eventData] = True
+
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
-            return None
+            self.debug(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            return
 
-        if not network == "SlideShare":
-            self.sf.debug(f"Skipping social network profile, {url}, as not a SlideShare profile")
-            return None
+        if network != "SlideShare":
+            self.debug(f"Skipping social network profile, {url}, as not a SlideShare profile")
+            return
 
         res = self.sf.fetchUrl(
             url,
@@ -98,14 +98,14 @@ class sfp_slideshare(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            return None
+            return
 
         # Check if the profile is valid and extract name
         human_name = self.extractMeta('slideshare:name', res['content'])
 
         if not human_name:
-            self.sf.debug(f"{url} is not a valid SlideShare profile")
-            return None
+            self.debug(f"{url} is not a valid SlideShare profile")
+            return
 
         e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {human_name[0]}", self.__name__, event)
         self.notifyListeners(e)
@@ -114,11 +114,11 @@ class sfp_slideshare(SpiderFootPlugin):
         location = self.extractMeta('slideshare:location', res['content'])
 
         if not location:
-            return None
+            return
 
         if len(location[0]) < 3 or len(location[0]) > 100:
-            self.sf.debug("Skipping likely invalid location.")
-            return None
+            self.debug("Skipping likely invalid location.")
+            return
 
         e = SpiderFootEvent("GEOINFO", location[0], self.__name__, event)
         self.notifyListeners(e)

@@ -1,48 +1,35 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_cybercrimetracker
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Name:        sfp_cybercrimetracker
+# Purpose:     Check if a host/domain or IP address is malicious according to cybercrime-tracker.net.
 #
 # Author:       steve@binarypool.com
 #
 # Created:     14/12/2013
 # Copyright:   (c) Steve Micallef, 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-import re
-
-from netaddr import IPAddress, IPNetwork
-
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-
-malchecks = {
-    'cybercrime-tracker.net Malicious Submissions': {
-        'id': '_cybercrime',
-        'checks': ['ip', 'domain'],
-        'url': 'http://cybercrime-tracker.net/all.php',
-        'regex': '^{0}[/$]'
-    }
-}
 
 
 class sfp_cybercrimetracker(SpiderFootPlugin):
 
     meta = {
-        'name': "cybercrime-tracker.net",
-        'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
-        'flags': [""],
+        'name': "CyberCrime-Tracker.net",
+        'summary': "Check if a host/domain or IP address is malicious according to CyberCrime-Tracker.net.",
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "http://cybercrime-tracker.net/",
+            'website': "https://cybercrime-tracker.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://cybercrime-tracker.net/tools.php",
-                "http://cybercrime-tracker.net/about.php"
+                "https://cybercrime-tracker.net/about.php"
             ],
-            'favIcon': "http://cybercrime-tracker.net/favicon.ico",
-            'logo': "http://cybercrime-tracker.net/favicon.ico",
+            'favIcon': "https://cybercrime-tracker.net/favicon.ico",
+            'logo': "https://cybercrime-tracker.net/favicon.ico",
             'description': "CyberCrime is a C&C panel tracker, in other words, "
             "it lists the administration interfaces of certain in-the-wild botnets.",
         }
@@ -62,175 +49,161 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         'cacheperiod': "Hours to cache list data before re-fetching."
     }
 
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
-
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
-    # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS",
-                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
-                "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "IP_ADDRESS",
+            "AFFILIATE_INTERNET_NAME",
+            "AFFILIATE_IPADDR",
+            "CO_HOSTED_SITE"
+        ]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_COHOST"
+        ]
 
-    # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
-        targetDom = ''
-        # Get the base domain if we're supplied a domain
-        if targetType == "domain":
-            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
-            if not targetDom:
-                return None
+    def queryBlacklist(self, target):
+        blacklist = self.retrieveBlacklist()
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid:
-                data = dict()
-                url = malchecks[check]['url']
-                data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
-                if data['content'] is None:
-                    data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                    if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url)
-                        return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+        if not blacklist:
+            return False
 
-                # If we're looking at netblocks
-                if targetType == "netblock":
-                    iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to
-                    # build a list of IP.
-                    # Cycle through each IP and check if it's in the netblock.
-                    if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
-                        pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
-                        for line in data['content'].split('\n'):
-                            grp = re.findall(pat, line)
-                            if len(grp) > 0:
-                                # self.sf.debug("Adding " + grp[0] + " to list.")
-                                iplist.append(grp[0])
-                    else:
-                        iplist = data['content'].split('\n')
+        if target.lower() in blacklist:
+            self.debug(f"Host name {target} found in CyberCrime-Tracker.net blacklist.")
+            return True
 
-                    for ip in iplist:
-                        if len(ip) < 8 or ip.startswith("#"):
-                            continue
-                        ip = ip.strip()
+        return False
 
-                        try:
-                            if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
-                                return url
-                        except Exception as e:
-                            self.sf.debug(f"Error encountered parsing: {e}")
-                            continue
+    def retrieveBlacklist(self):
+        blacklist = self.sf.cacheGet('cybercrime-tracker', 24)
 
-                    return None
+        if blacklist is not None:
+            return self.parseBlacklist(blacklist)
 
-                # If we're looking at hostnames/domains/IPs
-                if 'regex' not in malchecks[check]:
-                    for line in data['content'].split('\n'):
-                        if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
-                else:
-                    # Check for the domain and the hostname
-                    try:
-                        rxDom = str(malchecks[check]['regex']).format(targetDom)
-                        rxTgt = str(malchecks[check]['regex']).format(target)
-                        for line in data['content'].split('\n'):
-                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                    re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                                return url
-                    except Exception as e:
-                        self.sf.debug("Error encountered parsing 2: " + str(e))
-                        continue
-        return None
+        res = self.sf.fetchUrl(
+            "https://cybercrime-tracker.net/all.php",
+            timeout=10,
+            useragent=self.opts['_useragent'],
+        )
 
-    def lookupItem(self, resourceId, itemType, target):
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
-                return self.resourceList(cid, target, itemType)
+        if res['code'] != "200":
+            self.error(f"Unexpected HTTP response code {res['code']} from CyberCrime-Tracker.net.")
+            self.errorState = True
+            return None
 
-        return None
+        if res['content'] is None:
+            self.error("Received no content from CyberCrime-Tracker.net")
+            self.errorState = True
+            return None
 
-    # Handle events sent to this module
+        self.sf.cachePut("cybercrime-tracker", res['content'])
+
+        return self.parseBlacklist(res['content'])
+
+    def parseBlacklist(self, blacklist):
+        """Parse plaintext blacklist
+
+        Args:
+            blacklist (str): plaintext blacklist from CyberCrime-Tracker.net
+
+        Returns:
+            list: list of blacklisted IP addresses and host names
+        """
+        hosts = list()
+
+        if not blacklist:
+            return hosts
+
+        for line in blacklist.split('\n'):
+            if not line:
+                continue
+            if line.startswith('#'):
+                continue
+
+            # Note: URL parsing and validation with sf.validHost() is too slow to use here
+            host = line.split("/")[0]
+            if not host:
+                continue
+            if "." not in host:
+                continue
+            hosts.append(host.split(':')[0])
+
+        return hosts
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        if self.errorState:
+            return
 
         self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
-        if eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts.get('checkaffiliates', False):
-            return None
+        if eventName == 'IP_ADDRESS':
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
+        elif eventName == 'AFFILIATE_IPADDR':
+            if not self.opts.get('checkaffiliates', False):
+                return
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+        elif eventName == "INTERNET_NAME":
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            if not self.opts.get('checkaffiliates', False):
+                return
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            if not self.opts.get('checkcohosts', False):
+                return
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
+        self.debug(f"Checking maliciousness of {eventData} ({eventName}) with CyberCrime-Tracker.net")
 
-            if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                typeId = 'ip'
-                if eventName == 'IP_ADDRESS':
-                    evtType = 'MALICIOUS_IPADDR'
-                else:
-                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        if not self.queryBlacklist(eventData):
+            return
 
-            if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                typeId = 'asn'
-                evtType = 'MALICIOUS_ASN'
+        url = f"https://cybercrime-tracker.net/index.php?search={eventData}"
+        text = f"CyberCrime-Tracker.net Malicious Submissions [{eventData}]\n<SFURL>{url}</SFURL>"
 
-            if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                             'AFFILIATE_INTERNET_NAME']:
-                typeId = 'domain'
-                if eventName == "INTERNET_NAME":
-                    evtType = "MALICIOUS_INTERNET_NAME"
-                if eventName == 'AFFILIATE_INTERNET_NAME':
-                    evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-                if eventName == 'CO_HOSTED_SITE':
-                    evtType = 'MALICIOUS_COHOST'
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
-            url = self.lookupItem(cid, typeId, eventData)
-
-            if self.checkForStop():
-                return None
-
-            # Notify other modules of what you've found
-            if url is not None:
-                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
-                evt = SpiderFootEvent(evtType, text, self.__name__, event)
-                self.notifyListeners(evt)
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_cybercrimetracker class

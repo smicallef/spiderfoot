@@ -1,0 +1,38 @@
+id: host_only_from_certificatetransparency
+version: 1
+meta:
+  name: Hostname only from certificate transparency
+  description: >
+    A hostname was found from certificate transparency but
+    nowhere else.
+
+    Since the host was not found anywhere else, this may indicate
+    that the host is in some way special, perhaps not intended to
+    be publicly exposed/used.
+  risk: LOW
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      - method: exact
+        field: module
+        value:
+          - sfp_crt
+          - sfp_certspotter
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      - method: exact
+        field: module
+        value:
+          - not sfp_crt
+          - not sfp_certspotter
+          - not sfp_dnsresolve
+aggregation:
+  field: data
+analysis:
+  - method: first_collection_only
+    field: data
+headline: "Host found only in certificate transparency: {data}"

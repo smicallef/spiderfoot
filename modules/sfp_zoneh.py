@@ -8,7 +8,7 @@
 #
 # Created:     09/01/2014
 # Copyright:   (c) Steve Micallef, 2014
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -21,7 +21,7 @@ class sfp_zoneh(SpiderFootPlugin):
     meta = {
         'name': "Zone-H Defacement Check",
         'summary': "Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -74,8 +74,8 @@ class sfp_zoneh(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS",
-                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+        return ["INTERNET_NAME", "IP_ADDRESS", "IPV6_ADDRESS",
+                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS",
                 "CO_HOSTED_SITE"]
 
     # What events this module produces
@@ -90,7 +90,7 @@ class sfp_zoneh(SpiderFootPlugin):
         grps = re.findall(r"<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
             if target in m[0]:
-                self.sf.info("Found zoneh site: " + m[0])
+                self.info("Found zoneh site: " + m[0])
                 return m[0] + "\n<SFURL>" + m[1] + "</SFURL>"
 
         return False
@@ -101,36 +101,36 @@ class sfp_zoneh(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return
-        if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts['checkaffiliates']:
+
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return
 
-        evtType = 'DEFACED_INTERNET_NAME'
-
-        if eventName == 'IP_ADDRESS':
+        if eventName == 'INTERNET_NAME':
+            evtType = 'DEFACED_INTERNET_NAME'
+        elif eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'DEFACED_IPADDR'
-
-        if eventName == 'CO_HOSTED_SITE':
+        elif eventName == 'CO_HOSTED_SITE':
             evtType = 'DEFACED_COHOST'
-
-        if eventName == 'AFFILIATE_INTERNET_NAME':
+        elif eventName == 'AFFILIATE_INTERNET_NAME':
             evtType = 'DEFACED_AFFILIATE_INTERNET_NAME'
-
-        if eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'DEFACED_AFFILIATE_IPADDR'
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
         if self.checkForStop():
             return
@@ -140,12 +140,12 @@ class sfp_zoneh(SpiderFootPlugin):
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.error("Unable to fetch " + url)
                 self.errorState = True
                 return
-            else:
-                self.sf.cachePut("sfzoneh", data['content'])
-                content = data['content']
+
+            self.sf.cachePut("sfzoneh", data['content'])
+            content = data['content']
 
         ret = self.lookupItem(eventData, content)
         if ret:

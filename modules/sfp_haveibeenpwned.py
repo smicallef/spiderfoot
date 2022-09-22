@@ -6,10 +6,11 @@
 #
 # Created:     19/02/2015
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
+import re
 import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -30,7 +31,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 "https://haveibeenpwned.com/API/v3",
                 "https://haveibeenpwned.com/FAQs"
             ],
-            'apiKeyInstructions': [],
+            'apiKeyInstructions': [
+                "Visit https://haveibeenpwned.com/API/Key",
+                "Register an account",
+                "Visit https://haveibeenpwned.com/API/Key",
+            ],
             'favIcon': "https://haveibeenpwned.com/favicon.ico",
             'logo': "https://haveibeenpwned.com/favicon.ico",
             'description': "Check if you have an account that has been compromised in a data breach.",
@@ -66,14 +71,13 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR"]
+        return ["EMAILADDR", "PHONE_NUMBER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR_COMPROMISED"]
+        return ["EMAILADDR_COMPROMISED", "PHONE_NUMBER_COMPROMISED", "LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def query(self, qry):
-        ret = None
         if self.opts['api_key']:
             version = "3"
         else:
@@ -104,17 +108,54 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             retry += 1
 
             if res['code'] == "401":
-                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.")
+                self.error("Failed to authenticate key with HaveIBeenPwned.com.")
                 self.errorState = True
                 return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
-            return None
+            self.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
 
-        return ret
+        return None
+
+    def queryPaste(self, qry):
+        url = f"https://haveibeenpwned.com/api/v3/pasteaccount/{qry}"
+        headers = {
+            'Accept': "application/json",
+            'hibp-api-key': self.opts['api_key']
+        }
+
+        retry = 0
+
+        while retry < 2:
+            # https://haveibeenpwned.com/API/v2#RateLimiting
+            time.sleep(1.5)
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                                   useragent="SpiderFoot", headers=headers)
+
+            if res['code'] == "200":
+                break
+
+            if res['code'] == "404":
+                return None
+
+            if res['code'] == "429":
+                # Back off a little further
+                time.sleep(2)
+            retry += 1
+
+            if res['code'] == "401":
+                self.error("Failed to authenticate key with HaveIBeenPwned.com.")
+                self.errorState = True
+                return None
+
+        try:
+            return json.loads(res['content'])
+        except Exception as e:
+            self.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -123,35 +164,90 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        if self.opts['api_key'] == "":
+            self.error("You enabled sfp_haveibeenpwned but did not set an API key!")
+            self.errorState = True
+            return
 
-        # Don't look up stuff twice
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         data = self.query(eventData)
-        if data is None:
-            return None
-
-        for n in data:
-            try:
-                if not self.opts['api_key']:
-                    site = n["Title"]
-                else:
+        if data is not None:
+            for n in data:
+                try:
                     site = n["Name"]
+                except Exception as e:
+                    self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                    continue
+
+                # Notify other modules of what you've found
+                if eventName == 'EMAILADDR':
+                    e = SpiderFootEvent("EMAILADDR_COMPROMISED", eventData + " [" + site + "]",
+                                        self.__name__, event)
+                else:
+                    e = SpiderFootEvent("PHONE_NUMBER_COMPROMISED", eventData + " [" + site + "]",
+                                        self.__name__, event)
+                self.notifyListeners(e)
+
+        # This API endpoint doesn't support phone numbers
+        if eventName == "PHONE_NUMBER":
+            return
+        pasteData = self.queryPaste(eventData)
+        if pasteData is None:
+            return
+
+        sites = {
+            "Pastebin": "https://pastebin.com/",
+            "Pastie": "http://pastie.org/p/",
+            "Slexy": "https://slexy.org/view/",
+            "Ghostbin": "https://ghostbin.com/paste/",
+            "JustPaste": "https://justpaste.it/",
+        }
+        links = set()
+        for n in pasteData:
+            try:
+                source = n.get("Source")
+                site = source
+                if source in sites:
+                    site = f"{sites[n.get('Source')]}{n.get('Id')}"
+                    links.add(site)
+
             except Exception as e:
-                self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 
-            evt = eventName + "_COMPROMISED"
-            # Notify other modules of what you've found
-            e = SpiderFootEvent(evt, eventData + " [" + site + "]",
-                                self.__name__, event)
-            self.notifyListeners(e)
+        for link in links:
+            try:
+                self.debug("Found a link: " + link)
+
+                if self.checkForStop():
+                    return
+
+                res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+                if res['content'] is None:
+                    self.debug(f"Ignoring {link} as no data returned")
+                    continue
+
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                    continue
+
+                evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
+                self.notifyListeners(evt1)
+
+                evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
+                self.notifyListeners(evt2)
+
+            except Exception as e:
+                self.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                continue
 
 # End of sfp_haveibeenpwned class

@@ -6,7 +6,7 @@
 #
 # Created:     2018-10-17
 # Copyright:   (c) bcoles 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -19,7 +19,7 @@ class sfp_twitter(SpiderFootPlugin):
     meta = {
         'name': "Twitter",
         'summary': "Gather name and location from Twitter profiles.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {
@@ -69,18 +69,18 @@ class sfp_twitter(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            self.debug(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
-        if not network == "Twitter":
-            self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
+        if network != "Twitter":
+            self.debug(f"Skipping social network profile, {url}, as not a Twitter profile")
             return
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -89,13 +89,13 @@ class sfp_twitter(SpiderFootPlugin):
         if res['content'] is None:
             return
 
-        if not res['code'] == "200":
-            self.sf.debug(url + " is not a valid Twitter profile")
+        if res['code'] != "200":
+            self.debug(url + " is not a valid Twitter profile")
             return
 
         # Retrieve name
         human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',
-                                res['content'], re.MULTILINE)
+                                str(res['content']), re.MULTILINE)
 
         if human_name:
             e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0],
@@ -107,7 +107,7 @@ class sfp_twitter(SpiderFootPlugin):
 
         if location:
             if len(location[0]) < 3 or len(location[0]) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.debug("Skipping likely invalid location.")
             else:
                 e = SpiderFootEvent("GEOINFO", location[0], self.__name__, event)
                 self.notifyListeners(e)

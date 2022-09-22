@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_hashes
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and identifying hashes
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
 # Created:     24/01/2020
 # Copyright:   (c) Steve Micallef 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_hashes(SpiderFootPlugin):
@@ -19,7 +19,7 @@ class sfp_hashes(SpiderFootPlugin):
     meta = {
         'name': "Hash Extractor",
         'summary': "Identify MD5 and SHA hashes in web content, files and more.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -57,13 +57,13 @@ class sfp_hashes(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        hashes = self.sf.parseHashes(eventData)
+        hashes = SpiderFootHelpers.extractHashesFromText(eventData)
         for hashtup in hashes:
             hashalgo, hashval = hashtup
 
-            evt = SpiderFootEvent("HASH", "[" + hashalgo + "] " + hashval, self.__name__, event)
+            evt = SpiderFootEvent("HASH", f"[{hashalgo}] {hashval}", self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:

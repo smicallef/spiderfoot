@@ -8,7 +8,7 @@
 #
 # Created:     2020-10-05
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 import json
 
@@ -20,7 +20,7 @@ class sfp_textmagic(SpiderFootPlugin):
     meta = {
         "name": "TextMagic",
         "summary": "Obtain phone number type from TextMagic API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Search Engines"],
         "dataSource": {
@@ -86,7 +86,7 @@ class sfp_textmagic(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def queryPhoneNumber(self, qry):
         headers = {
@@ -106,13 +106,13 @@ class sfp_textmagic(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.sf.info(f"No TextMagic info found for {qry}")
+            self.info(f"No TextMagic info found for {qry}")
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from TextMagic: {e}")
+            self.error(f"Error processing JSON response from TextMagic: {e}")
 
         return None
 
@@ -122,16 +122,16 @@ class sfp_textmagic(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "" or self.opts["api_key_username"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Username/Key!"
             )
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 

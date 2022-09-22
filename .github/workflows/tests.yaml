@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          pip install -r test/requirements.txt
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python Flake8 violations
+          flake8 . --count --show-source --statistics
+      - name: Test with pytest
+        run: |
+          python -m pytest -n auto --dist loadfile --ignore=test/integration/modules/ --durations=5 --cov-report term --cov=. .
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false
+          verbose: true

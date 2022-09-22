@@ -11,7 +11,7 @@
 #
 # Created:     2020-03-14
 # Copyright:   (c) bcoles 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -27,7 +27,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
     meta = {
         'name': "DNSGrep",
         'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {
@@ -92,20 +92,19 @@ class sfp_dnsgrep(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.info("No results found for " + qry)
+            self.info("No results found for " + qry)
             return None
 
         if res['code'] != '200':
-            self.sf.debug("Error retrieving search results for " + qry)
+            self.debug("Error retrieving search results for " + qry)
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
-            return None
+            self.error(f"Error processing JSON response from DNSGrep: {e}")
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -114,16 +113,16 @@ class sfp_dnsgrep(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 
         if data is None:
-            self.sf.info("No DNS records found for " + eventData)
-            return None
+            self.info("No DNS records found for " + eventData)
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -161,8 +160,8 @@ class sfp_dnsgrep(SpiderFootPlugin):
 
             evt_type = "INTERNET_NAME"
 
-            if self.opts["dns_resolve"] and not self.sf.resolveHost(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
+            if self.opts["dns_resolve"] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                self.debug(f"Host {domain} could not be resolved")
                 evt_type += "_UNRESOLVED"
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

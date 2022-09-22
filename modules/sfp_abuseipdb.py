@@ -7,7 +7,7 @@
 #
 # Created:     06/09/2018
 # Copyright:   (c) Steve Micallef, 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -81,11 +81,15 @@ class sfp_abuseipdb(SpiderFootPlugin):
     def watchedEvents(self):
         return [
             "IP_ADDRESS",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
         ]
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
             "MALICIOUS_IPADDR",
             "MALICIOUS_AFFILIATE_IPADDR",
         ]
@@ -117,22 +121,22 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error(f"Error retrieving search results, code {res['code']}")
+            self.error(f"Error retrieving search results, code {res['code']}")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
@@ -151,18 +155,21 @@ class sfp_abuseipdb(SpiderFootPlugin):
         """
         ips = list()
 
+        if not blacklist:
+            return ips
+
         for ip in blacklist.split('\n'):
             ip = ip.strip()
             if ip.startswith('#'):
                 continue
-            if not self.sf.validIP(ip):
+            if not self.sf.validIP(ip) and not self.sf.validIP6(ip):
                 continue
             ips.append(ip)
 
         return ips
 
     def queryIpAddress(self, ip):
-        """Query API for an IP address.
+        """Query API for an IPv4 or IPv6 address.
 
         Note: Currently unused.
 
@@ -193,24 +200,24 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         return None
@@ -247,24 +254,24 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB")
+            self.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB")
+            self.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB")
+            self.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
 
         return None
 
@@ -273,32 +280,35 @@ class sfp_abuseipdb(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates'):
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return
 
-        if eventName == 'IP_ADDRESS':
-            evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
+            blacklist_type = "BLACKLISTED_IPADDR"
+            malicious_type = 'MALICIOUS_IPADDR'
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
+            malicious_type = 'MALICIOUS_AFFILIATE_IPADDR'
         else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
             return
 
-        self.sf.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
+        self.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
 
         blacklist = self.queryBlacklist()
 
@@ -308,12 +318,20 @@ class sfp_abuseipdb(SpiderFootPlugin):
         if eventData not in blacklist:
             return
 
-        self.sf.info(f"Malicious IP address {eventData} found in AbuseIPDB blacklist")
+        self.info(f"Malicious IP address {eventData} found in AbuseIPDB blacklist")
 
         url = f"https://www.abuseipdb.com/check/{eventData}"
 
         evt = SpiderFootEvent(
-            evtType,
+            malicious_type,
+            f"AbuseIPDB [{eventData}]\n<SFURL>{url}</SFURL>",
+            self.__name__,
+            event
+        )
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(
+            blacklist_type,
             f"AbuseIPDB [{eventData}]\n<SFURL>{url}</SFURL>",
             self.__name__,
             event

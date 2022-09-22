@@ -1,0 +1,116 @@
+<%include file="HEADER.tmpl"/>
+<script src="${docroot}/static/js/spiderfoot.newscan.js"></script>
+<h2>New Scan</h2>
+<div style='padding-top: 20px'>
+<form class="form" action='${docroot}/startscan' method='POST'>
+<div class='col-sm-3' style='padding: 0'>
+    <label for="scanname">Scan Name</label>
+    <div class="input-group" style='padding-bottom: 10px'>
+        <input class='form-control' type="text" id="scanname" name="scanname" value="${scanname}" placeholder="The name of this scan.">
+    </div>
+    <label for="scantarget">Scan Target</label>
+    <div class="input-group">
+        <input class='form-control' type="text" value="${scantarget}" id="scantarget" name="scantarget" placeholder="The target of your scan.">
+    </div>
+</div>
+<div class='col-sm-9' style='font-size: 12px; padding: 0; padding-left: 10px'>
+    <div class='panel panel-default' style='background-color: #f7f7f7'>
+        <div class='panel-body' style='padding: 0; margin: 10px'>
+            <div class='row' style='padding-bottom: 5px'>
+                <div class='col-sm-12'>
+                <i class='glyphicon glyphicon-question-sign'></i>&nbsp;&nbsp;Your scan target may be one of the following. SpiderFoot will automatically detect the target type based on the format of your input:
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-6'>
+                    <b>Domain Name</b>: e.g. <i>example.com</i><br><b>IPv4 Address</b>: e.g. <i>1.2.3.4</i><br><b>IPv6 Address</b>: e.g. <i>2606:4700:4700::1111</i><br><b>Hostname/Sub-domain</b>: e.g. <i>abc.example.com</i><br><b>Subnet</b>: e.g. <i>1.2.3.0/24</i><br><b>Bitcoin Address</b>: e.g. 1HesYJSP1QqcyPEjnQ9vzBL1wujruNGe7R
+                </div>
+                <div class='col-sm-6'><b>E-mail address</b>: e.g. <i>bob@example.com</i><br><b>Phone Number</b>: e.g. <i>+12345678901</i> (E.164 format)<br><b>Human Name</b>: e.g. <i>&quot;John Smith&quot;</i> (must be in quotes)<br><b>Username</b>: e.g. <i>&quot;jsmith2000&quot;</i> (must be in quotes)<br><b>Network ASN</b>: e.g. <i>1234</i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="control-group">
+        <ul class='nav nav-tabs'>
+        <li id='usetab' class="active"><a href='#'>By Use Case</a></li>
+        <li id='typetab'><a href='#'>By Required Data</a></li>
+        <li id='moduletab'><a href='#'>By Module</a></li>
+        <div class='btn-group-sm pull-right' role="group" id='selectors' style='display: none'>
+        <button id="btn-select-all" type="button" class="btn btn-info">Select All</button>&nbsp;&nbsp;
+        <button id="btn-deselect-all" type="button" class="btn btn-info">De-Select All</button>
+        </div>
+        </ul>
+        <table class="table table-striped table-condensed" id="usetable">
+            <tr><td style='width: 50px'><input type=radio name='usecase' value='all' id="usecase_all" checked></td><td>All</td><td><b>Get anything and everything about the target.</b><br><br>All SpiderFoot modules will be enabled (slow) but every possible piece of information about the target will be obtained and analysed.<br><br></td></tr>
+            <tr><td style='width: 50px'><input type=radio name='usecase' value='Footprint' id="usecase_footprint"></td><td>Footprint</td><td><b>Understand what information this target exposes to the Internet.</b><br><br>Gain an understanding about the target's network perimeter, associated identities and other information that is obtained through a lot of web crawling and search engine use.
+             <br><br></td></tr>
+            <tr><td style='width: 50px'><input type=radio name='usecase' value='Investigate' id="usecase_investigate"></td><td>Investigate</td><td><b>Best for when you suspect the target to be malicious but need more information.</b><br><br>Some basic footprinting will be performed in addition to querying of blacklists and other sources that may have information about your target's maliciousness.
+            <br><br></td></tr>
+            <tr><td style='width: 50px'><input type=radio name='usecase' value='Passive' id="usecase_passive"></td><td>Passive</td><td><b>When you don't want the target to even suspect they are being investigated.</b><br><br>As much information will be gathered without touching the target or their affiliates, therefore only modules that do not touch the target will be enabled.
+
+        </td></tr>
+        </table>
+
+        <table class="table table-striped table-condensed" id="moduletable" style="display: none">
+            <%
+            modlist = dict()
+            for item in modules:
+                modlist[modules[item]['name']] = item
+            %>
+            % for it in sorted(modlist, key=lambda v: v.upper()):
+                <% item = modlist[it] %>
+                <% keylist = dict((k, v) for k, v in modules[item]['opts'].items() if not k.startswith('_')) %>
+                <% keyicon = "" %>
+                % if len(keylist) > 0:
+                    <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].items() if k.find("api_key") >= 0) %>
+                    <%
+                    if len(apikeylist) > 0:
+                        keyicon = "&nbsp;&nbsp;<i class=\"glyphicon glyphicon-lock\" rel='tooltip' title='Needs API key'></i>"
+                    %>
+                % endif
+
+                % if item != "sfp__stor_db" and item != "sfp__stor_stdout":
+                    <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}${keyicon}</td><td>${modules[item]['descr']}</td></tr>
+                % endif
+            % endfor
+        </table>
+        <table class="table table-striped table-condensed" id="typetable" style="display: none">
+            <% count = 0 %>
+            % for item in sorted(types):
+                % if count % 2 == 0:
+                    <tr>
+                % endif
+                <td><input type=checkbox id="type_${item[1]}" checked></td><td>${item[0]}</td>
+                % if not count % 2 == 0:
+                    </tr>
+                % endif
+                <% count = count + 1 %>
+            % endfor
+        </table>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type=hidden id='modulelist' name='modulelist' value=''>
+            <input type=hidden id='typelist' name='typelist' value=''>
+            <button id="btn-run-scan" class="btn btn-danger">Run Scan Now</button>
+        </div>
+    </div>
+</form>
+</div>
+
+<script type='text/javascript'>
+  if ("${selectedmods}" != "") {
+          switchTab("module");
+
+          $("input[id^=module_]").each(function(id, obj) {
+              if ("${selectedmods}".indexOf(obj.id.replace("module_", "")) >= 0) {
+                  $("#" + obj.id).attr("checked", true);
+              } else {
+                  $("#" + obj.id).attr("checked", false);
+              }
+          });
+  }
+</script>
+<%include file="FOOTER.tmpl"/>

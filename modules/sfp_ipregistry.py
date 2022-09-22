@@ -7,7 +7,7 @@
 #
 # Created:     2020-09-08
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -20,7 +20,7 @@ class sfp_ipregistry(SpiderFootPlugin):
     meta = {
         "name": "ipregistry",
         "summary": "Query the ipregistry.co database for reputation and geo-location.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {
@@ -76,18 +76,17 @@ class sfp_ipregistry(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info(f"No {self.meta['name']} info found for {qry}")
+            self.info(f"No {self.meta['name']} info found for {qry}")
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(
+            self.error(
                 f"Error processing JSON response from {self.meta['name']}: {e}"
             )
-            return None
 
-        return info
+        return None
 
     def emit(self, etype, data, pevent):
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
@@ -146,18 +145,18 @@ class sfp_ipregistry(SpiderFootPlugin):
 
     def handleEvent(self, event):
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
+        self.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
+            self.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if event.data in self.results:
-            self.sf.debug(f"Skipping {event.data}, already checked.")
-            return None
+            self.debug(f"Skipping {event.data}, already checked.")
+            return
         self.results[event.data] = True
 
         if event.eventType in ("IP_ADDRESS", "IPV6_ADDRESS"):

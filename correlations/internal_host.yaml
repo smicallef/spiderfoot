@@ -1,0 +1,30 @@
+id: internal_host
+version: 1
+meta:
+  name: A host resolving to unroutable IPs was found
+  description: >
+    A host that resolves to an IP address on ranges reserved for
+    internal use (10.0.0.0/8, etc.) was found to be publicly
+    resolvable. This might reveal information about the internal
+    infrastructure and workings of the target.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNAL_IP_ADDRESS
+  - collect:
+      - method: exact
+        field: type
+        value: IP_ADDRESS
+      - method: regex
+        field: data
+        value:
+          - ^192\\.168\\..*
+          - ^10\\..*
+      - method: exact
+        field: module
+        value: sfp_dnsresolve
+aggregation:
+  field: data
+headline: "An internal host was found: {data}"

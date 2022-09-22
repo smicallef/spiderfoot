@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_onioncity
-# Purpose:      Searches the Tor search engine 'Onion City' for content related
-#               to the domain in question.
+# Purpose:      Searches the Tor search engine 'Onion City' using Google Custom
+#               Search for content related to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
 # Created:     15/07/2015
 # Copyright:   (c) Steve Micallef 2015
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -20,13 +20,25 @@ class sfp_onioncity(SpiderFootPlugin):
 
     meta = {
         'name': "Onion.link",
-        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
-        'flags': ["apikey"],
+        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain using Google Custom Search.",
+        'flags': ["apikey", "tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://onion.link/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developers.google.com/custom-search/v1",
+                "https://developers.google.com/custom-search/docs/overview",
+                "https://cse.google.com/cse"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://developers.google.com/custom-search/v1/introduction",
+                "Register a free Google account",
+                "Click on 'Get A Key'",
+                "Connect a Project",
+                "The API Key will be listed under 'YOUR API KEY'"
+            ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
             'logo': "https://onion.link/images/OC.png",
             'description': "Enabling search and global access to Tor's onionsites.",
@@ -78,23 +90,23 @@ class sfp_onioncity(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_onioncity but did not set a Google API key!")
+            self.error("You enabled sfp_onioncity but did not set a Google API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Already did a search for {eventData}, skipping.")
+            return
+
+        self.results[eventData] = True
 
         # Sites hosted on the domain
         res = self.sf.googleIterate(
@@ -108,7 +120,7 @@ class sfp_onioncity(SpiderFootPlugin):
         )
         if res is None:
             # Failed to talk to the bing API or no results returned
-            return None
+            return
 
         urls = res["urls"]
         new_links = list(set(urls) - set(self.results.keys()))
@@ -130,18 +142,18 @@ class sfp_onioncity(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
         else:
-            self.sf.error("Failed to fetch Google web search URL")
+            self.error("Failed to fetch Google web search URL")
 
         # Check if we've been asked to stop
         if self.checkForStop():
-            return None
+            return
 
         darknet_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(".onion.link")
         ]
 
         for link in darknet_links:
-            self.sf.debug("Found a darknet mention: " + link)
+            self.debug("Found a darknet mention: " + link)
             torlink = link.replace(".onion.link", ".onion")
             if self.opts['fetchlinks']:
                 res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
@@ -149,13 +161,13 @@ class sfp_onioncity(SpiderFootPlugin):
                                        verify=False)
 
                 if res['content'] is None:
-                    self.sf.debug("Ignoring " + link + " as no data returned")
+                    self.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 # Sometimes onion city search results false positives
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
                              + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
-                    self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                    self.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
@@ -165,7 +177,7 @@ class sfp_onioncity(SpiderFootPlugin):
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
                 except Exception:
-                    self.sf.debug("String not found in content.")
+                    self.debug("String not found in content.")
                     continue
 
                 data = res['content'][startIndex:endIndex]
@@ -175,6 +187,5 @@ class sfp_onioncity(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
                 self.notifyListeners(evt)
-
 
 # End of sfp_onioncity class

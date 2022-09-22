@@ -8,7 +8,7 @@
 #
 # Created:     23/02/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -21,7 +21,7 @@ class sfp_arin(SpiderFootPlugin):
     meta = {
         'name': "ARIN",
         'summary': "Queries ARIN registry for contact information.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {
@@ -53,13 +53,11 @@ class sfp_arin(SpiderFootPlugin):
 
     results = None
     currentEventSrc = None
-    memCache = dict()
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.memCache = dict()
         self.currentEventSrc = None
 
         for opt in list(userOpts.keys()):
@@ -77,18 +75,12 @@ class sfp_arin(SpiderFootPlugin):
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
-        if url in self.memCache:
-            res = self.memCache[url]
-        else:
-            head = {"Accept": "application/json"}
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'], headers=head)
-            if res['content'] is not None and res['code'] != "404":
-                self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
-                                      self.currentEventSrc)
-                self.notifyListeners(evt)
-        return res
+        head = {"Accept": "application/json"}
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                               useragent=self.opts['_useragent'], headers=head)
+        if res['content'] is not None and res['code'] != "404":
+            return res
+        return None
 
     # Owner information about an AS
     def query(self, qtype, value):
@@ -106,23 +98,26 @@ class sfp_arin(SpiderFootPlugin):
                     lname = t
                 url += "pocs;first=" + fname + ";last=" + lname
         except Exception as e:
-            self.sf.debug("Couldn't process name: " + value + " (" + str(e) + ")")
+            self.debug("Couldn't process name: " + value + " (" + str(e) + ")")
             return None
 
         if qtype == "contact":
             url = value
 
         res = self.fetchRir(url)
-        if res['content'] is None:
-            self.sf.debug("No info found/available for " + value + " at ARIN.")
+        if not res:
+            self.debug("No info found/available for " + value + " at ARIN.")
             return None
 
         try:
-            j = json.loads(res['content'])
-            return j
+            data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
+
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, self.currentEventSrc)
+        self.notifyListeners(evt)
+        return data
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -131,11 +126,11 @@ class sfp_arin(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True

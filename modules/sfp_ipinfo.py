@@ -8,7 +8,7 @@
 #
 # Created:     17/06/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -84,21 +84,20 @@ class sfp_ipinfo(SpiderFootPlugin):
                                headers=headers)
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by ipinfo.io.")
+            self.error("You are being rate-limited by ipinfo.io.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No GeoIP info found for " + ip)
+            self.info("No GeoIP info found for " + ip)
             return None
 
         try:
-            result = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
 
-        return result
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -109,16 +108,15 @@ class sfp_ipinfo(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipinfo but did not set an API key!")
+            self.error("You enabled sfp_ipinfo but did not set an API key!")
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -132,7 +130,7 @@ class sfp_ipinfo(SpiderFootPlugin):
             return
 
         location = ', '.join([_f for _f in [data.get('city'), data.get('region'), data.get('country')] if _f])
-        self.sf.info("Found GeoIP for " + eventData + ": " + location)
+        self.info("Found GeoIP for " + eventData + ": " + location)
 
         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
         self.notifyListeners(evt)

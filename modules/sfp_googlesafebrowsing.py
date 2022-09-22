@@ -8,7 +8,7 @@
 #
 # Created:     2020-08-18
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -21,7 +21,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
     meta = {
         "name": "Google SafeBrowsing",
         "summary": "Check if the URL is included on any of the Safe Browsing lists.",
-        "flags": ["slow", "apikey"],
+        'flags': ["slow", "apikey"],
         "useCases": ["Passive", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {
@@ -130,24 +130,24 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         )
 
         if res["code"] == "400":
-            self.sf.error("Invalid request payload on Google Safe Browsing API")
+            self.error("Invalid request payload on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Google Safe Browsing API")
+            self.error("Reaching rate limit on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "403":
-            self.sf.error(
+            self.error(
                 "Permission denied, invalid API key on Google Safe Browsing API"
             )
             self.errorState = True
             return None
 
         if res["code"] in ["500", "503", "504"]:
-            self.sf.error(
+            self.error(
                 "Google Safe Browsing API is having some troubles or unavailable."
             )
             self.errorState = True
@@ -156,11 +156,11 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
             if info == {}:
-                self.sf.info("No Google Safe Browsing matches found for " + qry)
+                self.info("No Google Safe Browsing matches found for " + qry)
                 return None
 
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -171,23 +171,22 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 "You enabled sfp_googlesafebrowsing but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         evtType = ""
         if eventName in ["IP_ADDRESS", "AFFILIATE_IPADDR"]:
@@ -207,7 +206,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         rec = self.query(eventData)
 
         if rec is None:
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
         self.notifyListeners(evt)

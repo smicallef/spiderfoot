@@ -1,0 +1,24 @@
+id: outlier_webserver
+version: 1
+meta:
+  name: Outlier web server
+  description: >
+    A web server that appeared in 10% or less of the
+    total web servers found. Outliers can often reveal
+    entities that are rare and therefore interesting.
+
+    Particularly in the case of web servers, an outlier
+    may be an indicator of Shadow IT or unmtaintained
+    infrastructure.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: WEBSERVER_BANNER
+aggregation:
+  field: data
+analysis:
+  - method: outlier
+    maximum_percent: 10
+headline: "Outlier web server found: {data}"

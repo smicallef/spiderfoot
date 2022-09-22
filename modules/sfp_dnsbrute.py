@@ -8,9 +8,10 @@
 #
 # Created:     06/07/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
+import importlib
 import random
 import threading
 import time
@@ -23,7 +24,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
     meta = {
         'name': "DNS Brute-forcer",
         'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }
@@ -64,21 +65,17 @@ class sfp_dnsbrute(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-        cslines = list()
         if self.opts['commons']:
-            cs = open(self.sf.myPath() + "/dicts/subdomains.txt", 'r')
-            cslines = cs.readlines()
-            for s in cslines:
-                s = s.strip()
-                self.sublist[s] = True
+            with importlib.resources.open_text('spiderfoot.dicts', 'subdomains.txt') as f:
+                for s in f.readlines():
+                    s = s.strip()
+                    self.sublist[s] = True
 
-        ttlines = list()
         if self.opts['top10000']:
-            tt = open(self.sf.myPath() + "/dicts/subdomains-10000.txt", 'r')
-            ttlines = tt.readlines()
-            for s in ttlines:
-                s = s.strip()
-                self.sublist[s] = True
+            with importlib.resources.open_text('spiderfoot.dicts', 'subdomains-10000.txt') as f:
+                for s in f.readlines():
+                    s = s.strip()
+                    self.sublist[s] = True
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -95,8 +92,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
     def tryHost(self, name):
         try:
-            addrs = self.sf.resolveHost(name)
-            if addrs:
+            if self.sf.resolveHost(name) or self.sf.resolveHost6(name):
                 with self.lock:
                     self.hostResults[name] = True
         except Exception:
@@ -110,7 +106,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         t = []
 
         # Spawn threads for scanning
-        self.sf.info("Spawning threads to check hosts: " + str(hostList))
+        self.info("Spawning threads to check hosts: " + str(hostList))
         for name in hostList:
             tn = 'thread_sfp_dnsbrute_' + str(random.SystemRandom().randint(1, 999999999))
             t.append(threading.Thread(name=tn, target=self.tryHost, args=(name,)))
@@ -135,7 +131,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def sendEvent(self, source, result):
-        self.sf.info("Found a brute-forced host: " + result)
+        self.info("Found a brute-forced host: " + result)
         # Report the host
         evt = SpiderFootEvent("INTERNET_NAME", result, self.__name__, source)
         self.notifyListeners(evt)
@@ -147,7 +143,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         eventData = event.data
         eventDataHash = self.sf.hashstring(eventData)
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnsbrute":
             return
@@ -168,7 +164,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             # Try resolving common names
             wildcard = self.sf.checkDnsWildcard(dom)
             if self.opts['skipcommonwildcard'] and wildcard:
-                self.sf.debug("Wildcard DNS detected on " + dom + " so skipping host iteration.")
+                self.debug("Wildcard DNS detected on " + dom + " so skipping host iteration.")
                 return
 
             dom = "." + dom
@@ -191,10 +187,10 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return
 
         # Try resolving common names
-        self.sf.debug("Iterating through possible sub-domains.")
+        self.debug("Iterating through possible sub-domains.")
         wildcard = self.sf.checkDnsWildcard(eventData)
         if self.opts['skipcommonwildcard'] and wildcard:
-            self.sf.debug("Wildcard DNS detected.")
+            self.debug("Wildcard DNS detected.")
             return
 
         targetList = list()
@@ -202,7 +198,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             if self.checkForStop():
                 return
 
-            name = sub + "." + eventData
+            name = f"{sub}.{eventData}"
 
             if len(targetList) <= self.opts['_maxthreads']:
                 targetList.append(name)

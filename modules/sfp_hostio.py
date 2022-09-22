@@ -7,7 +7,7 @@
 #
 # Created:     2020-08-21
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 import json
 
@@ -19,7 +19,7 @@ class sfp_hostio(SpiderFootPlugin):
     meta = {
         "name": "Host.io",
         "summary": "Obtain information about domain names from host.io.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
         "dataSource": {
@@ -91,7 +91,7 @@ class sfp_hostio(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.info(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.info(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def query(self, qry):
         res = self.sf.fetchUrl(
@@ -105,16 +105,15 @@ class sfp_hostio(SpiderFootPlugin):
             return None
 
         if res["content"] is None:
-            self.sf.info(f"No Host.io info found for {qry}")
+            self.info(f"No Host.io info found for {qry}")
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Host.io: {e}")
-            return None
+            self.error(f"Error processing JSON response from Host.io: {e}")
 
-        return info
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -122,26 +121,27 @@ class sfp_hostio(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
-            return None
+            self.debug(f"Skipping {eventData} as already mapped.")
+            return
+
         self.results[eventData] = True
 
         data = self.query(event.data)
         if not data:
-            self.sf.error(f"No data received for {event.data}")
-            return None
+            self.error(f"No data received for {event.data}")
+            return
 
         found = False
         ipinfo = data.get("ipinfo")

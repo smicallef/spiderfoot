@@ -7,7 +7,7 @@
 #
 # Created:     05/08/2018
 # Copyright:   (c) Steve Micallef, 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
@@ -20,7 +20,7 @@ class sfp_cleantalk(SpiderFootPlugin):
     meta = {
         'name': "CleanTalk Spam List",
         'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -47,7 +47,6 @@ class sfp_cleantalk(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18,
@@ -55,7 +54,6 @@ class sfp_cleantalk(SpiderFootPlugin):
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliate IP addresses?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -74,15 +72,25 @@ class sfp_cleantalk(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
-                "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
+        return [
+            'IP_ADDRESS',
+            'AFFILIATE_IPADDR',
+            'NETBLOCK_OWNER',
+            'NETBLOCK_MEMBER'
+        ]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+        ]
 
     def query(self, qry, targetType):
         cid = "_cleantalk"
@@ -95,12 +103,12 @@ class sfp_cleantalk(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url)
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -115,66 +123,75 @@ class sfp_cleantalk(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug("%s found within netblock/subnet %s in CleanTalk Spam List." % (ip, qry))
+                        self.debug(f"{ip} found within netblock/subnet {qry} in CleanTalk Spam List.")
                         return url
                 except Exception as e:
-                    self.sf.debug("Error encountered parsing: %s" % e)
+                    self.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug("%s found in CleanTalk Spam List." % qry)
+                    self.debug(f"{qry} found in CleanTalk Spam List.")
                     return url
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {event.module}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'IP_ADDRESS':
             targetType = 'ip'
-            evtType = 'MALICIOUS_IPADDR'
+            malicious_type = "MALICIOUS_IPADDR"
+            blacklist_type = "BLACKLISTED_IPADDR"
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             targetType = 'ip'
-            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            malicious_type = "MALICIOUS_AFFILIATE_IPADDR"
+            blacklist_type = "BLACKLISTED_AFFILIATE_IPADDR"
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
-                return None
+                return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_NETBLOCK'
+            malicious_type = "MALICIOUS_NETBLOCK"
+            blacklist_type = "BLACKLISTED_NETBLOCK"
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
-                return None
+                return
             targetType = 'netblock'
-            evtType = 'MALICIOUS_SUBNET'
+            malicious_type = "MALICIOUS_SUBNET"
+            blacklist_type = "BLACKLISTED_SUBNET"
         else:
-            return None
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
 
-        self.sf.debug("Checking maliciousness of %s with CleanTalk Spam List" % eventData)
+        self.debug(f"Checking maliciousness of {eventData} with CleanTalk Spam List")
 
         url = self.query(eventData, targetType)
 
         if not url:
-            return None
+            return
 
-        text = "CleanTalk Spam List [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
-        evt = SpiderFootEvent(evtType, text, self.__name__, event)
+        self.debug(f"{eventData} found in Cleantalk Spam List")
+
+        text = f"CleanTalk Spam List [{eventData}]\n<SFURL>{url}</SFURL>"
+
+        evt = SpiderFootEvent(blacklist_type, text, self.__name__, event)
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(malicious_type, text, self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_cleantalk class

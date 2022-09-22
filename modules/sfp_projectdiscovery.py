@@ -7,7 +7,7 @@
 #
 # Created:     2020-09-04
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -19,7 +19,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
     meta = {
         "name": "ProjectDiscovery Chaos",
         "summary": "Search for hosts/subdomains using chaos.projectdiscovery.io",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
         "dataSource": {
@@ -80,18 +80,17 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         )
 
         if res["content"] is None:
-            self.sf.info("No DNS info found in chaos projectdiscovery API for " + qry)
+            self.info("No DNS info found in chaos projectdiscovery API for " + qry)
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except json.JSONDecodeError as e:
-            self.sf.error(
+            self.error(
                 f"Error processing JSON response from Chaos projectdiscovery: {e}"
             )
-            return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -99,36 +98,34 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        # Once we are in this state, return immediately.
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 "You enabled sfp_projectdiscovery but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
-        if eventName != "DOMAIN_NAME":
-            return None
+        if eventName not in self.watchedEvents():
+            return
 
         result = self.query(eventData)
         if result is None:
-            return None
+            return
 
         subdomains = result.get("subdomains")
         if not isinstance(subdomains, list):
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
         self.notifyListeners(evt)
@@ -136,13 +133,13 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         resultsSet = set()
         for subdomain in subdomains:
             if self.checkForStop():
-                return None
+                return
 
             if subdomain in resultsSet:
                 continue
             completeSubdomain = f"{subdomain}.{eventData}"
-            if self.opts["verify"] and not self.sf.resolveHost(completeSubdomain):
-                self.sf.debug(f"Host {completeSubdomain} could not be resolved")
+            if self.opts["verify"] and not self.sf.resolveHost(completeSubdomain) and not self.sf.resolveHost6(completeSubdomain):
+                self.debug(f"Host {completeSubdomain} could not be resolved")
                 evt = SpiderFootEvent(
                     "INTERNET_NAME_UNRESOLVED", completeSubdomain, self.__name__, event
                 )

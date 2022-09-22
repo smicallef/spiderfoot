@@ -1,0 +1,24 @@
+id: email_in_whois
+version: 1
+meta:
+  name: A target-relevant email address was found in Whois data
+  description: >
+    An email address was found in Whois data that is directly
+    related to the target (e.g. same domain). The email found may
+    be that of a highly privileged person responsible for
+    maintaining the infrastructure of the target.
+
+    Email addresses are increasingly rarely found in Whois data due
+    to GDPR.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: EMAILADDR
+      - method: regex
+        field: source.type
+        value: .*WHOIS.*
+aggregation:
+  field: data
+headline: "Email address found in Whois record: {data}"

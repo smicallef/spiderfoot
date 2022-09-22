@@ -7,7 +7,7 @@
 #
 # Created:     06/10/2013
 # Copyright:   (c) Steve Micallef 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -78,20 +78,20 @@ class sfp_bingsearch(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!")
+            self.error("You enabled sfp_bingsearch but did not set a Bing API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug("Already did a search for " + eventData + ", skipping.")
+            return
+
+        self.results[eventData] = True
 
         # Sites hosted on the domain
 
@@ -106,7 +106,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         )
         if res is None:
             # Failed to talk to the bing API or no results returned
-            return None
+            return
 
         urls = res["urls"]
         new_links = list(set(urls) - set(self.results.keys()))
@@ -119,7 +119,7 @@ class sfp_bingsearch(SpiderFootPlugin):
             link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
         ]
         for link in internal_links:
-            self.sf.debug("Found a link: " + link)
+            self.debug("Found a link: " + link)
 
             evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__, event)
             self.notifyListeners(evt)

@@ -6,7 +6,7 @@
 #
 # Created:     04/10/2015
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -19,7 +19,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
     meta = {
         'name': "Open Bug Bounty",
         'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -69,9 +69,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["VULNERABILITY"]
-
-        return ret
+        return ["VULNERABILITY_DISCLOSURE"]
 
     # Query XSSposed.org
     def queryOBB(self, qry):
@@ -81,17 +79,17 @@ class sfp_openbugbounty(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.debug("No content returned from openbugbounty.org")
+            self.debug("No content returned from openbugbounty.org")
             return None
 
         try:
             rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
-            for m in rx.findall(res['content']):
+            for m in rx.findall(str(res['content'])):
                 # Report it
                 if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error("Error processing response from openbugbounty.org: " + str(e))
+            self.error("Error processing response from openbugbounty.org: " + str(e))
             return None
         return ret
 
@@ -102,14 +100,13 @@ class sfp_openbugbounty(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         obb = self.queryOBB(eventData)
         if obb:
@@ -117,7 +114,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
         for n in data:
             # Notify other modules of what you've found
-            e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
+            e = SpiderFootEvent("VULNERABILITY_DISCLOSURE", n, self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_openbugbounty class

@@ -6,7 +6,7 @@
 #
 # Created:     22/02/2017
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -90,9 +90,7 @@ class sfp_hunter(SpiderFootPlugin):
             "limit": str(limit)
         }
 
-        ret = None
-
-        url = "https://api.hunter.io/v2/domain-search?%s" % urllib.parse.urlencode(params)
+        url = f"https://api.hunter.io/v2/domain-search?{urllib.parse.urlencode(params)}"
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
@@ -103,12 +101,11 @@ class sfp_hunter(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from hunter.io: %s" % e)
-            return None
+            self.error(f"Error processing JSON response from hunter.io: {e}")
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -117,28 +114,27 @@ class sfp_hunter(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_hunter but did not set an API key!")
+            self.error("You enabled sfp_hunter but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         data = self.query(eventData, 0, 10)
         if not data:
-            return None
+            return
 
         if "data" not in data:
-            return None
+            return
 
         # Check if we have more results on further pages
         if "meta" in data:
@@ -170,13 +166,13 @@ class sfp_hunter(SpiderFootPlugin):
                         self.notifyListeners(e)
 
             if rescount >= maxgoal:
-                return None
+                return
 
             data = self.query(eventData, rescount, 10)
             if data is None:
-                return None
+                return
             if "data" not in data:
-                return None
+                return
 
             rescount += len(data['data'].get('emails', list()))
 

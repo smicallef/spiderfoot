@@ -7,7 +7,7 @@
 #
 # Created:     18/01/2015
 # Copyright:   (c) Steve Micallef 2015
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -32,7 +32,7 @@ class sfp_errors(SpiderFootPlugin):
     meta = {
         'name': "Error String Extractor",
         'summary': "Identify common error messages in content like SQL errors, etc.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -77,19 +77,19 @@ class sfp_errors(SpiderFootPlugin):
 
         # We only want web content from the target
         if srcModuleName != "sfp_spider":
-            return None
+            return
 
         eventSource = event.actualSource
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventSource not in list(self.results.keys()):
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web content information for external sites.")
-            return None
+            self.debug("Not collecting web content information for external sites.")
+            return
 
         for regexpGrp in list(regexps.keys()):
             if regexpGrp in self.results[eventSource]:
@@ -99,7 +99,7 @@ class sfp_errors(SpiderFootPlugin):
                 pat = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource] = self.results[eventSource] + [regexpGrp]
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
                                           self.__name__, event)

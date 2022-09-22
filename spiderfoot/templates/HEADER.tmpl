@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SpiderFoot v${version}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" type="image/png" href="${docroot}/static/img/spiderfoot-icon.png">
+
+    <script type='text/javascript' src='${docroot}/static/js/spiderfoot.js'></script>
+    <script type='text/javascript' src='${docroot}/static/js/viz.js'></script>
+
+    <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/tablesorter/dist/css/jquery.tablesorter.pager.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/alertifyjs/build/css/alertify.min.css" rel="stylesheet">
+
+    <script>
+        // Load themes before the page body loads
+        var head = document.getElementsByTagName('HEAD')[0];
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        if (localStorage.getItem("theme") === "dark-theme") {
+            link.href = "${docroot}/static/css/dark.css";
+        } else {
+            link.href = "${docroot}/static/node_modules/tablesorter/dist/css/theme.default.min.css";
+        }
+        head.appendChild(link);
+
+      
+    </script>
+  </head>
+
+  <body>
+
+<nav class="navbar navbar-fixed-top navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <span data-toggle="" data-target="switcher4">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse" aria-expanded="false">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </span>
+      <a class="navbar-brand brand-logo light" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header.png" /></a>
+      <a class="navbar-brand brand-logo dark" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header-dark.png" /></a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li
+% if pageid == "NEWSCAN":
+    class="active"
+% endif
+class="nav-item"
+><a id="nav-link-newscan" href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
+        <li 
+% if pageid == "SCANLIST": 
+    class="active"
+% endif
+class="nav-item"
+><a id="nav-link-scans" href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
+        <li
+% if pageid == "SETTINGS":
+    class="active"
+%endif
+class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
+ 
+      </ul>
+
+
+      
+      
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+        <!-- Theme toggler -->
+        <span id="toggler-text">Dark Mode</span>
+        <label id="switcher4" class="switch">
+          <input id="theme-toggler" class="theme-toggler" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </li>
+
+        <li class="nav-item"><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+    <div id="aboutmodal" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+    <div class="modal-header">
+      <h3 class="modal-title">SpiderFoot ${version}</h3>
+    </div>
+
+    <div class="modal-body">
+    <p>SpiderFoot is an open source, MIT-licensed footprinting tool, created by <a href='https://twitter.com/binarypool' target=_new>Steve Micallef</a>. It is designed to be easy to use, fast and extensible.</p>
+    <p>If you have any bugs to report, or requests for enhancements, please contact the support mailing list at <a href=mailto:support@spiderfoot.net>support@spiderfoot.net</a>.
+    <p>You are running version <b>${version}</b>.</p>
+    <p> Visit the project website at <a href='https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_int' target=_new>https://www.spiderfoot.net/</a>.</p>
+    <p> View the documentation at <a href='https://www.spiderfoot.net/documentation/' target=_new>https://www.spiderfoot.net/documentation/</a>.</p>
+    <p> Check out the Github repo at <a href='https://github.com/smicallef/spiderfoot' target=_new>https://github.com/smicallef/spiderfoot</a>.</p>
+    <p> Latest updates @ Twitter <a href='https://twitter.com/spiderfoot' target=_new>https://twitter.com/spiderfoot</a>.</p>
+    <p> Join the community in our <a href='https://discord.gg/vyvztrG' target=_new>Discord Server</a>.</p>
+    <p> Want something cloud-based with more capabilities? <a href='https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQvaHgvCg==&s=os_int' target=_new>Check out SpiderFoot HX</a>.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+    </div>
+
+    </div>
+    </div>
+    </div>
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script>var docroot = '${docroot}';</script>
+    <script src="${docroot}/static/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="${docroot}/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="${docroot}/static/node_modules/alertifyjs/build/alertify.min.js"></script>
+    <script src="${docroot}/static/node_modules/tablesorter/dist/js/jquery.tablesorter.min.js"></script>
+    <script src='${docroot}/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js'></script>
+    <script src='${docroot}/static/node_modules/tablesorter/dist/js/jquery.tablesorter.widgets.min.js'></script>
+    <script src="${docroot}/static/node_modules/d3/d3.min.js"></script>
+    <script type='text/javascript' hash="sha256-0kTZzWMEh3cdgCMVytlY1E8rg7oO13eyLa+kvyAhRmo=">sf.updateTooltips();</script>
+
+    <div class="container" id="mainbody" style='padding-bottom: 50px'>
+

@@ -8,7 +8,7 @@
 #
 # Created:     04/02/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import dns.resolver
@@ -20,8 +20,8 @@ class sfp_quad9(SpiderFootPlugin):
 
     meta = {
         'name': "Quad9",
-        'summary': "Check if a host would be blocked by Quad9",
-        'flags': [""],
+        'summary': "Check if a host would be blocked by Quad9 DNS.",
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -29,7 +29,7 @@ class sfp_quad9(SpiderFootPlugin):
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://www.quad9.net/faq/",
-                "https://www.quad9.net/#Setup_Quad9"
+                "https://support.quad9.net/hc/en-us/categories/360002571772-Configuration",
             ],
             'favIcon': "https://quad9.net/wp-content/uploads/2018/01/favicon-32.png",
             'logo': "https://quad9.net/wp-content/uploads/2017/11/quad9-logo-white@2x.png",
@@ -58,13 +58,21 @@ class sfp_quad9(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "CO_HOSTED_SITE"
+        ]
 
     def producedEvents(self):
         return [
+            "BLACKLISTED_INTERNET_NAME",
+            "BLACKLISTED_AFFILIATE_INTERNET_NAME",
+            "BLACKLISTED_COHOST",
             "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_COHOST"]
+            "MALICIOUS_COHOST",
+        ]
 
     def query(self, qry):
         res = dns.resolver.Resolver()
@@ -72,9 +80,9 @@ class sfp_quad9(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qry)
-            self.sf.debug(f"Addresses returned: {addrs}")
+            self.debug(f"Addresses returned: {addrs}")
         except Exception:
-            self.sf.debug(f"Unable to resolve {qry}")
+            self.debug(f"Unable to resolve {qry}")
             return False
 
         if addrs:
@@ -85,35 +93,51 @@ class sfp_quad9(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
+        if eventName == "INTERNET_NAME":
+            malicious_type = "MALICIOUS_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_INTERNET_NAME"
+        elif eventName == "AFFILIATE_INTERNET_NAME":
+            malicious_type = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+            blacklist_type = "BLACKLISTED_AFFILIATE_INTERNET_NAME"
+        elif eventName == "CO_HOSTED_SITE":
+            malicious_type = "MALICIOUS_COHOST"
+            blacklist_type = "BLACKLISTED_COHOST"
+        else:
+            self.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by Quad9.
-        if not self.sf.resolveHost(eventData):
-            return None
+        if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
+            return
 
         found = self.query(eventData)
 
         # Host was found, not blocked
         if found:
-            return None
-
-        typ = "MALICIOUS_" + eventName
-
-        if eventName == "CO_HOSTED_SITE":
-            typ = "MALICIOUS_COHOST"
+            return
 
         evt = SpiderFootEvent(
-            typ,
-            f"Blocked by Quad9 [{eventData}]\n<SFURL>https://quad9.net/result/?url={eventData}</SFURL>",
-            self.__name__, parentEvent
+            blacklist_type,
+            f"Quad9 [{eventData}]\n<SFURL>https://quad9.net/result/?url={eventData}</SFURL>",
+            self.__name__,
+            event
+        )
+        self.notifyListeners(evt)
+
+        evt = SpiderFootEvent(
+            malicious_type,
+            f"Quad9 [{eventData}]\n<SFURL>https://quad9.net/result/?url={eventData}</SFURL>",
+            self.__name__,
+            event
         )
         self.notifyListeners(evt)
 

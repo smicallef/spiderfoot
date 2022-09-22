@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_company
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and identifying company names.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
 # Created:     09/09/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -21,18 +21,15 @@ class sfp_company(SpiderFootPlugin):
     meta = {
         'name': "Company Name Extractor",
         'summary': "Identify company names in any obtained data.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
 
-    # Default options
     opts = {
-        # options specific to this module
         'filterjscss': True
     }
 
-    # Option descriptions
     optdescs = {
         'filterjscss': "Filter out company names that originated from CSS/JS content. Enabling this avoids detection of popular Javascript and web framework author company names."
     }
@@ -50,8 +47,6 @@ class sfp_company(SpiderFootPlugin):
                 "AFFILIATE_DOMAIN_WHOIS", "AFFILIATE_WEB_CONTENT"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["COMPANY_NAME", "AFFILIATE_COMPANY_NAME"]
 
@@ -69,12 +64,12 @@ class sfp_company(SpiderFootPlugin):
             'LLC', r'L\.L\.C\.?', 'AG', r'A\.G\.?', 'GmbH', r'Pty\.?\s+Ltd\.?',
             r'Ltd\.?', r'Pte\.?', r'Inc\.?', r'INC\.?', 'Incorporated', 'Foundation',
             r'Corp\.?', 'Corporation', 'SA', r'S\.A\.?', 'SIA', 'BV', r'B\.V\.?',
-            'NV', r'N\.V\.?' 'PLC', 'Limited', r'Pvt\.?\s+Ltd\.?', 'SARL']
+            'NV', r'N\.V\.?', 'PLC', 'Limited', r'Pvt\.?\s+Ltd\.?', 'SARL']
         pattern_match = [
             'LLC', 'L.L.C', 'AG', 'A.G', 'GmbH', 'Pty',
             'Ltd', 'Pte', 'Inc', 'INC', 'Foundation',
             'Corp', 'SA', 'S.A', 'SIA', 'BV', 'B.V',
-            'NV', 'N.V' 'PLC', 'Limited', 'Pvt.', 'SARL']
+            'NV', 'N.V', 'PLC', 'Limited', 'Pvt.', 'SARL']
 
         pattern_suffix = r"(?=[ \.,:<\)\'\"]|[$\n\r])"
 
@@ -86,22 +81,22 @@ class sfp_company(SpiderFootPlugin):
 
         # Don't re-parse company names
         if eventName in ["COMPANY_NAME", "AFFILIATE_COMPANY_NAME"]:
-            return None
+            return
 
         if eventName == "TARGET_WEB_CONTENT":
             url = event.actualSource
             if self.opts['filterjscss'] and (".js" in url or ".css" in url):
-                self.sf.debug("Ignoring web content from CSS/JS.")
-                return None
+                self.debug("Ignoring web content from CSS/JS.")
+                return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName} ({len(eventData)} bytes)")
+        self.debug(f"Received event, {eventName}, from {srcModuleName} ({len(eventData)} bytes)")
 
         # Strip out everything before the O=
         try:
             if eventName == "SSL_CERTIFICATE_ISSUED":
                 eventData = eventData.split("O=")[1]
         except Exception:
-            self.sf.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
+            self.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
 
         # Find chunks of text containing what might be a company name first.
         # This is to avoid running very expensive regexps on large chunks of
@@ -144,12 +139,13 @@ class sfp_company(SpiderFootPlugin):
 
                     fullcompany = re.sub(r"\s+", " ", fullcompany.strip())
 
-                    self.sf.info("Found company name: " + fullcompany)
+                    self.info("Found company name: " + fullcompany)
+
                     if fullcompany in myres:
-                        self.sf.debug("Already found from this source.")
+                        self.debug("Already found from this source.")
                         continue
-                    else:
-                        myres.append(fullcompany)
+
+                    myres.append(fullcompany)
 
                     if "AFFILIATE_" in eventName:
                         etype = "AFFILIATE_COMPANY_NAME"

@@ -6,9 +6,10 @@
 #
 # Created:     10/09/2017
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
+import base64
 import datetime
 import json
 import urllib.error
@@ -38,7 +39,7 @@ class sfp_wigle(SpiderFootPlugin):
                 "Register a free account",
                 "Navigate to https://wigle.net/account",
                 "Click on 'Show my token'",
-                "The API key is listed under 'API Token'"
+                "The encoded API key is adjacent to 'Encoded for use'"
             ],
             'favIcon': "https://wigle.net/favicon.ico?v=A0Ra9gElOR",
             'logo': "https://wigle.net/images/planet-bubble.png",
@@ -108,7 +109,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.")
+            self.error("Wigle.net query limit reached for the day.")
             return None
 
         try:
@@ -117,7 +118,7 @@ class sfp_wigle(SpiderFootPlugin):
                 return None
             return info['results'][0]['boundingbox']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Wigle.net: {e}")
+            self.error(f"Error processing JSON response from Wigle.net: {e}")
             return None
 
     def getnetworks(self, coords):
@@ -153,7 +154,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.")
+            self.error("Wigle.net query limit reached for the day.")
             return None
 
         ret = list()
@@ -169,8 +170,20 @@ class sfp_wigle(SpiderFootPlugin):
 
             return ret
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from WiGLE: {e}")
+            self.error(f"Error processing JSON response from WiGLE: {e}")
             return None
+
+    def validApiKey(self, api_key):
+        if not api_key:
+            return False
+
+        try:
+            if base64.b64encode(base64.b64decode(api_key)).decode('utf-8') != api_key:
+                return False
+        except Exception:
+            return False
+
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -181,28 +194,27 @@ class sfp_wigle(SpiderFootPlugin):
         if self.errorState:
             return
 
-        if self.opts['api_key_encoded'] == "":
-            self.sf.error("You enabled sfp_wigle but did not set an API key!")
+        if not self.validApiKey(self.opts['api_key_encoded']):
+            self.error(f"Invalid API key for {self.__class__.__name__} module")
             self.errorState = True
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
         coords = self.getcoords(eventData)
         if not coords:
-            self.sf.error("Couldn't get coordinates for address from Wigle.net.")
+            self.error("Couldn't get coordinates for address from Wigle.net.")
             return
 
         nets = self.getnetworks(coords)
         if not nets:
-            self.sf.error("Couldn't get networks for coordinates from Wigle.net.")
+            self.error("Couldn't get networks for coordinates from Wigle.net.")
             return
 
         for n in nets:

@@ -8,7 +8,7 @@
 #
 # Created:     24/07/2016
 # Copyright:   (c) Steve Micallef 2016
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random
@@ -23,12 +23,16 @@ class sfp_s3bucket(SpiderFootPlugin):
     meta = {
         'name': "Amazon S3 Bucket Finder",
         'summary': "Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://aws.amazon.com/s3/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': 'https://a0.awsstatic.com/libra-css/images/site/fav/favicon.ico',
+            'logo': 'https://a0.awsstatic.com/libra-css/images/site/touch-icon-ipad-144-smile.png',
+            'description': "Amazon S3 is cloud object storage with industry-leading scalability, data availability, security, and performance. "
+            "S3 is ideal for data lakes, mobile applications, backup and restore, archival, IoT devices, ML, AI, and analytics."
         }
     }
 
@@ -64,8 +68,6 @@ class sfp_s3bucket(SpiderFootPlugin):
         return ["DOMAIN_NAME", "LINKED_URL_EXTERNAL"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
@@ -73,11 +75,11 @@ class sfp_s3bucket(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
         if not res['content']:
-            return None
+            return
 
         if "NoSuchBucket" in res['content']:
-            self.sf.debug(f"Not a valid bucket: {url}")
-            return None
+            self.debug(f"Not a valid bucket: {url}")
+            return
 
         # Bucket found
         if res['code'] in ["301", "302", "200"]:
@@ -93,19 +95,17 @@ class sfp_s3bucket(SpiderFootPlugin):
     def threadSites(self, siteList):
         self.s3results = dict()
         running = True
-        i = 0
         t = []
 
-        for site in siteList:
+        for i, site in enumerate(siteList):
             if self.checkForStop():
-                return None
+                return False
 
-            self.sf.info("Spawning thread to check bucket: " + site)
+            self.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name='thread_sfp_s3buckets_' + tname,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
-            i += 1
 
         # Block until all threads are finished
         while running:
@@ -152,18 +152,24 @@ class sfp_s3bucket(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.results[eventData] = True
+
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".amazonaws.com" in eventData:
                 b = self.sf.urlFQDN(eventData)
+                if b in self.opts['endpoints']:
+                    try:
+                        b += "/" + eventData.split(b + "/")[1].split("/")[0]
+                    except Exception:
+                        # Not a proper bucket path
+                        return
                 evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
-            return None
+            return
 
         targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
@@ -176,7 +182,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                 suffixes = [''] + self.opts['suffixes'].split(',')
                 for s in suffixes:
                     if self.checkForStop():
-                        return None
+                        return
 
                     b = t + s + "." + e
                     url = "https://" + b

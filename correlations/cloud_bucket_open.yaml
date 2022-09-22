@@ -1,0 +1,24 @@
+id: cloud_bucket_open
+version: 1
+meta:
+  name: Cloud storage bucket open to the Internet
+  description: >
+    A cloud storage bucket (e.g. S3) referenced from the target
+    website has been found to be open to the Internet. Such
+    buckets should be restricted so that contents cannot be
+    listed, even if needing to be publicly accessible.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: CLOUD_STORAGE_BUCKET
+      - method: exact
+        field: source.type
+        value: LINKED_URL_EXTERNAL
+      - method: exact
+        field: child.type
+        value: CLOUD_STORAGE_BUCKET_OPEN
+aggregation:
+  field: data
+headline: "Cloud storage bucket found open: {data}"

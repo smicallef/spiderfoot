@@ -8,7 +8,7 @@
 #
 # Created:     2020-10-07
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 import json
 
@@ -20,7 +20,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
     meta = {
         "name": "IPQualityScore",
         "summary": "Determine if target is malicious using IPQualityScore API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Investigate", "Passive"],
         "categories": ["Reputation Systems"],
         "dataSource": {
@@ -99,7 +99,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             error_str = f", message {error_message}"
         else:
             error_str = ""
-        self.sf.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
+        self.error(f"Failed to get results for {qry}, code {res['code']}{error_str}")
 
     def query(self, qry, eventName):
         queryString = ""
@@ -107,7 +107,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             queryString = f"https://ipqualityscore.com/api/json/phone/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
         elif eventName == "EMAILADDR":
             queryString = f"https://ipqualityscore.com/api/json/email/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
-        elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
+        elif eventName in ['IP_ADDRESS', 'DOMAIN_NAME']:
             queryString = f"https://ipqualityscore.com/api/json/ip/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
 
         res = self.sf.fetchUrl(
@@ -117,7 +117,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         )
 
         if not res['content']:
-            self.sf.info(f"No IPQualityScore info found for {qry}")
+            self.info(f"No IPQualityScore info found for {qry}")
             return None
 
         try:
@@ -127,7 +127,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 return None
             return r
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from IPQualityScore: {e}")
+            self.error(f"Error processing JSON response from IPQualityScore: {e}")
 
         return None
 
@@ -158,20 +158,20 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
-            return None
+            self.debug(f"Skipping {eventData} as already mapped.")
+            return
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
@@ -220,7 +220,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [Unknown]", self.__name__, event)
                 self.notifyListeners(evt)
 
-        elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
+        elif eventName in ['IP_ADDRESS', 'DOMAIN_NAME']:
             if malicious:
                 maliciousDesc += f" - FRAUD SCORE: {fraudScore}\n - BOT STATUS: {botStatus}\n - RECENT ABUSE: {recentAbuse}\n - ABUSE VELOCITY: {data.get('abuse_velocity')}\n - VPN: {data.get('vpn')}\n - ACTIVE VPN: {data.get('active_vpn')}\n - TOR: {data.get('tor')}\n - ACTIVE TOR: {data.get('active_tor')}"
 

@@ -8,11 +8,11 @@
 #
 # Created:     18/03/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-import urllib
 import json
+import urllib
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -86,7 +86,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.info(f"No location info found for {address}")
+            self.info(f"No location info found for {address}")
             return None
 
         return res
@@ -97,28 +97,28 @@ class sfp_googlemaps(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         res = self.query(eventData)
 
         if not res:
-            self.sf.debug(f"No information found for {eventData}")
-            return None
+            self.debug(f"No information found for {eventData}")
+            return
 
         evt = SpiderFootEvent(
             "RAW_RIR_DATA",
@@ -131,11 +131,11 @@ class sfp_googlemaps(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])['results'][0]
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
+            return
 
         if srcModuleName == "sfp_googlemaps":
-            return None
+            return
 
         geometry = data.get('geometry')
         if geometry:

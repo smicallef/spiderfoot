@@ -6,7 +6,7 @@
 #
 # Created:     21/11/2016
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -20,21 +20,18 @@ class sfp_psbdmp(SpiderFootPlugin):
     meta = {
         'name': "Psbdmp",
         'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://psbdmp.cc/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://psbdmp.cc/"
+                "https://psbdmp.cc/api"
             ],
             'favIcon': "",
-            'logo': "",
-            'description': "Search dump(s) by some word.\n"
-            "Search dump(s) by email.\n"
-            "Search dump(s) by domain.\n"
-            "Search dump(s) from specific date.",
+            'logo': "https://psbdmp.cc/logo.png",
+            'description': "Pastebin dump security monitor."
         }
     }
 
@@ -70,13 +67,13 @@ class sfp_psbdmp(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=15, useragent="SpiderFoot")
 
         if res['code'] == "403" or res['content'] is None:
-            self.sf.info("Unable to fetch data from psbdmp.cc right now.")
+            self.info("Unable to fetch data from psbdmp.cc right now.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from psbdmp.cc: {e}")
+            self.error(f"Error processing JSON response from psbdmp.cc: {e}")
             return None
 
         ids = list()
@@ -96,17 +93,17 @@ class sfp_psbdmp(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
         if data is None:
-            return None
+            return
 
         for n in data:
             e = SpiderFootEvent("LEAKSITE_URL", n, self.__name__, event)
@@ -119,12 +116,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             )
 
             if res['content'] is None:
-                self.sf.debug(f"Ignoring {n} as no data returned")
-                continue
-
-            # Sometimes pastes search results false positives
-            if eventData.lower() not in str(res['content']).lower():
-                self.sf.debug(f"{eventData} not found in pastes content.")
+                self.debug(f"Ignoring {n} as no data returned")
                 continue
 
             if re.search(

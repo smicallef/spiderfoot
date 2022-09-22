@@ -6,7 +6,7 @@
 #
 # Created:     06/02/2018
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -101,13 +101,13 @@ class sfp_fullcontact(SpiderFootPlugin):
         )
 
         if res['code'] in ["401", "400"]:
-            self.sf.error("API key rejected by FullContact")
+            self.error("API key rejected by FullContact")
             self.errorState = True
             return None
 
         if res['code'] == "403":
             if failcount == 3:
-                self.sf.error("Throttled or other blocking by FullContact")
+                self.error("Throttled or other blocking by FullContact")
                 return None
 
             time.sleep(2)
@@ -115,13 +115,13 @@ class sfp_fullcontact(SpiderFootPlugin):
             return self.query(url, data, failcount)
 
         if not res['content']:
-            self.sf.error("No content returned from FullContact")
+            self.error("No content returned from FullContact")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from FullContact: {e}")
+            self.error(f"Error processing JSON response from FullContact: {e}")
             return None
 
         if "updated" in ret and int(self.opts['max_age_days']) > 0:
@@ -130,7 +130,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             age_limit_ts = int(time.time()) - (86400 * int(self.opts['max_age_days']))
 
             if last_ts < age_limit_ts:
-                self.sf.debug("FullContact record found but too old.")
+                self.debug("FullContact record found but too old.")
                 return None
 
         return ret
@@ -165,20 +165,20 @@ class sfp_fullcontact(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts["api_key"] == "":
-            self.sf.error(
+            self.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
@@ -186,7 +186,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPersonByEmail(eventData)
 
             if not data:
-                return None
+                return
 
             full_name = data.get('fullName')
 
@@ -194,13 +194,13 @@ class sfp_fullcontact(SpiderFootPlugin):
                 e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
                 self.notifyListeners(e)
 
-            return None
+            return
 
         if eventName == "DOMAIN_NAME":
             data = self.queryCompany(eventData)
 
             if not data:
-                return None
+                return
 
             if data.get("details"):
                 data = data['details']

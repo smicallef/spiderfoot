@@ -8,7 +8,7 @@
 #
 # Created:     20/02/2013
 # Copyright:   (c) Steve Micallef 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random
@@ -71,10 +71,15 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
+        portlist = list()
         if self.opts['ports'][0].startswith("http://") or \
                 self.opts['ports'][0].startswith("https://") or \
                 self.opts['ports'][0].startswith("@"):
-            portlist = self.sf.optValueToData(self.opts['ports'][0])
+            file_ports = self.sf.optValueToData(self.opts['ports'][0])
+            if file_ports:
+                portlist = file_ports.split("\n")
+            else:
+                self.error(f"Could not load ports from {self.opts['ports'][0]}")
         else:
             portlist = self.opts['ports']
 
@@ -83,7 +88,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             try:
                 self.portlist.append(int(port))
             except ValueError:
-                self.sf.debug(f"Skipping invalid port '{port}' specified in port list")
+                self.debug(f"Skipping invalid port '{port}' specified in port list")
 
         if self.opts['randomize']:
             random.SystemRandom().shuffle(self.portlist)
@@ -93,8 +98,6 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         return ['IP_ADDRESS', 'NETBLOCK_OWNER']
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
 
@@ -132,9 +135,9 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
         # Spawn threads for scanning
         while i < len(portList):
-            self.sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
-            t.append(threading.Thread(name='sfp_portscan_tcp_' + str(portList[i]),
-                                      target=self.tryPort, args=(ip, portList[i])))
+            port = portList[i]
+            self.info(f"Spawning thread to check port: {port} on {ip}")
+            t.append(threading.Thread(name=f"sfp_portscan_tcp_{port}", target=self.tryPort, args=(ip, port)))
             t[i].start()
             i += 1
 
@@ -154,74 +157,83 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     # Generate TCP_PORT_OPEN_BANNER event
     def sendEvent(self, resArray, srcEvent):
         for cp in resArray:
-            if resArray[cp]:
-                self.sf.info("TCP Port " + cp + " found to be OPEN.")
-                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
-                self.notifyListeners(evt)
-                if resArray[cp] is not True:
-                    banner = str(resArray[cp], 'utf-8', errors='replace')
-                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
-                                           self.__name__, evt)
-                    self.notifyListeners(bevt)
+            if not resArray[cp]:
+                continue
+
+            self.info(f"TCP port {cp} found to be OPEN.")
+            evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
+            self.notifyListeners(evt)
+
+            if resArray[cp] is not True:
+                banner = str(resArray[cp], 'utf-8', errors='replace')
+                bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner, self.__name__, evt)
+                self.notifyListeners(bevt)
 
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        scanIps = list()
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.portlist:
-            self.sf.error('No ports specified in port list')
+            self.error('No ports specified in port list')
             self.errorState = True
-            return None
+            return
 
-        try:
-            if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
+        scanIps = list()
+        if eventName == "NETBLOCK_OWNER":
+            if not self.opts['netblockscan']:
+                self.debug(f"Scanning of owned netblocks is disabled. Skipping netblock {eventData}.")
+                return
+
+            try:
                 net = IPNetwork(eventData)
-                if net.prefixlen < self.opts['netblockscanmax']:
-                    self.sf.debug("Skipping port scanning of " + eventData + ", too big.")
-                    return None
+            except Exception as e:
+                self.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
+                return
 
-                for ip in net:
-                    ipaddr = str(ip)
-                    if ipaddr.split(".")[3] in ['255', '0']:
-                        continue
-                    if '255' in ipaddr.split("."):
-                        continue
-                    scanIps.append(ipaddr)
-            else:
-                scanIps.append(eventData)
-        except Exception as e:
-            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
-            return None
+            if net.prefixlen < self.opts['netblockscanmax']:
+                self.debug(f"Skipping port scanning of owned net block {eventData}, too big.")
+                return
 
-        for ipAddr in scanIps:
-            # Don't look up stuff twice
+            for ip in net:
+                ipaddr = str(ip)
+                if '255' in ipaddr.split("."):
+                    continue
+                if ipaddr.split(".")[3] == '0':
+                    continue
+                scanIps.append(ipaddr)
+        else:
+            scanIps.append(eventData)
+
+        for ipAddr in set(scanIps):
             if ipAddr in self.results:
-                self.sf.debug("Skipping " + ipAddr + " as already scanned.")
-                return None
-            else:
-                self.results[ipAddr] = True
+                self.debug(f"Skipping {ipAddr} as already scanned.")
+                return
+
+            self.results[ipAddr] = True
+
+            self.info(f"Scanning {len(set(self.portlist))} ports on {ipAddr}")
 
             i = 0
             portArr = []
             for port in self.portlist:
                 if self.checkForStop():
-                    return None
+                    return
 
                 if i < self.opts['maxthreads']:
                     portArr.append(port)
-                    i += 1
                 else:
                     self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
-                    i = 1
+                    i = 0
                     portArr = [port]
+
+                i += 1
 
             # Scan whatever is remaining
             self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)

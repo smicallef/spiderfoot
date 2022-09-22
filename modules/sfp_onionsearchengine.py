@@ -8,7 +8,7 @@
 #
 # Created:     27/10/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -24,7 +24,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     meta = {
         'name': "Onionsearchengine.com",
         'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
-        'flags': [""],
+        'flags': ["tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -83,11 +83,11 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
+            self.debug("Already did a search for " + eventData + ", skipping.")
+            return
 
         self.results[eventData] = True
 
@@ -96,7 +96,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         while keepGoing and page <= int(self.opts['max_pages']):
             # Check if we've been asked to stop
             if self.checkForStop():
-                return None
+                return
 
             params = {
                 'search': '"' + eventData.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
@@ -110,8 +110,8 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                     timeout=self.opts['timeout'])
 
             if data is None or not data.get('content'):
-                self.sf.info("No results returned from onionsearchengine.com.")
-                return None
+                self.info("No results returned from onionsearchengine.com.")
+                return
 
             page += 1
 
@@ -119,7 +119,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 # Work around some kind of bug in the site
                 if "you didn't submit a keyword" in data['content']:
                     continue
-                return None
+                return
 
             if "forward >" not in data['content']:
                 keepGoing = False
@@ -134,7 +134,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
             for link in links:
                 if self.checkForStop():
-                    return None
+                    return
 
                 if link in self.results:
                     continue
@@ -144,12 +144,12 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 blacklist = False
                 for r in self.opts['blacklist']:
                     if re.match(r, link, re.IGNORECASE):
-                        self.sf.debug("Skipping " + link + " as it matches blacklist " + r)
+                        self.debug("Skipping " + link + " as it matches blacklist " + r)
                         blacklist = True
                 if blacklist:
                     continue
 
-                self.sf.debug("Found a darknet mention: " + link)
+                self.debug("Found a darknet mention: " + link)
 
                 if not self.sf.urlFQDN(link).endswith(".onion"):
                     continue
@@ -165,11 +165,11 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                        verify=False)
 
                 if res['content'] is None:
-                    self.sf.debug("Ignoring " + link + " as no data returned")
+                    self.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 if eventData not in res['content']:
-                    self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                    self.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
@@ -179,7 +179,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
                 except Exception:
-                    self.sf.debug('String "' + eventData + '" not found in content.')
+                    self.debug('String "' + eventData + '" not found in content.')
                     continue
 
                 data = res['content'][startIndex:endIndex]

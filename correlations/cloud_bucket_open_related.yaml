@@ -1,0 +1,25 @@
+id: cloud_bucket_open_related
+version: 1
+meta:
+  name: Possibly related cloud storage bucket open to the Internet
+  description: >
+    A cloud storage bucket (e.g. S3) potentially related to
+    the target has been found to be open to the Internet.
+
+    As the buckets in this case are based on name-matching, verification
+    for actual association with the target is necessary.
+  risk: LOW
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: CLOUD_STORAGE_BUCKET
+      - method: exact
+        field: source.type
+        value: not LINKED_URL_EXTERNAL
+      - method: exact
+        field: child.type
+        value: CLOUD_STORAGE_BUCKET_OPEN
+aggregation:
+  field: data
+headline: "Potentially relevant cloud storage bucket found open: {data}"

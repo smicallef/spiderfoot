@@ -1,0 +1,48 @@
+id: stale_host
+version: 1
+meta:
+  name: Stale host found
+  description: >
+    A host appears to be stale based upon various indicators such
+    as unsuccessful HTTP codes, expired SSL certificates, error
+    messages, vulnerabilities and junk files found. Such hosts
+    may be unmaintained, exposing the target to security risks.
+  risk: HIGH
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: SSL_CERTIFICATE_EXPIRED
+  - collect:
+      - method: exact
+        field: type
+        value: HTTP_CODE
+      - method: regex
+        field: data
+        value: not ^[2-3].*$
+      - method: regex
+        field: data
+        value: not 40[13]
+  - collect:
+      - method: exact
+        field: type
+        value: ERROR_MESSAGE
+  - collect:
+      - method: exact
+        field: type
+        value: JUNK_FILE
+  - collect:
+      - method: regex
+        field: type
+        value: VULNERABILITY_.*
+aggregation:
+  field: entity.data
+analysis:
+  - method: threshold
+    field: type
+    # Avoid multiple of the same type triggering. This means
+    # a minimum of 3 of different types must appear in one
+    # bucket.
+    count_unique_only: true
+    minimum: 3
+headline: "Potentially stale/unmaintained host: {entity.data}"

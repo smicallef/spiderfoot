@@ -8,7 +8,7 @@
 #
 # Created:     18/06/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -21,7 +21,7 @@ class sfp_blockchain(SpiderFootPlugin):
     meta = {
         'name': "Blockchain",
         'summary': "Queries blockchain.info to find the balance of identified bitcoin wallet addresses.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {
@@ -71,27 +71,26 @@ class sfp_blockchain(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         # Wallet balance
         res = self.sf.fetchUrl("https://blockchain.info/balance?active=" + eventData,
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
-            self.sf.info("No Blockchain info found for " + eventData)
-            return None
+            self.info("No Blockchain info found for " + eventData)
+            return
         try:
             data = json.loads(res['content'])
             balance = float(data[eventData]['final_balance']) / 100000000
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
+            return
 
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
         self.notifyListeners(evt)

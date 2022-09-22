@@ -8,7 +8,7 @@
 #
 # Created:     26/11/2016
 # Copyright:   (c) Steve Micallef 2012
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -63,7 +63,7 @@ class sfp_similar(SpiderFootPlugin):
     meta = {
         'name': "Similar Domain Finder",
         'summary': "Search various sources to identify similar looking domain names, for instance squatted domains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }
@@ -106,7 +106,7 @@ class sfp_similar(SpiderFootPlugin):
             return
 
         tld = "." + eventData.split(dom + ".")[-1]
-        self.sf.debug(f"Keyword extracted from {eventData}: {dom}")
+        self.debug(f"Keyword extracted from {eventData}: {dom}")
 
         if dom in self.results:
             return
@@ -141,19 +141,17 @@ class sfp_similar(SpiderFootPlugin):
             domlist.append(c + dom)
 
         # Search for double character domains
-        pos = 0
-        for c in dom:
+        for pos, c in enumerate(dom):
             domlist.append(dom[0:pos] + c + c + dom[(pos + 1):len(dom)])
-            pos += 1
 
         for d in domlist:
-            d_tld = f"{d}{tld}"
-
             try:
-                if self.sf.resolveHost(d_tld) or self.sf.resolveHost(f"www.{d_tld}"):
-                    self.sf.debug(f"Resolved {d_tld}")
-                    evt = SpiderFootEvent("SIMILARDOMAIN", d_tld, self.__name__, event)
-                    self.notifyListeners(evt)
+                for domain in [f"{d}{tld}", f"www.{d}{tld}"]:
+                    if self.sf.resolveHost(domain) or self.sf.resolveHost6(domain):
+                        self.debug(f"Resolved {domain}")
+                        evt = SpiderFootEvent("SIMILARDOMAIN", f"{d}{tld}", self.__name__, event)
+                        self.notifyListeners(evt)
+                        break
             except Exception:
                 continue
 

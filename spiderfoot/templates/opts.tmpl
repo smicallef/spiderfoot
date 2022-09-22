@@ -1,0 +1,199 @@
+<%include file="HEADER.tmpl"/>
+    <script type='text/javascript' src='${docroot}/static/js/spiderfoot.opts.js'></script>
+    <h2>Settings</h2>
+% if updated:
+<div class="alert alert-success">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Success!</h4>
+ Settings updated. These will take effect the next time you run a scan.
+</div>
+% endif
+<form class="form" action='${docroot}/savesettings' id="savesettingsform" method='POST' enctype="multipart/form-data">
+<div class='text-left'>
+    <input type=hidden id='allopts' name='allopts' value=''>
+    <input type=hidden id='token' name='token' value="${token}">
+    <input type="file" name='configFile' id="configFile" class='hidden' onChange='$("#savesettingsform").submit()' />
+    <button id="btn-save-changes" class='btn btn-primary' type="submit">Save Changes</button>
+    <button id="btn-import-config" class='btn btn-info'>Import API Keys</button>
+    <button id="btn-opt-export" class='btn btn-info'>Export API Keys</button>
+    <button id="btn-reset-settings" class='btn btn-danger'>Reset to Factory Default</button>
+<br><br>
+</div>
+
+<div class="tabbable tabs-left">
+<ul class="nav nav-pills nav-stacked col-md-3">
+<li id='tab_global' class="active"><a href="#">Global</a></li>
+% for mod in sorted(opts['__modules__'].keys()):
+    <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if not k.startswith('_')) %>
+    % if len(keylist) > 0:
+        <% keyicon = "" %>
+        <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if k.find("api_key") >= 0) %>
+        <% 
+        if len(apikeylist) > 0: 
+            keyicon = "&nbsp;&nbsp;<i class=\"glyphicon glyphicon-lock\"></i>"
+        %>
+        <li id='tab_${mod}'><a href='#' onclick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
+    % endif
+% endfor
+</ul>
+</div>
+
+<div class="tab-content col-md-9">
+
+<div id='optsect_global' class="tab-pane active">
+<h4>Global Settings</h4>
+<table class='table table-bordered table-striped'>
+<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
+% for opt in sorted(opts.keys()):
+    % if not opt.startswith("__"):
+    <tr><td>${opts['__globaloptdescs__'].get(opt) or "No description available"}</td><td style='vertical-align: middle'>
+        % if type(opts[opt]) is int:
+        <div class='form-group'>
+            <input id='${opt}' class='form-control' type=text value="${opts[opt]}">
+        </div>
+        % endif
+        % if type(opts[opt]) is str:
+        <div class='form-group'>
+            <input id='${opt}' style='width: 500px' class='form-control' type=text value="${opts[opt]}">
+        </div>
+        % endif
+        % if type(opts[opt]) is bool:
+        <%
+            if opts[opt] == True:
+                seltrue = "selected"
+                selfalse = ""
+            else:
+                selfalse = "selected"  
+                seltrue = ""
+        %>
+            <select id='${opt}' class='form-control'>
+                <option value=1 ${seltrue}>True</option>
+                <option value=0 ${selfalse}>False</option>
+            </select>
+        % endif
+        % if type(opts[opt]) is list and type(opts[opt][0]) is str:
+            <% expandedopt = ','.join(opts[opt]) %>
+            <div class='form-group'>
+                <input id='${opt}' style='width: 500px' class='form-control' type=text value="${expandedopt}">
+            </div>
+        % endif
+        % if type(opts[opt]) is list and type(opts[opt][0]) is int:
+            <% expandedopt = ','.join(str(x) for x in opts[opt]) %>
+            <div class='form-group'>
+                <input id='${opt}' class='form-control' type=text value="${expandedopt}">
+            </div>
+        % endif
+    </td></tr>
+    % endif
+% endfor
+</tbody>
+</table>
+</div>
+% for mod in sorted(opts['__modules__'].keys()):
+    <%
+        summary = opts['__modules__'][mod].get('descr') or 'No summary available.'
+        categories = opts['__modules__'][mod].get('cats') or []
+        labels = opts['__modules__'][mod].get('labels') or []
+        meta = opts['__modules__'][mod].get('meta')
+        modopts = opts['__modules__'][mod].get('opts')
+        optdescs = opts['__modules__'][mod].get('optdescs')
+        data_source = meta.get('dataSource') or {}
+        website = data_source.get('website') or ''
+        description = data_source.get('description') or ''
+        apiKeyInstructions = data_source.get('apiKeyInstructions') or ''
+    %>
+    <div id='optsect_${mod}' class="tab-pane" style="display: none">
+    <h4>${opts['__modules__'][mod]['name']} (${mod})</h4>
+
+    <table class='table table-bordered table-striped'>
+    <tbody>
+    <tr><td>Summary</td><td>${summary}<br/><br/>${description}</td></tr>
+
+    % if categories:
+    <tr><td>Categories:</td><td>${', '.join(categories)}</td><tr>
+    % endif
+
+    % if labels:
+    <tr><td>Tags:</td><td>${', '.join(labels)}</td><tr>
+    % endif
+
+    % if website:
+    <tr><td>Website:</td><td><a href="${website}" target=_new>${website}</a></td></tr>
+    % endif
+
+    </tbody>
+    </table>
+
+    <h4>Settings</h4>
+    <table class='table table-bordered table-striped'>
+    <thead><tr><th>Option</th> <th>Value</th></tr></thead>
+    <tbody>
+
+    % for opt in sorted(modopts.keys()):
+        % if not opt.startswith("_"):
+            <tr>
+              <td>${optdescs.get(opt) or "No description available."}
+                % if "api_key" in opt:
+                    % if apiKeyInstructions:
+                        <%
+                            import re
+                            instructions = ""
+                            for step in apiKeyInstructions:
+                                if "https://" in step or "http://" in step:
+                                    step = re.sub(r'(https?://.[^ ]+)', '<a target=_new href=\'\\1\'>\\1</a>', step)
+                                instructions += f"<li>{step}</li>"
+                        %>
+                        &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="<ol>${instructions}</ol>"><i class="glyphicon glyphicon-question-sign"></i></a>
+                    % endif
+                % endif
+              </td>
+              <td style='vertical-align: middle'>
+            % if type(modopts[opt]) is int:
+                <div class='form-group'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${modopts[opt]}">
+                </div>
+            % endif
+            % if type(modopts[opt]) is str:
+                <div class='form-group'>
+                    <input id='${mod}:${opt}' style='width: 500px' class='form-control' type=text value="${modopts[opt]}">
+                </div>
+            % endif
+            % if type(modopts[opt]) is bool:
+            <%
+                if modopts[opt] == True:
+                    seltrue = "selected"
+                    selfalse = ""
+                else:
+                    selfalse = "selected"
+                    seltrue = ""
+            %>
+                <select id='${mod}:${opt}' class='form-control'>
+                    <option value=1 ${seltrue}>True</option>
+                    <option value=0 ${selfalse}>False</option>
+                </select>
+            % endif
+            % if type(modopts[opt]) is list and type(modopts[opt][0]) is str:
+                <% expandedopt = ','.join(modopts[opt]) %>
+                <div class='form-group'>
+                    <input id='${mod}:${opt}' style='width: 500px' class='form-control' type=text value="${expandedopt}">
+                </div>
+            % endif
+            % if type(modopts[opt]) is list and type(modopts[opt][0]) is int:
+                <% expandedopt = ','.join(str(x) for x in modopts[opt]) %>
+                <div class='form-group'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${expandedopt}">
+                </div>
+            % endif
+
+            </td></tr>
+        % endif
+    % endfor
+    </tbody>
+    </table>
+    </div>
+% endfor
+</div>
+</div> <!-- /tabbable tabs-left -->
+</form>
+<br><br>
+<%include file="FOOTER.tmpl"/>

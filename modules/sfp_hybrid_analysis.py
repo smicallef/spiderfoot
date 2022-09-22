@@ -7,7 +7,7 @@
 #
 # Created:     2020-08-09
 # Copyright:   (c) bcoles 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -103,7 +103,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryHost(self, qry):
         """Query a host
@@ -132,7 +132,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     def queryHash(self, qry):
         """Query a hash
@@ -161,9 +161,9 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
         """Parse HTTP response from API
 
         Args:
@@ -172,21 +172,24 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         Returns:
             str: API response as JSON
         """
+        if not res:
+            self.error("No response from Hybrid Analysis.")
+            return None
 
         if res['code'] == '400':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
-            self.sf.debug("API response: %s" % res['content'])
+            self.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
+            self.debug(f"API response: {res['content']}")
             return None
 
         # Future proofing - Hybrid Analysis does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
+            self.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'])
+            self.error(f"Failed to retrieve content from Hybrid Analysis: Unexpected response status {res['code']}")
             self.errorState = True
             return None
 
@@ -194,12 +197,11 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -207,57 +209,57 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
-            return None
+            return
 
         if eventName == "IP_ADDRESS":
             data = self.queryHost(eventData)
         elif eventName == "DOMAIN_NAME":
             data = self.queryDomain(eventData)
         else:
-            return None
+            return
 
         if data is None:
-            self.sf.debug("No information found for %s" % eventData)
-            return None
-
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
-        self.notifyListeners(evt)
+            self.debug(f"No information found for{eventData}")
+            return
 
         results = data.get("result")
 
         if not results:
-            return None
+            return
 
         hashes = []
 
         for result in results:
-            hash = result.get('sha256')
-            if hash:
-                hashes.append(hash)
+            file_hash = result.get('sha256')
+            if file_hash:
+                hashes.append(file_hash)
 
         if not hashes:
-            return None
+            return
 
-        self.sf.info("Found %s results for %s" % (len(hashes), eventData))
+        self.info(f"Found {len(hashes)} results for {eventData}")
+
+        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        self.notifyListeners(evt)
 
         urls = []
         domains = []
 
-        for hash in hashes:
-            results = self.queryHash(hash)
+        for file_hash in hashes:
+            results = self.queryHash(file_hash)
 
             if not results:
-                self.sf.debug("No information found for hash %s" % hash)
+                self.debug(f"No information found for hash {file_hash}")
                 continue
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
@@ -292,7 +294,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         for domain in set(domains):
             if self.checkForStop():
-                return None
+                return
 
             if domain in self.results:
                 continue
@@ -300,8 +302,8 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 continue
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host %s could not be resolved" % domain)
+            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                self.debug(f"Host {domain} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)
             else:

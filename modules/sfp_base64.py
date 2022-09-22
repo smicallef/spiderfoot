@@ -21,7 +21,7 @@ class sfp_base64(SpiderFootPlugin):
     meta = {
         'name': "Base64 Decoder",
         'summary': "Identify Base64-encoded strings in URLs, often revealing interesting hidden information.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -57,7 +57,7 @@ class sfp_base64(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         decoded_data = urllib.parse.unquote(eventData)
 
@@ -83,12 +83,12 @@ class sfp_base64(SpiderFootPlugin):
             else:
                 string = str(match)
 
-            self.sf.info(f"Found Base64 string: {match}")
+            self.info(f"Found Base64 string: {match}")
 
             try:
                 string += f" ({base64.b64decode(match).decode('utf-8')})"
             except Exception as e:
-                self.sf.debug(f"Unable to base64-decode string: {e}")
+                self.debug(f"Unable to base64-decode string: {e}")
                 continue
 
             evt = SpiderFootEvent("BASE64_DATA", string, self.__name__, event)

@@ -7,7 +7,7 @@
 #
 # Created:     2019-08-07
 # Copyright:   (c) bcoles 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -55,6 +55,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
     results = None
     errorState = False
+    errorWarned = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -93,57 +94,60 @@ class sfp_emailrep(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error('API error: Bad request')
+            self.error('API error: Bad request')
             self.errorState = True
             return None
 
         if res['code'] == '401':
-            self.sf.error('API error: Invalid API key')
+            self.error('API error: Invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error('API error: Too Many Requests')
+            self.error('API error: Too Many Requests')
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'])
+            self.error('Unexpected reply from EmailRep.io: ' + res['code'])
             self.errorState = True
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return
+
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if self.opts['api_key'] == '':
-            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.")
+        if self.opts['api_key'] == '' and not self.errorWarned:
+            self.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.")
+            self.errorWarned = True
 
         res = self.query(eventData)
 
         if res is None:
-            return None
+            return
 
         details = res.get('details')
 
         if not details:
-            return None
+            return
 
         credentials_leaked = details.get('credentials_leaked')
         if credentials_leaked:

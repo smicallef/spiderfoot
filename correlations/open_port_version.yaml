@@ -1,0 +1,26 @@
+id: open_port_version
+version: 1
+meta:
+  name: Open TCP port reveals version
+  description: >
+    A possible software version has been revealed on an open port. Such
+    information may reveal the use of old/unpatched software used by
+    the target.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: TCP_PORT_OPEN_BANNER
+      - method: regex
+        field: data
+        value: .*[0-9]\.[0-9].*
+      - method: regex
+        field: data
+        value: not .*Mime-Version.*
+      - method: regex
+        field: data
+        value: not .*HTTP/1.*
+aggregation:
+  field: data
+headline: "Software version revealed on open port: {data}"

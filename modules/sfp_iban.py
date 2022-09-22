@@ -1,50 +1,40 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_iban
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
-#               modules (such as sfp_spider) and identifying IBAN numbers.
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
+#               modules (such as sfp_spider) and identifying IBANs.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
 # Created:     26/04/2020
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_iban(SpiderFootPlugin):
 
     meta = {
         'name': "IBAN Number Extractor",
-        'summary': "Identify IBAN Numbers in any data",
+        'summary': "Identify International Bank Account Numbers (IBANs) in any data.",
         'flags': ["errorprone"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
 
-    # Default options.
     opts = {
     }
 
-    # Option descriptions.
     optdescs = {
     }
 
-    # Tracking results can be helpful to avoid reporting/processing duplicates
     results = None
-
-    # Tracking the error state of the module can be useful to detect when a third party
-    # has failed and you don't wish to process any more events.
-    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
 
         # Override datasource for sfp_iban module
         self.__dataSource__ = "Target Website"
@@ -67,28 +57,12 @@ class sfp_iban(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        # Once we are in this state, return immediately.
-        if self.errorState:
-            return None
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # event was received.
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-        # Extract IBAN Card numbers
-        ibanNumbers = self.sf.parseIBANNumbers(eventData)
-
-        myres = list()
-        for ibanNumber in ibanNumbers:
-            evttype = "IBAN_NUMBER"
-
-            self.sf.info("Found IBAN number : " + ibanNumber)
-
-            if ibanNumber in myres:
-                self.sf.debug("Already found from this source")
-                continue
-            myres.append(ibanNumber)
-
-            evt = SpiderFootEvent(evttype, ibanNumber, self.__name__, event)
+        ibans = SpiderFootHelpers.extractIbansFromText(eventData)
+        for ibanNumber in set(ibans):
+            self.info(f"Found IBAN number: {ibanNumber}")
+            evt = SpiderFootEvent("IBAN_NUMBER", ibanNumber, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:

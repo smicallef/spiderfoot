@@ -6,13 +6,13 @@
 #
 # Created:     10/08/2017
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_builtwith(SpiderFootPlugin):
@@ -102,8 +102,9 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Relationships']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
-            return None
+            self.error(f"Error processing JSON response from builtwith.com: {e}")
+
+        return None
 
     def queryDomainInfo(self, t):
         url = f"https://api.builtwith.com/rv1/api.json?LOOKUP={t}&KEY={self.opts['api_key']}"
@@ -119,8 +120,9 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Results'][0]
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
-            return None
+            self.error(f"Error processing JSON response from builtwith.com: {e}")
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -129,21 +131,20 @@ class sfp_builtwith(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_builtwith but did not set an API key!")
+            self.error("You enabled sfp_builtwith but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
+
+        self.results[eventData] = True
 
         data = self.queryDomainInfo(eventData)
         if data is not None:
@@ -154,7 +155,7 @@ class sfp_builtwith(SpiderFootPlugin):
                                             self.__name__, event)
                         self.notifyListeners(e)
                         if nb.get('Email', None):
-                            if self.sf.validEmail(nb['Email']):
+                            if SpiderFootHelpers.validEmail(nb['Email']):
                                 if nb['Email'].split("@")[0] in self.opts['_genericusers'].split(","):
                                     evttype = "EMAILADDR_GENERIC"
                                 else:
@@ -165,7 +166,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
                 if data['Meta'].get("Emails", []):
                     for email in data['Meta']['Emails']:
-                        if self.sf.validEmail(email):
+                        if SpiderFootHelpers.validEmail(email):
                             if email.split("@")[0] in self.opts['_genericusers'].split(","):
                                 evttype = "EMAILADDR_GENERIC"
                             else:
@@ -202,7 +203,7 @@ class sfp_builtwith(SpiderFootPlugin):
                             src = event
                         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
                         if t.get("LastDetected", 0) < agelimit:
-                            self.sf.debug("Data found too old, skipping.")
+                            self.debug("Data found too old, skipping.")
                             continue
                         e = SpiderFootEvent("WEBSERVER_TECHNOLOGY", t["Name"],
                                             self.__name__, src)
@@ -210,26 +211,26 @@ class sfp_builtwith(SpiderFootPlugin):
 
         data = self.queryRelationships(eventData)
         if data is None:
-            return None
+            return
 
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
 
         for r in data:
             if "Domain" not in r or "Identifiers" not in r:
-                self.sf.debug("Data returned not in the format requested.")
+                self.debug("Data returned not in the format requested.")
                 continue
 
             if r['Domain'] != eventData:
-                self.sf.debug("Data returned doesn't match data requested, skipping.")
+                self.debug("Data returned doesn't match data requested, skipping.")
                 continue
 
             for i in r['Identifiers']:
                 if "Last" not in i or "Type" not in i or "Value" not in i:
-                    self.sf.debug("Data returned not in the format requested.")
+                    self.debug("Data returned not in the format requested.")
                     continue
 
                 if i['Last'] < agelimit:
-                    self.sf.debug("Data found too old, skipping.")
+                    self.debug("Data found too old, skipping.")
                     continue
 
                 evttype = None

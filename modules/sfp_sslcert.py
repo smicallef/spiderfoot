@@ -7,7 +7,7 @@
 #
 # Created:     23/08/2013
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from urllib.parse import urlparse
@@ -20,7 +20,7 @@ class sfp_sslcert(SpiderFootPlugin):
     meta = {
         'name': "SSL Certificate Analyzer",
         'summary': "Gather information about SSL certificates used by the target's HTTPS sites.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Crawling and Scanning"]
     }
@@ -66,11 +66,11 @@ class sfp_sslcert(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ['TCP_PORT_OPEN', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
-                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
+                'CO_HOSTED_SITE', 'CO_HOSTED_SITE_DOMAIN',
                 "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
                 "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW",
-                "DOMAIN_NAME", 'AFFILIATE_DOMAIN_NAME']
+                "DOMAIN_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -78,7 +78,7 @@ class sfp_sslcert(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
@@ -92,7 +92,7 @@ class sfp_sslcert(SpiderFootPlugin):
                     port = u.port
                 fqdn = self.sf.urlFQDN(eventData.lower())
             except Exception:
-                self.sf.debug("Couldn't parse URL: " + eventData)
+                self.debug("Couldn't parse URL: " + eventData)
                 return
         else:
             fqdn = eventData
@@ -103,7 +103,7 @@ class sfp_sslcert(SpiderFootPlugin):
         else:
             return
 
-        self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
+        self.debug("Testing SSL for: " + fqdn + ':' + str(port))
         # Re-fetch the certificate from the site and process
         try:
             sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
@@ -112,7 +112,7 @@ class sfp_sslcert(SpiderFootPlugin):
             pemcert = self.sf.sslDerToPem(dercert)
             cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
         except Exception as x:
-            self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
+            self.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
             return
 
         if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
@@ -120,7 +120,7 @@ class sfp_sslcert(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if not cert.get('text'):
-            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            self.info("Failed to parse the SSL cert for " + fqdn)
             return
 
         # Generate the event for the raw cert (in text form)
@@ -145,19 +145,18 @@ class sfp_sslcert(SpiderFootPlugin):
 
             if self.getTarget().matches(domain, includeChildren=True):
                 evt_type = 'INTERNET_NAME'
+                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                    self.debug(f"Host {domain} could not be resolved")
+                    evt_type += '_UNRESOLVED'
             else:
-                evt_type = 'AFFILIATE_INTERNET_NAME'
-
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug(f"Host {domain} could not be resolved")
-                evt_type += '_UNRESOLVED'
+                evt_type = 'CO_HOSTED_SITE'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)
 
             if self.sf.isDomain(domain, self.opts['_internettlds']):
-                if evt_type.startswith('AFFILIATE'):
-                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                if evt_type == 'CO_HOSTED_SITE':
+                    evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)

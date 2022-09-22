@@ -7,7 +7,7 @@
 #
 # Created:     25/05/2013
 # Copyright:   (c) Steve Micallef 2013
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -32,7 +32,7 @@ class sfp_webframework(SpiderFootPlugin):
     meta = {
         'name': "Web Framework Identifier",
         'summary': "Identify the usage of popular web frameworks like jQuery, YUI and others.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -80,14 +80,14 @@ class sfp_webframework(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventSource not in self.results:
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting web content information for external sites.")
+            self.debug("Not collecting web content information for external sites.")
             return
 
         for regexpGrp in list(regexps.keys()):
@@ -98,7 +98,7 @@ class sfp_webframework(SpiderFootPlugin):
                 pat = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource] = self.results[eventSource] + [regexpGrp]
                     evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp,
                                           self.__name__, event)

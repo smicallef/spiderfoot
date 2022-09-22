@@ -12,7 +12,7 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -p 5001:5001 spiderfoot
+#   sudo docker run -p 5001:5001 --security-opt no-new-privileges spiderfoot
 #
 # Using Docker volume for spiderfoot data
 #
@@ -26,28 +26,36 @@
 #
 #   sudo docker run --rm spiderfoot sf.py -h
 #
+# Running a shell in the container for maintenance
+#   sudo docker run -it --entrypoint /bin/sh spiderfoot
+#
 # Running spiderfoot unit tests in container
-#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=requirements_test.txt .
+#
+#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=test/requirements.txt .
 #   sudo docker run --rm spiderfoot-test -m pytest --flake8 .
 
-FROM alpine:3.9.6 AS build
+FROM alpine:3.12.4 AS build
 ARG REQUIREMENTS=requirements.txt
 RUN apk add --no-cache gcc git curl python3 python3-dev py3-pip swig tinyxml-dev \
  python3-dev musl-dev openssl-dev libffi-dev libxslt-dev libxml2-dev jpeg-dev \
- openjpeg-dev zlib-dev
+ openjpeg-dev zlib-dev cargo rust
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin":$PATH
 COPY $REQUIREMENTS requirements.txt ./
 RUN ls
 RUN echo "$REQUIREMENTS"
+RUN pip3 install -U pip
 RUN pip3 install -r "$REQUIREMENTS"
 
 
 
-FROM alpine:3.9.6
+FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
-# Place database and configs outside installation directory
+
+# Place database and logs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
+ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
+ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
 
 # Run everything as one command so that only one layer is created
 RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg \
@@ -57,15 +65,14 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && rm -rf /var/cache/apk/* \
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
-    && mkdir $SPIDERFOOT_DATA \
-    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
+    && mkdir -p $SPIDERFOOT_DATA || true \
+    && mkdir -p $SPIDERFOOT_LOGS || true \
+    && mkdir -p $SPIDERFOOT_CACHE || true \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
 
 COPY . .
-
-# fix permissions on logs directory
-ENV SPIDERFOOT_LOGS /home/spiderfoot/log
-RUN chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS
-
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 

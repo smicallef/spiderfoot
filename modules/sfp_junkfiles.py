@@ -7,12 +7,12 @@
 #
 # Created:     23/08/2014
 # Copyright:   (c) Steve Micallef 2014
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import random
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_junkfiles(SpiderFootPlugin):
@@ -77,7 +77,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                                useragent=self.opts['_useragent'],
                                verify=False)
         if res['code'] != "404":
-            host = self.sf.urlBaseUrl(junkUrl)
+            host = SpiderFootHelpers.urlBaseUrl(junkUrl)
             self.skiphosts[host] = True
             return False
         return True
@@ -87,46 +87,48 @@ class sfp_junkfiles(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        host = self.sf.urlBaseUrl(eventData)
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
+
+        host = SpiderFootHelpers.urlBaseUrl(eventData)
 
         if host in self.skiphosts:
-            self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-            return None
+            self.debug("Skipping " + host + " because it doesn't return 404s.")
+            return
 
         # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
             if host in self.skiphosts:
-                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                self.debug("Skipping " + host + " because it doesn't return 404s.")
+                return
 
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
                     eventData.endswith("." + ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
                     if self.checkForStop():
-                        return None
+                        return
 
-                    self.sf.debug("Trying " + x + " against " + eventData)
+                    self.debug("Trying " + x + " against " + eventData)
                     fetch = bits[0] + "." + x
-                    if fetch not in self.results:
-                        self.results[fetch] = True
-                    else:
-                        self.sf.debug("Skipping, already fetched.")
+                    if fetch in self.results:
+                        self.debug("Skipping, already fetched.")
                         continue
+
+                    self.results[fetch] = True
+
                     res = self.sf.fetchUrl(fetch, headOnly=True,
                                            timeout=self.opts['_fetchtimeout'],
                                            useragent=self.opts['_useragent'],
                                            sizeLimit=10000000,
                                            verify=False)
                     if res['realurl'] != fetch:
-                        self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
+                        self.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                         continue
                     if res['code'] == "200":
                         if not self.checkValidity(fetch):
@@ -135,34 +137,35 @@ class sfp_junkfiles(SpiderFootPlugin):
                         evt = SpiderFootEvent("JUNK_FILE", fetch, self.__name__, event)
                         self.notifyListeners(evt)
 
-        base = self.sf.urlBaseDir(eventData)
+        base = SpiderFootHelpers.urlBaseDir(eventData)
         if not base or base in self.bases:
-            return None
-        else:
-            self.bases[base] = True
+            return
+
+        self.bases[base] = True
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
         for f in self.opts['files']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
-                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                self.debug("Skipping " + host + " because it doesn't return 404s.")
+                return
 
-            self.sf.debug("Trying " + f + " against " + eventData)
+            self.debug("Trying " + f + " against " + eventData)
             fetch = base + f
-            if fetch not in self.results:
-                self.results[fetch] = True
-            else:
-                self.sf.debug("Skipping, already fetched.")
+            if fetch in self.results:
+                self.debug("Skipping, already fetched.")
                 continue
+
+            self.results[fetch] = True
+
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],
                                    verify=False)
             if res['realurl'] != fetch:
-                self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
+                self.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
             if res['code'] == "200":
                 if not self.checkValidity(fetch):
@@ -172,36 +175,37 @@ class sfp_junkfiles(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
         # don't do anything with the root directory of a site
-        self.sf.debug("Base: " + base + ", event: " + eventData)
-        if base == eventData + "/" or base == eventData:
-            return None
+        self.debug(f"Base: {base}, event: {eventData}")
+        if base in [eventData, eventData + "/"]:
+            return
 
         # http://www/blah/abc.html -> try http://www/blah.[dirs]
         for dirfile in self.opts['dirs']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
-                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                self.debug("Skipping " + host + " because it doesn't return 404s.")
+                return
 
             if base.count('/') == 3:
-                self.sf.debug("Skipping base url.")
+                self.debug("Skipping base url.")
                 continue
 
-            self.sf.debug("Trying " + dirfile + " against " + eventData)
+            self.debug("Trying " + dirfile + " against " + eventData)
             fetch = base[0:len(base) - 1] + "." + dirfile
-            if fetch not in self.results:
-                self.results[fetch] = True
-            else:
-                self.sf.debug("Skipping, already fetched.")
+            if fetch in self.results:
+                self.debug("Skipping, already fetched.")
                 continue
+
+            self.results[fetch] = True
+
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],
                                    verify=False)
             if res['realurl'] != fetch:
-                self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
+                self.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
             if res['code'] == "200":
                 if not self.checkValidity(fetch):

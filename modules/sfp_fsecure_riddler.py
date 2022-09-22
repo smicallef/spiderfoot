@@ -7,7 +7,7 @@
 #
 # Created:     2019-09-16
 # Copyright:   (c) bcoles 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -97,29 +97,27 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
-            return None
+            return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
-            return None
+            self.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
+            return
 
         try:
             token = data.get('response').get('user').get('authentication_token')
         except Exception:
-            self.sf.error('Login failed')
+            self.error('Login failed')
             self.errorState = True
-            return None
+            return
 
         if not token:
-            self.sf.error('Login failed')
+            self.error('Login failed')
             self.errorState = True
-            return None
+            return
 
         self.token = token
-
-        return None
 
     # https://riddler.io/help/search
     def query(self, qry):
@@ -140,7 +138,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] in ["400", "401", "402", "403"]:
-            self.sf.error('Unexpected HTTP response code: ' + res['code'])
+            self.error('Unexpected HTTP response code: ' + res['code'])
             self.errorState = True
             return None
 
@@ -150,11 +148,11 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
+            self.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
             return None
 
         if not data:
-            self.sf.debug("No results found for " + qry)
+            self.debug("No results found for " + qry)
             return None
 
         return data
@@ -165,22 +163,22 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fsecure_riddler':
-            self.sf.debug("Ignoring " + eventData + ", from self.")
-            return None
+            self.debug("Ignoring " + eventData + ", from self.")
+            return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         if self.opts['username'] == '' or self.opts['password'] == '':
-            self.sf.error('You enabled sfp_fsecure_riddler but did not set an API username/password!')
+            self.error('You enabled sfp_fsecure_riddler but did not set an API username/password!')
             self.errorState = True
-            return None
+            return
 
         if not self.token:
             self.login()
@@ -195,8 +193,8 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             data = self.query("ip:" + eventData)
 
         if not data:
-            self.sf.info("No results found for " + eventData)
-            return None
+            self.info("No results found for " + eventData)
+            return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
@@ -227,7 +225,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                 coords.append(str(coord[0]) + ', ' + str(coord[1]))
 
         if self.opts['verify'] and len(hosts) > 0:
-            self.sf.info("Resolving " + str(len(set(hosts))) + " domains ...")
+            self.info("Resolving " + str(len(set(hosts))) + " domains ...")
 
         for host in set(hosts):
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
@@ -235,8 +233,8 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
-            if self.opts['verify'] and not self.sf.resolveHost(host):
-                self.sf.debug(f"Host {host} could not be resolved")
+            if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                self.debug(f"Host {host} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, host, self.__name__, event)

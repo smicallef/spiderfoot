@@ -8,7 +8,7 @@
 #
 # Created:     03/05/2017
 # Copyright:   (c) Steve Micallef 2017
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import argparse
@@ -53,11 +53,12 @@ class bcolors:
 
 
 class SpiderFootCli(cmd.Cmd):
-    version = "3.3-DEV"
+    version = "4.0.0"
     pipecmd = None
     output = None
     modules = []
     types = []
+    correlationrules = []
     prompt = "sf> "
     nohelp = "[!] Unknown command '%s'."
     knownscans = []
@@ -174,8 +175,8 @@ class SpiderFootCli(cmd.Cmd):
 
         if self.ownopts['cli.spool_file']:
             return self.do_set("cli.spool = " + val)
-        else:
-            self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
+
+        self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
 
         return None
 
@@ -191,10 +192,12 @@ class SpiderFootCli(cmd.Cmd):
                 self.dprint(readline.get_history_item(i), plain=True)
                 i += 1
             return None
+
         if self.ownopts['cli.history']:
             val = "0"
         else:
             val = "1"
+
         return self.do_set("cli.history = " + val)
 
     # Run before all commands to handle history and spooling
@@ -245,8 +248,7 @@ class SpiderFootCli(cmd.Cmd):
         spaces = 2
         # Find the maximum column sizes
         for r in data:
-            i = 0
-            for c in r:
+            for i, c in enumerate(r):
                 if type(r) == list:
                     # we have  list index
                     cn = str(i)
@@ -261,7 +263,6 @@ class SpiderFootCli(cmd.Cmd):
                 # print(str(cn) + ", " + str(c) + ", " + str(v))
                 if len(v) > maxsize.get(cn, 0):
                     maxsize[cn] = len(v)
-                i += 1
 
         # Adjust for long titles
         if titlemap:
@@ -270,8 +271,7 @@ class SpiderFootCli(cmd.Cmd):
                     maxsize[c] = len(titlemap.get(c, c))
 
         # Display the column titles
-        i = 0
-        for c in cols:
+        for i, c in enumerate(cols):
             if titlemap:
                 t = titlemap.get(c, c)
             else:
@@ -284,19 +284,16 @@ class SpiderFootCli(cmd.Cmd):
             if sdiff > 0 and i < len(cols) - 1:
                 # out += " " * sdiff
                 out.append(" " * sdiff)
-            i += 1
         # out += "\n"
         out.append('\n')
 
         # Then the separator
-        i = 0
-        for c in cols:
+        for i, c in enumerate(cols):
             # out += "-" * ((maxsize[c]+spaces))
             out.append("-" * ((maxsize[c] + spaces)))
             if i < len(cols) - 1:
                 # out += "+"
                 out.append("+")
-            i += 1
         # out += "\n"
         out.append("\n")
 
@@ -353,7 +350,7 @@ class SpiderFootCli(cmd.Cmd):
             return None
 
         if not isinstance(url, str):
-            self.edprint("Invalid request URL: %s" % url)
+            self.edprint(f"Invalid request URL: {url}")
             return None
 
         # logging.basicConfig()
@@ -361,14 +358,13 @@ class SpiderFootCli(cmd.Cmd):
         # requests_log = logging.getLogger("requests.packages.urllib3")
         # requests_log.setLevel(logging.DEBUG)
         # requests_log.propagate = True
-        try:
-            headers = {
-                "User-agent": "SpiderFoot-CLI/" + self.version,
-                "Accept": "application/json"
-            }
+        headers = {
+            "User-agent": "SpiderFoot-CLI/" + self.version,
+            "Accept": "application/json"
+        }
 
-            self.ddprint("Fetching: " + url)
-            self.ddprint("Posting: " + str(post))
+        try:
+            self.ddprint(f"Fetching: {url}")
             if not post:
                 r = requests.get(
                     url,
@@ -380,6 +376,7 @@ class SpiderFootCli(cmd.Cmd):
                     )
                 )
             else:
+                self.ddprint(f"Posting: {post}")
                 r = requests.post(
                     url,
                     headers=headers,
@@ -390,13 +387,12 @@ class SpiderFootCli(cmd.Cmd):
                     ),
                     data=post
                 )
-            self.ddprint("Response: " + str(r))
+            self.ddprint(f"Response: {r}")
             if r.status_code == requests.codes.ok:  # pylint: disable=no-member
                 return r.text
-            else:
-                r.raise_for_status()
+            r.raise_for_status()
         except BaseException as e:
-            self.edprint("Failed communicating with server: " + str(e))
+            self.edprint(f"Failed communicating with server: {e}")
             return None
 
     def emptyline(self):
@@ -410,7 +406,16 @@ class SpiderFootCli(cmd.Cmd):
     # [[ 'blahblah test' ], [[ 'top', '10' ], [ 'grep', 'foo']]]
     def myparseline(self, cmdline, replace=True):
         ret = [list(), list()]
-        s = shlex.split(cmdline)
+
+        if not cmdline:
+            return ret
+
+        try:
+            s = shlex.split(cmdline)
+        except Exception as e:
+            self.edprint(f"Error parsing command: {e}")
+            return ret
+
         for c in s:
             if c == '|':
                 break
@@ -430,9 +435,8 @@ class SpiderFootCli(cmd.Cmd):
             if t == '|':
                 i += 1
                 ret[1].append(list())
-                continue
             # Replace variables
-            if t.startswith("$") and t in self.ownopts:
+            elif t.startswith("$") and t in self.ownopts:
                 ret[1][i].append(self.ownopts[t])
             else:
                 ret[1][i].append(t)
@@ -442,19 +446,21 @@ class SpiderFootCli(cmd.Cmd):
     # Send the command output to the user, processing the pipes
     # that may have been used.
     def send_output(self, data, cmd, titles=None, total=True, raw=False):
-        totalrec = 0
         out = None
         try:
-            if not raw:
+            if raw:
+                j = data
+                totalrec = 0
+            else:
                 j = json.loads(data)
                 totalrec = len(j)
-            else:
-                j = data
         except BaseException as e:
-            self.edprint("Unable to parse data from server: " + str(e))
+            self.edprint(f"Unable to parse data from server: {e}")
             return
 
-        if not raw:
+        if raw:
+            out = data
+        else:
             if self.ownopts['cli.output'] == "json":
                 out = json.dumps(j, indent=4, separators=(',', ': '))
 
@@ -462,10 +468,8 @@ class SpiderFootCli(cmd.Cmd):
                 out = self.pretty(j, titlemap=titles)
 
             if not out:
-                self.edprint("Unknown output format '" + self.ownopts['cli.output'] + "'.")
+                self.edprint(f"Unknown output format '{self.ownopts['cli.output']}'.")
                 return
-        else:
-            out = data
 
         c = self.myparseline(cmd)
 
@@ -473,7 +477,7 @@ class SpiderFootCli(cmd.Cmd):
         if len(c[1]) == 0:
             self.dprint(out, plain=True)
             if total:
-                self.dprint("Total records: " + str(totalrec))
+                self.dprint(f"Total records: {totalrec}")
             return
 
         for pc in c[1]:
@@ -493,7 +497,7 @@ class SpiderFootCli(cmd.Cmd):
                     if re.match(p, r.strip()):
                         newout += r + "\n"
 
-            if pipecmd == "str" or pipecmd == "grep":
+            if pipecmd in ['str', 'grep']:
                 for r in out.split("\n"):
                     if pipeargs.lower() in r.strip().lower():
                         newout += r + "\n"
@@ -518,9 +522,9 @@ class SpiderFootCli(cmd.Cmd):
                     f.write(out)
                     f.close()
                 except BaseException as e:
-                    self.edprint("Unable to write to file: " + str(e))
+                    self.edprint(f"Unable to write to file: {e}")
                     return
-                self.dprint("Successfully wrote to file '" + str(pipeargs) + "'.")
+                self.dprint(f"Successfully wrote to file '{pipeargs}'.")
                 return
 
             out = newout
@@ -582,6 +586,24 @@ class SpiderFootCli(cmd.Cmd):
         self.send_output(d, line, titles={"name": "Module name",
                                           "descr": "Description"})
 
+    # List all SpiderFoot correlation rules
+    def do_correlationrules(self, line, cacheonly=False):
+        """correlations
+        List all available correlation rules and their descriptions."""
+        d = self.request(self.ownopts['cli.server_baseurl'] + "/correlationrules")
+        if not d:
+            return
+
+        if cacheonly:
+            j = json.loads(d)
+            for m in j:
+                self.correlationrules.append(m['name'])
+            return
+
+        self.send_output(d, line, titles={"id": "Correlation rule ID",
+                                          "name": "Name",
+                                          "risk": "Risk"})
+
     # List all SpiderFoot data element types.
     def do_types(self, line, cacheonly=False):
         """types
@@ -623,7 +645,7 @@ class SpiderFootCli(cmd.Cmd):
             return
 
         sid = c[0][0]
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/scanopts?id=" + sid)
+        d = self.request(self.ownopts['cli.server_baseurl'] + f"/scanopts?id={sid}")
         if not d:
             return
         j = json.loads(d)
@@ -631,19 +653,20 @@ class SpiderFootCli(cmd.Cmd):
             self.dprint("No such scan exists.")
             return
 
-        out = "Name: " + j['meta'][0] + "\n"
-        out += "ID: " + sid + "\n"
-        out += "Target: " + j['meta'][1] + "\n"
-        out += "Started: " + j['meta'][3] + "\n"
-        out += "Completed: " + j['meta'][4] + "\n"
-        out += "Status: " + j['meta'][5] + "\n"
+        out = list()
+        out.append(f"Name: {j['meta'][0]}")
+        out.append(f"ID: {sid}")
+        out.append(f"Target: {j['meta'][1]}")
+        out.append(f"Started: {j['meta'][3]}")
+        out.append(f"Completed: {j['meta'][4]}")
+        out.append(f"Status: {j['meta'][5]}")
 
         if "-c" in c[0]:
-            out += "Configuration:\n"
+            out.append("Configuration:")
             for k in sorted(j['config']):
-                out += "  " + k + " = " + j['config'][k] + "\n"
+                out.append(f"  {k} = {j['config'][k]}")
 
-        self.send_output(out, line, total=False, raw=True)
+        self.send_output("\n".join(out), line, total=False, raw=True)
 
     # List scans.
     def do_scans(self, line):
@@ -679,6 +702,45 @@ class SpiderFootCli(cmd.Cmd):
 
         self.send_output(d, line, titles=titles)
 
+    # Show the correlation results from a scan.
+    def do_correlations(self, line):
+        """correlations <sid> [-c correlation_id]
+        Get the correlation results for scan ID <sid> and optionally the
+        events associated with a correlation result [correlation_id] to
+        get the results for a particular correlation."""
+        c = self.myparseline(line)
+        if len(c[0]) < 1:
+            self.edprint("Invalid syntax.")
+            return
+
+        post = {"id": c[0][0]}
+
+        if "-c" in c[0]:
+            post['correlationId'] = c[0][c[0].index("-c") + 1]
+            url = self.ownopts['cli.server_baseurl'] + "/scaneventresults"
+            titles = {
+                "10": "Type",
+                "1": "Data"
+            }
+        else:
+            url = self.ownopts['cli.server_baseurl'] + "/scancorrelations"
+            titles = {
+                "0": "ID",
+                "1": "Title",
+                "3": "Risk",
+                "7": "Data Elements"
+            }
+
+        d = self.request(url, post=post)
+        if not d:
+            return
+        j = json.loads(d)
+        if len(j) < 1:
+            self.dprint("No results.")
+            return
+
+        self.send_output(d, line, titles=titles)
+
     # Show the data from a scan.
     def do_data(self, line):
         """data <sid> [-t type] [-x] [-u]
@@ -699,8 +761,15 @@ class SpiderFootCli(cmd.Cmd):
 
         if "-u" in c[0]:
             url = self.ownopts['cli.server_baseurl'] + "/scaneventresultsunique"
+            titles = {
+                "0": "Data"
+            }
         else:
             url = self.ownopts['cli.server_baseurl'] + "/scaneventresults"
+            titles = {
+                "10": "Type",
+                "1": "Data"
+            }
 
         d = self.request(url, post=post)
         if not d:
@@ -710,19 +779,11 @@ class SpiderFootCli(cmd.Cmd):
             self.dprint("No results.")
             return
 
-        if "-u" in c[0]:
-            titles = {
-                "0": "Data"
-            }
-        else:
-            titles = {
-                "10": "Type",
-                "1": "Data"
-            }
         if "-x" in c[0]:
             titles["0"] = "Last Seen"
             titles["3"] = "Module"
             titles["2"] = "Source Data"
+
         d = d.replace("&lt;/SFURL&gt;", "").replace("&lt;SFURL&gt;", "")
         self.send_output(d, line, titles=titles)
 
@@ -730,21 +791,16 @@ class SpiderFootCli(cmd.Cmd):
     def do_export(self, line):
         """export <sid> [-t type]
         Export the scan data for scan ID <sid> as type [type].
-        Valid types: csv, json (default: json)."""
+        Valid types: csv, json, gexf (default: json)."""
         c = self.myparseline(line)
 
         if len(c[0]) < 1:
             self.edprint("Invalid syntax.")
             return
 
+        export_format = 'json'
         if '-t' in c[0]:
             export_format = c[0][c[0].index("-t") + 1]
-        else:
-            export_format = 'json'
-
-        if export_format not in ['json', 'csv']:
-            print("Invalid export format: %s" % export_format)
-            return
 
         base_url = self.ownopts['cli.server_baseurl']
         post = {"ids": c[0][0]}
@@ -773,6 +829,18 @@ class SpiderFootCli(cmd.Cmd):
 
             self.send_output(res, line, titles=None, total=False, raw=True)
 
+        elif export_format == 'gexf':
+            res = self.request(base_url + '/scanvizmulti', post=post)
+
+            if not res:
+                self.dprint("No results.")
+                return
+
+            self.send_output(res, line, titles=None, total=False, raw=True)
+
+        else:
+            self.edprint(f"Invalid export format: {export_format}")
+
     # Show logs.
     def do_logs(self, line):
         """logs <sid> [-l count] [-w]
@@ -781,17 +849,27 @@ class SpiderFootCli(cmd.Cmd):
         If -w is supplied, logs will be streamed to the console until
         Ctrl-C is entered."""
         c = self.myparseline(line)
+
         if len(c[0]) < 1:
             self.edprint("Invalid syntax.")
             return
+
         sid = c[0][0]
         limit = None
         if "-l" in c[0]:
             limit = c[0][c[0].index("-l") + 1]
 
+            if not limit.isdigit():
+                self.edprint(f"Invalid result count: {limit}")
+                return
+
+            limit = int(limit)
+
         if "-w" not in c[0]:
-            d = self.request(self.ownopts['cli.server_baseurl'] + "/scanlog",
-                             post={'id': sid, 'limit': limit})
+            d = self.request(
+                self.ownopts['cli.server_baseurl'] + "/scanlog",
+                post={'id': sid, 'limit': limit}
+            )
             if not d:
                 return
             j = json.loads(d)
@@ -810,51 +888,58 @@ class SpiderFootCli(cmd.Cmd):
                 }
             )
             return
-        else:
-            # Get the rowid of the latest log message
-            d = self.request(self.ownopts['cli.server_baseurl'] + "/scanlog",
-                             post={'id': sid, 'limit': '1'})
-            if not d:
-                return
-            j = json.loads(d)
-            if len(j) < 1:
-                self.dprint("No logs (yet?).")
-                return
-            else:
-                rowid = j[0][4]
 
-            try:
-                if not limit:
-                    limit = 10
-                d = self.request(self.ownopts['cli.server_baseurl'] + "/scanlog",
-                                 post={'id': sid, 'reverse': '1', 'rowId': rowid - int(limit)})
+        # Get the rowid of the latest log message
+        d = self.request(
+            self.ownopts['cli.server_baseurl'] + "/scanlog",
+            post={'id': sid, 'limit': '1'}
+        )
+        if not d:
+            return
+
+        j = json.loads(d)
+        if len(j) < 1:
+            self.dprint("No logs (yet?).")
+            return
+
+        rowid = j[0][4]
+
+        if not limit:
+            limit = 10
+
+        d = self.request(
+            self.ownopts['cli.server_baseurl'] + "/scanlog",
+            post={'id': sid, 'reverse': '1', 'rowId': rowid - limit}
+        )
+        if not d:
+            return
+
+        j = json.loads(d)
+        for r in j:
+            # self.send_output(str(r), line, total=False, raw=True)
+            if r[2] == "ERROR":
+                self.edprint(f"{r[1]}: {r[3]}")
+            else:
+                self.dprint(f"{r[1]}: {r[3]}")
+
+        try:
+            while True:
+                d = self.request(
+                    self.ownopts['cli.server_baseurl'] + "/scanlog",
+                    post={'id': sid, 'reverse': '1', 'rowId': rowid}
+                )
                 if not d:
                     return
-
                 j = json.loads(d)
                 for r in j:
-                    # self.send_output(str(r), line, total=False, raw=True)
                     if r[2] == "ERROR":
-                        self.edprint(r[1] + ": " + r[3])
+                        self.edprint(f"{r[1]}: {r[3]}")
                     else:
-                        self.dprint(r[1] + ": " + r[3])
-
-                while True:
-                    d = self.request(self.ownopts['cli.server_baseurl'] + "/scanlog",
-                                     post={'id': sid, 'reverse': '1', 'rowId': rowid})
-                    if not d:
-                        return
-                    j = json.loads(d)
-                    for r in j:
-                        if r[2] == "ERROR":
-                            self.edprint(r[1] + ": " + r[3])
-                        else:
-                            self.dprint(r[1] + ": " + r[3])
-
-                        rowid = str(r[4])
-                    time.sleep(0.5)
-            except KeyboardInterrupt:
-                return
+                        self.dprint(f"{r[1]}: {r[3]}")
+                    rowid = str(r[4])
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            return
 
     # Start a new scan.
     def do_start(self, line):
@@ -868,13 +953,14 @@ class SpiderFootCli(cmd.Cmd):
         Use -w to watch the logs from the scan. Ctrl-C to abort the
         logging (but will not abort the scan).
         """
-        mods = ""
-        types = ""
-        usecase = ""
         c = self.myparseline(line)
         if len(c[0]) < 3:
             self.edprint("Invalid syntax.")
             return None
+
+        mods = ""
+        types = ""
+        usecase = ""
 
         if "-m" in c[0]:
             mods = c[0][c[0].index("-m") + 1]
@@ -902,23 +988,24 @@ class SpiderFootCli(cmd.Cmd):
             "scantarget": target,
             "modulelist": mods,
             "typelist": types,
-            "usecase": usecase,
-            "cli": "1"
+            "usecase": usecase
         }
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/startscan",
-                         post=post)
+        d = self.request(
+            self.ownopts['cli.server_baseurl'] + "/startscan",
+            post=post
+        )
         if not d:
             return None
 
         s = json.loads(d)
         if s[0] == "SUCCESS":
             self.dprint("Successfully initiated scan.")
-            self.dprint("Scan ID: " + s[1])
+            self.dprint(f"Scan ID: {s[1]}")
         else:
-            self.dprint("Unable to start scan: " + str(s[1]))
+            self.dprint(f"Unable to start scan: {s[1]}")
 
         if "-w" in c[0]:
-            return self.do_logs(s[1] + " -w")
+            return self.do_logs(f"{s[1]} -w")
 
         return None
 
@@ -928,20 +1015,13 @@ class SpiderFootCli(cmd.Cmd):
         Abort the running scan with scan ID, <sid>."""
         c = self.myparseline(line)
         try:
-            id = c[0][0]
+            scan_id = c[0][0]
         except BaseException:
             self.edprint("Invalid syntax.")
             return
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/stopscan?id=" + id)
-        if not d:
-            return
-
-        s = json.loads(d)
-        if s[0] == "SUCCESS":
-            self.dprint("Successfully requested scan to stop. This could take some minutes to complete.")
-        else:
-            self.dprint("Unable to stop scan: " + str(s[1]))
+        self.request(self.ownopts['cli.server_baseurl'] + f"/stopscan?id={scan_id}")
+        self.dprint(f"Successfully requested scan {id} to stop. This could take some minutes to complete.")
 
     # Search for data, alias to find
     def do_search(self, line):
@@ -976,8 +1056,10 @@ class SpiderFootCli(cmd.Cmd):
         if "-x" in c[0]:
             titles["2"] = "Source Data"
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/search",
-                         post={'value': val, 'id': sid, 'eventType': etype})
+        d = self.request(
+            self.ownopts['cli.server_baseurl'] + "/search",
+            post={'value': val, 'id': sid, 'eventType': etype}
+        )
         if not d:
             return
         j = json.loads(d)
@@ -1013,7 +1095,7 @@ class SpiderFootCli(cmd.Cmd):
                 "4": "Unique"
             }
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/scansummary?id=" + sid + "&by=type")
+        d = self.request(self.ownopts['cli.server_baseurl'] + f"/scansummary?id={sid}&by=type")
         if not d:
             return
 
@@ -1034,20 +1116,13 @@ class SpiderFootCli(cmd.Cmd):
         Delete a scan with scan ID, <sid>."""
         c = self.myparseline(line)
         try:
-            id = c[0][0]
+            scan_id = c[0][0]
         except BaseException:
             self.edprint("Invalid syntax.")
             return
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + f"/scandelete?confirm=1&raw=1&id={id}")
-        if not d:
-            return
-
-        s = json.loads(d)
-        if s[0] == "SUCCESS":
-            self.dprint("Successfully deleted scan.")
-        else:
-            self.dprint("Something odd happened: " + str(s[1]))
+        self.request(self.ownopts['cli.server_baseurl'] + f"/scandelete?id={scan_id}")
+        self.dprint(f"Successfully deleted scan {scan_id}.")
 
     # Override the default help
     def print_topics(self, header, cmds, cmdlen, maxcol):
@@ -1065,6 +1140,7 @@ class SpiderFootCli(cmd.Cmd):
             ["ping", "Test connectivity to the SpiderFoot server."],
             ["modules", "List available modules."],
             ["types", "List available data types."],
+            ["correlationrules", "List available correlation rules."],
             ["set", "Set variables and configuration settings."],
             ["scans", "List all scans that have been run or are running."],
             ["start", "Start a new scan."],
@@ -1072,14 +1148,19 @@ class SpiderFootCli(cmd.Cmd):
             ["delete", "Delete a scan."],
             ["scaninfo", "Scan information."],
             ["data", "Show data from a scan's results."],
+            ["correlations", "Show correlation results from a scan."],
             ["summary", "Scan result summary."],
             ["find", "Search for data within scan results."],
             ["query", "Run SQL against the SpiderFoot SQLite database."],
             ["logs", "View/watch logs from a scan."]
         ]
 
-        self.send_output(json.dumps(helpmap), "", titles={"0": "Command", "1": "Description"},
-                         total=False)
+        self.send_output(
+            json.dumps(helpmap),
+            "",
+            titles={"0": "Command", "1": "Description"},
+            total=False
+        )
 
     # Get/Set configuration
     def do_set(self, line):
@@ -1100,52 +1181,68 @@ class SpiderFootCli(cmd.Cmd):
                 self.edprint("Invalid syntax.")
                 return
 
+        # Local CLI config
+        if cfg and val:
+            if cfg.startswith('$'):
+                self.ownopts[cfg] = val
+                self.dprint(f"{cfg} set to {val}")
+                return
+
+            if cfg in self.ownopts:
+                if isinstance(self.ownopts[cfg], bool):
+                    if val.lower() == "false" or val == "0":
+                        val = False
+                    else:
+                        val = True
+
+                self.ownopts[cfg] = val
+                self.dprint(f"{cfg} set to {val}")
+                return
+
         # Get the server-side config
         d = self.request(self.ownopts['cli.server_baseurl'] + "/optsraw")
         if not d:
+            self.edprint("Unable to obtain SpiderFoot server-side config.")
             return
+
         j = list()
         serverconfig = dict()
         token = ""  # nosec
-        if not d:
-            self.edprint("Unable to obtain SpiderFoot server-side config.")
-        else:
-            j = json.loads(d)
-            if j[0] == "ERROR":
-                self.edprint("Error fetching SpiderFoot server-side config.")
-                return
-            else:
-                serverconfig = j[1]['data']
-                token = j[1]['token']
+        j = json.loads(d)
+        if j[0] == "ERROR":
+            self.edprint("Error fetching SpiderFoot server-side config.")
+            return
+
+        serverconfig = j[1]['data']
+        token = j[1]['token']
 
         self.ddprint(str(serverconfig))
 
+        # Printing current config, not setting a value
         if not cfg or not val:
             ks = list(self.ownopts.keys())
             ks.sort()
             output = list()
             for k in ks:
                 c = self.ownopts[k]
-                if type(c) == bool:
-                    if c:
-                        c = "True"
-                    else:
-                        c = "False"
+                if isinstance(c, bool):
+                    c = str(c)
 
                 if not cfg:
                     output.append({'opt': k, 'val': c})
-                else:
-                    if cfg == k:
-                        self.dprint(k + " = " + c, plain=True)
+                    continue
+
+                if cfg == k:
+                    self.dprint(f"{k} = {c}", plain=True)
 
             for k in sorted(serverconfig.keys()):
                 if type(serverconfig[k]) == list:
                     serverconfig[k] = ','.join(serverconfig[k])
                 if not cfg:
                     output.append({'opt': k, 'val': str(serverconfig[k])})
-                else:
-                    if cfg == k:
-                        self.dprint(k + " = " + str(serverconfig[k]), plain=True)
+                    continue
+                if cfg == k:
+                    self.dprint(f"{k} = {serverconfig[k]}", plain=True)
 
             if len(output) > 0:
                 self.send_output(
@@ -1157,63 +1254,58 @@ class SpiderFootCli(cmd.Cmd):
             return
 
         if val:
-            # Local CLI config
-            if cfg in self.ownopts or cfg.startswith('$'):
-                if not cfg.startswith('$'):
-                    if type(self.ownopts[cfg]) == bool:
-                        if val.lower() == "false" or val == "0":
-                            val = False
-                        else:
-                            val = True
+            # submit all non-CLI vars to the SF server
+            confdata = dict()
+            found = False
+            for k in serverconfig:
+                if k == cfg:
+                    serverconfig[k] = val
+                    if type(val) == str:
+                        if val.lower() == "true":
+                            serverconfig[k] = "1"
+                        if val.lower() == "false":
+                            serverconfig[k] = "0"
+                    found = True
 
-                self.ownopts[cfg] = val
-                self.dprint(cfg + " set to " + str(val))
+            if not found:
+                self.edprint("Variable not found, so not set.")
                 return
-            # Server-side config
-            else:
-                # submit all non-CLI vars to the SF server
-                confdata = dict()
-                found = False
-                for k in serverconfig:
-                    if k == cfg:
-                        serverconfig[k] = val
-                        found = True
 
-                if not found:
-                    self.edprint("Variable not found, so not set.")
-                    return
+            # Sanitize the data before sending it to the server
+            for k in serverconfig:
+                optstr = ":".join(k.split(".")[1:])
+                if type(serverconfig[k]) == bool:
+                    if serverconfig[k]:
+                        confdata[optstr] = "1"
+                    else:
+                        confdata[optstr] = "0"
+                if type(serverconfig[k]) == list:
+                    # If set by the user, it must already be a
+                    # string, not a list
+                    confdata[optstr] = ','.join(serverconfig[k])
+                if type(serverconfig[k]) == int:
+                    confdata[optstr] = str(serverconfig[k])
+                if type(serverconfig[k]) == str:
+                    confdata[optstr] = serverconfig[k]
 
-                # Sanitize the data before sending it to the server
-                for k in serverconfig:
-                    optstr = ":".join(k.split(".")[1:])
-                    if type(serverconfig[k]) == bool:
-                        if not serverconfig[k]:
-                            confdata[optstr] = "0"
-                        else:
-                            confdata[optstr] = "1"
-                    if type(serverconfig[k]) == list:
-                        # If set by the user, it must already be a
-                        # string, not a list
-                        confdata[optstr] = ','.join(serverconfig[k])
-                    if type(serverconfig[k]) == int:
-                        confdata[optstr] = str(serverconfig[k])
-                    if type(serverconfig[k]) == str:
-                        confdata[optstr] = serverconfig[k]
+            self.ddprint(str(confdata))
+            d = self.request(
+                self.ownopts['cli.server_baseurl'] + "/savesettingsraw",
+                post={'token': token, 'allopts': json.dumps(confdata)}
+            )
+            j = list()
 
-                self.ddprint(str(confdata))
-                d = self.request(self.ownopts['cli.server_baseurl'] + "/savesettingsraw",
-                                 post={'token': token, 'allopts': json.dumps(confdata)})
-                j = list()
-                if not d:
-                    self.edprint("Unable to set SpiderFoot server-side config.")
-                    return
-                else:
-                    j = json.loads(d)
-                    if j[0] == "ERROR":
-                        self.edprint("Error setting SpiderFoot server-side config: " + str(j[1]))
-                        return
-                    self.dprint(cfg + " set to " + str(val))
-                    return
+            if not d:
+                self.edprint("Unable to set SpiderFoot server-side config.")
+                return
+
+            j = json.loads(d)
+            if j[0] == "ERROR":
+                self.edprint(f"Error setting SpiderFoot server-side config: {j[1]}")
+                return
+
+            self.dprint(f"{cfg} set to {val}")
+            return
 
         if cfg not in self.ownopts:
             self.edprint("Variable not found, so not set. Did you mean to use a $ variable?")
@@ -1266,9 +1358,10 @@ if __name__ == "__main__":
     # Load commands from a file
     if args.e:
         try:
-            cin = open(args.e, "r")
+            with open(args.e, 'r') as f:
+                cin = f.read()
         except BaseException as e:
-            print("Unable to open " + args.e + ":" + " (" + str(e) + ")")
+            print(f"Unable to open {args.e}: ({e})")
             sys.exit(-1)
     else:
         cin = sys.stdin
@@ -1282,9 +1375,8 @@ if __name__ == "__main__":
         s.ownopts['cli.password'] = args.p
     if args.P:
         try:
-            pf = open(args.P, "r")
-            s.ownopts['cli.password'] = pf.readlines()[0].strip('\n')
-            pf.close()
+            with open(args.P, 'r') as f:
+                s.ownopts['cli.password'] = f.readlines()[0].strip('\n')
         except BaseException as e:
             print(f"Unable to open {args.P}: ({e})")
             sys.exit(-1)

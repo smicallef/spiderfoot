@@ -8,14 +8,14 @@
 #
 # Created:     2019-05-26
 # Copyright:   (c) bcoles 2019
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import hashlib
 import json
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_gravatar(SpiderFootPlugin):
@@ -23,7 +23,7 @@ class sfp_gravatar(SpiderFootPlugin):
     meta = {
         'name': "Gravatar",
         'summary': "Retrieve user information from Gravatar API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {
@@ -74,7 +74,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # nosec
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,
@@ -84,7 +84,7 @@ class sfp_gravatar(SpiderFootPlugin):
         time.sleep(1)
 
         if res['content'] is None:
-            self.sf.debug('No response from gravatar.com')
+            self.debug('No response from gravatar.com')
             return None
 
         if res['code'] != '200':
@@ -93,7 +93,7 @@ class sfp_gravatar(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('entry') is None or len(data.get('entry')) == 0:
@@ -108,17 +108,17 @@ class sfp_gravatar(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 
         if data is None:
-            self.sf.debug("No user information found for " + eventData)
-            return None
+            self.debug("No user information found for " + eventData)
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -147,7 +147,7 @@ class sfp_gravatar(SpiderFootPlugin):
         # if data.get('currentLocation') is not None:
         #     location = data.get('currentLocation')
         #     if len(location) < 3 or len(location) > 100:
-        #         self.sf.debug("Skipping likely invalid location.")
+        #         self.debug("Skipping likely invalid location.")
         #     else:
         #         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
         #         self.notifyListeners(evt)
@@ -163,7 +163,7 @@ class sfp_gravatar(SpiderFootPlugin):
                 em = email.get('value')
                 if not em:
                     continue
-                if self.sf.validEmail(em) and em != eventData:
+                if SpiderFootHelpers.validEmail(em) and em != eventData:
                     if em.split("@")[0] in self.opts['_genericusers'].split(","):
                         evttype = "EMAILADDR_GENERIC"
                     else:

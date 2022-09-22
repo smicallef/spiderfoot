@@ -9,7 +9,7 @@
 #
 # Created:     2020-08-29
 # Copyright:   (c) bcoles 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -24,9 +24,16 @@ class sfp_crobat_api(SpiderFootPlugin):
     meta = {
         'name': "Crobat API",
         'summary': "Search Crobat API for subdomains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Passive DNS"]
+        'categories': ["Passive DNS"],
+        'dataSource': {
+            'website': "https://sonar.omnisint.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'logo': "https://sonar.omnisint.io/img/crobat.png",
+            'description': "The entire Rapid7 Sonar DNS dataset indexed,"
+                " available at your fingertips.",
+        }
     }
 
     opts = {
@@ -75,18 +82,22 @@ class sfp_crobat_api(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from Crobat API.")
+            return None
+
         # Future proofing - Crobat API does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Crobat API")
+            self.error("You are being rate-limited by Crobat API")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Crobat API")
+            self.error("Failed to retrieve content from Crobat API")
             self.errorState = True
             return None
 
@@ -100,11 +111,11 @@ class sfp_crobat_api(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if not isinstance(data, list):
-            self.sf.error("Failed to retrieve content from Crobat API")
+            self.error("Failed to retrieve content from Crobat API")
             return None
 
         return data
@@ -115,31 +126,31 @@ class sfp_crobat_api(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName != "DOMAIN_NAME":
-            return None
+            return
 
         page = 0
         while page < self.opts['max_pages']:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             data = self.queryDomain(eventData, page)
 
             if not data:
-                self.sf.debug(f"No information found for domain {eventData} (page: {page})")
-                return None
+                self.debug(f"No information found for domain {eventData} (page: {page})")
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
@@ -153,8 +164,8 @@ class sfp_crobat_api(SpiderFootPlugin):
                 if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                     continue
 
-                if self.opts['verify'] and not self.sf.resolveHost(domain):
-                    self.sf.debug(f"Host {domain} could not be resolved")
+                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
+                    self.debug(f"Host {domain} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                     self.notifyListeners(evt)
                 else:

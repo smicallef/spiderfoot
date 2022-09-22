@@ -7,7 +7,7 @@
 #
 # Created:     2020-06-16
 # Copyright:   (c) bcoles 2020
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -97,23 +97,27 @@ class sfp_leakix(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseAPIResponse(res)
+        return self.parseApiResponse(res)
 
     # Parse API response
-    def parseAPIResponse(self, res):
+    def parseApiResponse(self, res: dict):
+        if not res:
+            self.error("No response from LeakIX.")
+            return None
+
         if res['code'] == '404':
-            self.sf.debug("Host not found")
+            self.debug("Host not found")
             return None
 
         # Future proofing - LeakIX does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by LeakIX")
+            self.error("You are being rate-limited by LeakIX")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from LeakIX")
+            self.error("Failed to retrieve content from LeakIX")
             self.errorState = True
             return None
 
@@ -121,12 +125,11 @@ class sfp_leakix(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            self.debug(f"Error processing JSON response: {e}")
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -142,16 +145,16 @@ class sfp_leakix(SpiderFootPlugin):
         locs = list()
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         if self.opts['api_key'] == "":
-            self.sf.debug("You enabled sfp_leakix but did not set an API key, results are limited")
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+            self.debug("You enabled sfp_leakix but did not set an API key, results are limited")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS", "DOMAIN_NAME"]:
             if eventName == "IP_ADDRESS":
@@ -160,8 +163,8 @@ class sfp_leakix(SpiderFootPlugin):
                 data = self.queryApi("domain", eventData)
 
             if data is None:
-                self.sf.debug("No information found for host " + eventData)
-                return None
+                self.debug("No information found for host " + eventData)
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
@@ -182,8 +185,8 @@ class sfp_leakix(SpiderFootPlugin):
                         ports.append(eventData + ":" + port)
                     hostname = service.get('hostname')
                     if hostname and eventName == "DOMAIN_NAME" and self.getTarget().matches(hostname) and hostname not in hosts:
-                        if self.opts["verify"] and not self.sf.resolveHost(hostname):
-                            self.sf.debug(f"Host {hostname} could not be resolved")
+                        if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
+                            self.debug(f"Host {hostname} could not be resolved")
                             evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", hostname, self.__name__, event)
                         else:
                             evt = SpiderFootEvent("INTERNET_NAME", hostname, self.__name__, event)

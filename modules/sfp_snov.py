@@ -8,7 +8,7 @@
 #
 # Created:     16/05/2020
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_snov(SpiderFootPlugin):
@@ -99,8 +99,8 @@ class sfp_snov(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        if not res['code'] == '200':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+        if res['code'] != '200':
+            self.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
         try:
@@ -109,12 +109,12 @@ class sfp_snov(SpiderFootPlugin):
             accessToken = json.loads(content).get('access_token')
 
             if accessToken is None:
-                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+                self.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
                 return None
 
             return str(accessToken)
         except Exception:
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
 
@@ -138,8 +138,8 @@ class sfp_snov(SpiderFootPlugin):
             timeout=30,
             useragent=self.opts['_useragent']
         )
-        if not res['code'] == '200':
-            self.sf.debug("Could not fetch email addresses")
+        if res['code'] != '200':
+            self.debug("Could not fetch email addresses")
             return None
 
         return res.get('content')
@@ -153,18 +153,17 @@ class sfp_snov(SpiderFootPlugin):
         if self.errorState:
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_client_id'] == "" or self.opts['api_key_client_secret'] == "":
-            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
+            self.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
@@ -172,7 +171,7 @@ class sfp_snov(SpiderFootPlugin):
         # Get access token from Snov IO API
         accessToken = self.queryAccessToken()
         if accessToken is None or accessToken == '':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return
 
@@ -185,13 +184,13 @@ class sfp_snov(SpiderFootPlugin):
 
             data = self.queryDomainName(eventData, accessToken, currentLastId)
             if data is None:
-                self.sf.debug("No email address found for target domain")
+                self.debug("No email address found for target domain")
                 break
 
             try:
                 data = json.loads(data)
             except Exception:
-                self.sf.debug("No email address found for target domain")
+                self.debug("No email address found for target domain")
                 break
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
@@ -207,7 +206,7 @@ class sfp_snov(SpiderFootPlugin):
                         if email:
                             if email in self.results:
                                 continue
-                            if not self.sf.validEmail(email):
+                            if not SpiderFootHelpers.validEmail(email):
                                 continue
                             self.results[email] = True
 

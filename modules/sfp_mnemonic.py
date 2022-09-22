@@ -8,7 +8,7 @@
 #
 # Created:     2018-10-12
 # Copyright:   (c) bcoles 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -25,7 +25,7 @@ class sfp_mnemonic(SpiderFootPlugin):
     meta = {
         'name': "Mnemonic PassiveDNS",
         'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {
@@ -92,6 +92,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         return [
             'IP_ADDRESS',
             'IPV6_ADDRESS',
+            'INTERNAL_IP_ADDRESS',
             'CO_HOSTED_SITE',
             'INTERNET_NAME',
             'DOMAIN_NAME'
@@ -124,42 +125,42 @@ class sfp_mnemonic(SpiderFootPlugin):
         time.sleep(0.75)
 
         if res['content'] is None:
-            self.sf.info("No results found for " + qry)
+            self.info("No results found for " + qry)
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from Mnemonic: {e}")
+            self.debug(f"Error processing JSON response from Mnemonic: {e}")
             return None
 
         response_code = data.get('responseCode')
 
         if not response_code:
-            self.sf.debug("Error retrieving search results.")
+            self.debug("Error retrieving search results.")
             return None
 
         if response_code == 402:
-            self.sf.debug("Error retrieving search results: Resource limit exceeded")
+            self.debug("Error retrieving search results: Resource limit exceeded")
             self.errorState = True
             return None
 
         if response_code != 200:
-            self.sf.debug(f"Error retrieving search results: {response_code}")
+            self.debug(f"Error retrieving search results: {response_code}")
             return None
 
         if 'data' not in data:
-            self.sf.info(f"No results found for {qry}")
+            self.info(f"No results found for {qry}")
             return None
 
         size = data.get('size')
         count = data.get('count')
 
         if not count or not size:
-            self.sf.info(f"No results found for {qry}")
+            self.info(f"No results found for {qry}")
             return None
 
-        self.sf.info(f"Retrieved {size} of {count} results")
+        self.info(f"Retrieved {size} of {count} results")
 
         return data['data']
 
@@ -172,12 +173,12 @@ class sfp_mnemonic(SpiderFootPlugin):
             return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])
@@ -196,7 +197,7 @@ class sfp_mnemonic(SpiderFootPlugin):
             data = self.query(eventData, limit=per_page, offset=position)
 
             if data is None:
-                self.sf.info(f"No passive DNS data found for {eventData}")
+                self.info(f"No passive DNS data found for {eventData}")
                 break
 
             position += per_page
@@ -206,7 +207,7 @@ class sfp_mnemonic(SpiderFootPlugin):
                     continue
 
                 if r['lastSeenTimestamp'] < agelimit:
-                    self.sf.debug(f"Record {r['answer']} found for {r['query']} is too old, skipping.")
+                    self.debug(f"Record {r['answer']} found for {r['query']} is too old, skipping.")
                     continue
 
                 if eventName in ['IP_ADDRESS']:
@@ -235,14 +236,20 @@ class sfp_mnemonic(SpiderFootPlugin):
                         if not self.sf.validIP(answer):
                             continue
 
-                        evt = SpiderFootEvent("IP_ADDRESS", answer, self.__name__, event)
+                        if self.sf.isValidLocalOrLoopbackIp(answer):
+                            evt = SpiderFootEvent("INTERNAL_IP_ADDRESS", answer, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent("IP_ADDRESS", answer, self.__name__, event)
                         self.notifyListeners(evt)
 
                     if r['rrtype'] == 'aaaa':
                         if not self.sf.validIP6(r['answer']):
                             continue
 
-                        evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)
+                        if self.sf.isValidLocalOrLoopbackIp(answer):
+                            evt = SpiderFootEvent("INTERNAL_IP_ADDRESS", answer, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)
                         self.notifyListeners(evt)
 
         for co in set(cohosts):
@@ -252,9 +259,9 @@ class sfp_mnemonic(SpiderFootPlugin):
             if co in self.results:
                 continue
 
-            if eventName == "IP_ADDRESS":
+            if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                    self.sf.debug(f"Host {co} no longer resolves to {eventData}")
+                    self.debug(f"Host {co} no longer resolves to {eventData}")
                     continue
 
             if self.opts['cohostsamedomain']:
@@ -265,8 +272,8 @@ class sfp_mnemonic(SpiderFootPlugin):
                 continue
 
             if self.getTarget().matches(co, includeParents=True):
-                if self.opts['verify'] and not self.sf.resolveHost(co):
-                    self.sf.debug(f"Host {co} could not be resolved")
+                if self.opts['verify'] and not self.sf.resolveHost(co) and not self.sf.resolveHost6(co):
+                    self.debug(f"Host {co} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", co, self.__name__, event)
                     self.notifyListeners(evt)
                     continue

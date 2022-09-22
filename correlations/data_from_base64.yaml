@@ -1,0 +1,22 @@
+id: data_from_base64
+version: 1
+meta:
+  name: Data was found within base64-encoded data
+  description: >
+    Possibly interesting data was found within base64-encoded data,
+    such as software versions, names, email addresses and hostnames.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: BASE64_DATA
+      - method: regex
+        field: child.data
+        value: .*
+      - method: exact
+        field: child.type
+        value: not HASH
+aggregation:
+  field: child.data
+headline: "Interesting data was found within base64-encoded data: '{child.data}'"

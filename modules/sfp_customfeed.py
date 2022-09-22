@@ -8,7 +8,7 @@
 #
 # Created:     11/11/2018
 # Copyright:   (c) Steve Micallef, 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import re
@@ -31,7 +31,7 @@ class sfp_customfeed(SpiderFootPlugin):
     meta = {
         'name': "Custom Threat Feed",
         'summary': "Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"]
     }
@@ -84,7 +84,7 @@ class sfp_customfeed(SpiderFootPlugin):
                 "MALICIOUS_COHOST"]
 
     # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
+    def resourceList(self, replaceme_id, target, targetType):
         targetDom = ''
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
@@ -95,16 +95,15 @@ class sfp_customfeed(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             url = self.opts['url']
-            if id == cid:
+            if replaceme_id == cid:
                 data = dict()
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url)
+                        self.error("Unable to fetch " + url)
                         return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+                    self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -115,11 +114,11 @@ class sfp_customfeed(SpiderFootPlugin):
                     if 'regex' in malchecks[check]:
                         rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
+                        self.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                # self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -131,10 +130,10 @@ class sfp_customfeed(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
+                                self.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug(f"Error encountered parsing: {e}")
+                            self.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -143,7 +142,7 @@ class sfp_customfeed(SpiderFootPlugin):
                 if 'regex' not in malchecks[check]:
                     for line in data['content'].split('\n'):
                         if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            self.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
                     # Check for the domain and the hostname
@@ -153,10 +152,10 @@ class sfp_customfeed(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                self.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
                     except Exception as e:
-                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        self.debug("Error encountered parsing 2: " + str(e))
                         continue
 
         return None
@@ -165,8 +164,8 @@ class sfp_customfeed(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " ("
-                              + itemType + ") with: " + cid)
+                self.debug("Checking maliciousness of " + target + " ("
+                           + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -177,31 +176,31 @@ class sfp_customfeed(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['url'] == "":
-            self.sf.error("You enabled sfp_customfeed but defined no custom feed URL!")
+            self.error("You enabled sfp_customfeed but defined no custom feed URL!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            self.debug(f"Skipping {eventData}, already checked.")
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
         if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
+            return
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -237,7 +236,7 @@ class sfp_customfeed(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:

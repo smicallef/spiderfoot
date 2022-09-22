@@ -7,7 +7,7 @@
 #
 # Created:     2020-04-21
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -221,7 +221,7 @@ class sfp_template(SpiderFootPlugin):
             "TCP_PORT_OPEN_BANNER",
             'RAW_RIR_DATA',
             'GEOINFO',
-            'VULNERABILITY'
+            'VULNERABILITY_GENERAL'
         ]
 
     # When querying third parties, it's best to have a dedicated function
@@ -245,7 +245,7 @@ class sfp_template(SpiderFootPlugin):
         # - error(message) if it's a bad thing and should cause the scan to abort
         # - fatal(message) if it's a horrible thing and should kill SpiderFoot completely
         if res['content'] is None:
-            self.sf.info(f"No SHODAN info found for {qry}")
+            self.info(f"No SHODAN info found for {qry}")
             return None
 
         # Always process external data which is expected to be in a specific format
@@ -253,7 +253,7 @@ class sfp_template(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
+            self.error(f"Error processing JSON response from SHODAN: {e}")
 
         return None
 
@@ -270,11 +270,12 @@ class sfp_template(SpiderFootPlugin):
         if self.errorState:
             return
 
-        # Don't look up stuff twice
+        # Check if the module has already analysed this event data.
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
+        # Add the event data to results dictionary to prevent duplicate queries.
         # If eventData might be something large, set the key to a hash
         # of the value instead of the value, to avoid memory abuse.
         self.results[eventData] = True
@@ -287,7 +288,7 @@ class sfp_template(SpiderFootPlugin):
             max_netblock = self.opts['maxnetblock']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_netblock:
-                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
+                self.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
                 return
 
         # When handling netblocks/subnets, assuming the user set
@@ -314,7 +315,7 @@ class sfp_template(SpiderFootPlugin):
             # For netblocks, we need to create the IP address event so that
             # the threat intel event is more meaningful and linked to the
             # IP address within the network, not the whole network.
-            if eventName.startswith('NETBLOCK_'):
+            if eventName == 'NETBLOCK_OWNER':
                 # This is where the module generates an event for other modules
                 # to process and is a fundamental part of the SpiderFoot architecture.
                 # We are generating an event of type "IP_ADDRESS" here, the data being
@@ -327,6 +328,9 @@ class sfp_template(SpiderFootPlugin):
                 # With the event created, we can now notify any other modules listening
                 # for IP_ADDRESS events (which they define in their watchedEvents()
                 # function).
+                self.notifyListeners(pevent)
+            elif eventName == 'NETBLOCK_MEMBER':
+                pevent = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
                 self.notifyListeners(pevent)
             else:
                 # If the event received wasn't a netblock, then use that event

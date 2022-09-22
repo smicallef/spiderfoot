@@ -7,7 +7,7 @@
 #
 # Created:     06/04/2014
 # Copyright:   (c) Steve Micallef 2014
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -18,7 +18,7 @@ class sfp_intfiles(SpiderFootPlugin):
     meta = {
         'name': "Interesting File Finder",
         'summary': "Identifies potential files of interest, e.g. office documents, zip files.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Crawling and Scanning"]
     }
@@ -59,12 +59,12 @@ class sfp_intfiles(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         for fileExt in self.opts['fileexts']:
             if "." + fileExt.lower() in eventData.lower():

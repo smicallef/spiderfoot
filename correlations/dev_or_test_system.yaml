@@ -1,0 +1,26 @@
+id: dev_or_test_system
+version: 1
+meta:
+  name: A host appearing to be a test or development system was found
+  description: >
+    A host that has dev, test, staging, internal or uat in its
+    name was found. This may indicate a system that is exposed
+    over the Internet unintentionally, and/or may be less secure
+    than other systems.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: INTERNET_NAME
+      - method: regex
+        field: data
+        value:
+          - .*dev.*
+          - .*test.*
+          - .*uat.*
+          - .*internal.*
+          - .*staging.*
+aggregation:
+  field: data
+headline: "Development or internal system found: {data}"

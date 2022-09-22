@@ -8,16 +8,19 @@
 #
 # Created:     25/04/2014
 # Copyright:   (c) Steve Micallef 2014
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import io
 import mimetypes
 
-import docx
-import exifread
-import pptx
 import PyPDF2
+
+import docx
+
+import exifread
+
+import pptx
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -27,7 +30,7 @@ class sfp_filemeta(SpiderFootPlugin):
     meta = {
         'name': "File Metadata Extractor",
         'summary': "Extracts meta data from documents and images.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint"],
         'categories': ["Content Analysis"]
     }
@@ -70,31 +73,31 @@ class sfp_filemeta(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         for fileExt in self.opts['fileexts']:
             if self.checkForStop():
-                return None
+                return
 
             if "." + fileExt.lower() in eventData.lower():
                 # Fetch the file, allow much more time given that these files are
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
-                                       useragent=self.opts['_useragent'], dontMangle=True,
+                                       useragent=self.opts['_useragent'], disableContentEncoding=True,
                                        sizeLimit=10000000,
                                        verify=False)
                 if ret['content'] is None:
-                    self.sf.error(f"Unable to fetch file for meta analysis: {eventData}")
-                    return None
+                    self.error(f"Unable to fetch file for meta analysis: {eventData}")
+                    return
 
                 if len(ret['content']) < 512:
-                    self.sf.error(f"Strange content encountered, size of {len(ret['content'])}")
-                    return None
+                    self.error(f"Strange content encountered, size of {len(ret['content'])}")
+                    return
 
                 meta = None
                 data = None
@@ -106,38 +109,38 @@ class sfp_filemeta(SpiderFootPlugin):
                         pdf = PyPDF2.PdfFileReader(raw, strict=False)
                         data = pdf.getDocumentInfo()
                         meta = str(data)
-                        self.sf.debug("Obtained meta data from " + eventData)
+                        self.debug("Obtained meta data from " + eventData)
                     except Exception as e:
-                        self.sf.error(f"Unable to parse meta data from: {eventData} ({e})")
-                        return None
+                        self.error(f"Unable to parse meta data from: {eventData} ({e})")
+                        return
 
                 if fileExt.lower() in ["docx"]:
                     try:
                         c = io.BytesIO(ret['content'])
                         doc = docx.Document(c)
                         mtype = mimetypes.guess_type(eventData)[0]
-                        self.sf.debug("Office type: " + str(mtype))
+                        self.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except Exception as e:
-                        self.sf.error(f"Unable to process file: {eventData} ({e})")
-                        return None
+                        self.error(f"Unable to process file: {eventData} ({e})")
+                        return
 
                 if fileExt.lower() in ["pptx"]:
                     try:
                         c = io.BytesIO(ret['content'])
                         doc = pptx.Presentation(c)
                         mtype = mimetypes.guess_type(eventData)[0]
-                        self.sf.debug("Office type: " + str(mtype))
+                        self.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except Exception as e:
-                        self.sf.error(f"Unable to process file: {eventData} ({e})")
-                        return None
+                        self.error(f"Unable to process file: {eventData} ({e})")
+                        return
 
                 if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
                     try:
@@ -147,13 +150,13 @@ class sfp_filemeta(SpiderFootPlugin):
                             continue
                         meta = str(data)
                     except Exception as e:
-                        self.sf.error(f"Unable to parse meta data from: {eventData} ({e})")
-                        return None
+                        self.error(f"Unable to parse meta data from: {eventData} ({e})")
+                        return
 
                 if meta is not None and data is not None:
-                    evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+                    rawevt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
+                                             self.__name__, event)
+                    self.notifyListeners(rawevt)
 
                     val = list()
                     try:
@@ -169,13 +172,13 @@ class sfp_filemeta(SpiderFootPlugin):
                         if "Image Software" in data:
                             val.append(str(data['Image Software']))
                     except Exception as e:
-                        self.sf.error("Failed to parse PDF, " + eventData + ": " + str(e))
-                        return None
+                        self.error("Failed to parse PDF, " + eventData + ": " + str(e))
+                        return
 
                     for v in val:
                         if v and not isinstance(v, PyPDF2.generic.NullObject):
-                            self.sf.debug("VAL: " + str(val))
+                            self.debug("VAL: " + str(val))
                             # Strip non-ASCII
                             v = ''.join([i if ord(i) < 128 else ' ' for i in v])
-                            evt = SpiderFootEvent("SOFTWARE_USED", v, self.__name__, event)
+                            evt = SpiderFootEvent("SOFTWARE_USED", v, self.__name__, rawevt)
                             self.notifyListeners(evt)

@@ -1,0 +1,39 @@
+id: multiple_malicious
+version: 1
+meta:
+  name: >
+    An IP, host, subnet or email address was considered malicious by
+    multiple sources
+  description: >
+    An IP, host, subnet or email address was considered malicious by
+    multiple sources.
+
+    Such cases have a high likelihood of being genuinely malicious and
+    should be urgently investigated. Even if the entity in question is
+    not compromised, it's likely to be blocked across parts of the
+    Internet due to its presence in these lists.
+  risk: HIGH
+collections:
+  - collect:
+      - method: regex
+        field: type
+        value:
+          - MALICIOUS_*
+          - BLACKLIST_*
+      # Filter out all subnets
+      - method: regex
+        field: source.data
+        value: not .*/.*
+      # Filter out affiliates and Co-hosts
+      - method: regex
+        field: type
+        value:
+          - not .*COHOST.*
+          - not .*AFFILIATE.*
+aggregation:
+  field: source.data
+analysis:
+  - method: threshold
+    field: source.data
+    minimum: 2
+headline: "Entity considered malicious by multiple sources: {source.data}"

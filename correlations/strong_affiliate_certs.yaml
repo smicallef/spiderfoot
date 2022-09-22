@@ -1,0 +1,39 @@
+id: strong_affiliate_certs
+version: 1
+meta:
+  name: Affiliated host/domain with strong relationship to the target
+  description: >
+    A host or domain was found to be referenced multiple times from
+    SSL certificates covering multiple target hosts.
+
+    Strong affiliates indicate potential targets that should be
+    included in the scope of scanning to ensure more complete coverage.
+  risk: INFO
+collections:
+  - collect:
+      - method: exact
+        field: module
+        value:
+          - sfp_sslcert
+          - sfp_crt
+          - sfp_certspotter
+      - method: exact
+        field: source.type
+        value:
+          - INTERNET_NAME
+          - DOMAIN_NAME
+      - method: exact
+        field: type
+        value:
+          - AFFILIATE_INTERNET_NAME
+          - AFFILIATE_DOMAIN_NAME
+          - CO_HOSTED_SITE
+          - CO_HOSTED_SITE_DOMAIN
+aggregation:
+  field: data
+analysis:
+  - method: threshold
+    field: source.data
+    count_unique_only: true
+    minimum: 2
+headline: "Affiliate with strong target relationship: {data}"

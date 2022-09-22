@@ -8,11 +8,11 @@
 #
 # Created:     2018-10-21
 # Copyright:   (c) bcoles 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
-import urllib
 import json
+import urllib
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -22,7 +22,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     meta = {
         'name': "OpenCorporates",
         'summary': "Look up company information from OpenCorporates.",
-        'flags': [""],
+        'flags': ["apikey"],
         'useCases': ["Passive", "Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -30,6 +30,14 @@ class sfp_opencorporates(SpiderFootPlugin):
             'model': "FREE_NOAUTH_LIMITED",
             'references': [
                 "https://api.opencorporates.com/documentation/API-Reference"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://opencorporates.com/api_accounts/new"
+                "Register a new account with an email",
+                "Navigate to https://opencorporates.com/users/account and select 'Get Account'",
+                "Select the plan required",
+                "Navigate to https://opencorporates.com/users/account",
+                "The API key is listed under 'API Account'",
             ],
             'favIcon': "https://opencorporates.com/assets/favicons/favicon.png",
             'logo': "https://opencorporates.com/contents/ui/theme/img/oc-logo.svg",
@@ -47,7 +55,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     optdescs = {
         'confidence': "Confidence that the search result objects are correct (numeric value between 0 and 100).",
-        'api_key': 'OpenCorporates.com API key.'
+        'api_key': 'OpenCorporates.com API key. Without this you will be limited to 50 look-ups per day.'
     }
 
     results = None
@@ -78,7 +86,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         version = '0.4'
 
         apiparam = ""
-        if not self.opts['api_key'] == "":
+        if self.opts['api_key']:
             apiparam = "&api_token=" + self.opts['api_key']
 
         params = urllib.parse.urlencode({
@@ -95,17 +103,17 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.")
+            self.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.")
+            self.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -116,7 +124,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     def retrieveCompanyDetails(self, jurisdiction_code, company_number):
         url = f"https://api.opencorporates.com/companies/{jurisdiction_code}/{company_number}"
 
-        if not self.opts['api_key'] == "":
+        if self.opts['api_key']:
             url += "?api_token=" + self.opts['api_key']
 
         res = self.sf.fetchUrl(
@@ -126,17 +134,17 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.")
+            self.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.")
+            self.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response: {e}")
+            self.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -152,7 +160,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         if location:
             if len(location) < 3 or len(location) > 100:
-                self.sf.debug("Skipping likely invalid location.")
+                self.debug("Skipping likely invalid location.")
             else:
                 if company.get('registered_address'):
                     country = company.get('registered_address').get('country')
@@ -161,7 +169,7 @@ class sfp_opencorporates(SpiderFootPlugin):
                             location += ", " + country
 
                 location = location.replace("\n", ',')
-                self.sf.info("Found company address: " + location)
+                self.info("Found company address: " + location)
                 e = SpiderFootEvent("PHYSICAL_ADDRESS", location, self.__name__, sevt)
                 self.notifyListeners(e)
 
@@ -172,7 +180,7 @@ class sfp_opencorporates(SpiderFootPlugin):
             for previous_name in previous_names:
                 p = previous_name.get('company_name')
                 if p:
-                    self.sf.info("Found previous company name: " + p)
+                    self.info("Found previous company name: " + p)
                     e = SpiderFootEvent("COMPANY_NAME", p, self.__name__, sevt)
                     self.notifyListeners(e)
 
@@ -183,7 +191,7 @@ class sfp_opencorporates(SpiderFootPlugin):
             for officer in officers:
                 n = officer.get('name')
                 if n:
-                    self.sf.info("Found company officer: " + n)
+                    self.info("Found company officer: " + n)
                     e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, self.__name__, sevt)
                     self.notifyListeners(e)
 
@@ -193,23 +201,26 @@ class sfp_opencorporates(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData}, already checked.")
+            self.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.debug(f"Received event, {eventName}, from {srcModuleName}")
+
+        if self.opts['api_key'] == '':
+            self.error(f"Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
 
         res = self.searchCompany(f"{eventData}*")
 
         if res is None:
-            self.sf.debug("Found no results for " + eventData)
+            self.debug("Found no results for " + eventData)
             return
 
         companies = res.get('companies')
 
         if not companies:
-            self.sf.debug("Found no results for " + eventData)
+            self.debug("Found no results for " + eventData)
             return
 
         for c in companies:
@@ -219,7 +230,7 @@ class sfp_opencorporates(SpiderFootPlugin):
                 continue
 
             # Check for match
-            if not eventData.lower() == company.get('name').lower():
+            if eventData.lower() != company.get('name').lower():
                 continue
 
             # Extract company details from search results
