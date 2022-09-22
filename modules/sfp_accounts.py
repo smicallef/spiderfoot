@@ -25,7 +25,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     meta = {
         'name': "Account Finder",
-        'summary': "Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc.",
+        'summary': "Look for possible associated accounts on over 500 social and other websites such as Instagram, Reddit, etc.",
         'useCases': ["Footprint", "Passive"],
         'categories': ["Social Media"]
     }
@@ -76,9 +76,9 @@ class sfp_accounts(SpiderFootPlugin):
         self.commonNames = SpiderFootHelpers.humanNamesFromWordlists()
         self.words = SpiderFootHelpers.dictionaryWordsFromWordlists()
 
-        content = self.sf.cacheGet("sfaccounts", 48)
+        content = self.sf.cacheGet("sfaccountsv2", 48)
         if content is None:
-            url = "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/master/web_accounts_list.json"
+            url = "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/main/wmn-data.json"
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if data['content'] is None:
@@ -87,7 +87,7 @@ class sfp_accounts(SpiderFootPlugin):
                 return
 
             content = data['content']
-            self.sf.cachePut("sfaccounts", content)
+            self.sf.cachePut("sfaccountsv2", content)
 
         try:
             self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
@@ -104,18 +104,23 @@ class sfp_accounts(SpiderFootPlugin):
                 "SIMILAR_ACCOUNT_EXTERNAL"]
 
     def checkSite(self, name, site):
-        if 'check_uri' not in site:
+        if 'uri_check' not in site:
             return
 
-        url = site['check_uri'].format(account=name)
-        if 'pretty_uri' in site:
-            ret_url = site['pretty_uri'].format(account=name)
+        url = site['uri_check'].format(account=name)
+        if 'uri_pretty' in site:
+            ret_url = site['uri_pretty'].format(account=name)
         else:
             ret_url = url
-        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{ret_url}</SFURL>"
+        retname = f"{site['name']} (Category: {site['cat']})\n<SFURL>{ret_url}</SFURL>"
+
+        post = None
+        if site.get('post_body'):
+            post = site['post_body']
 
         res = self.sf.fetchUrl(
             url,
+            postData=post,
             timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'],
             noLog=True,
@@ -127,12 +132,13 @@ class sfp_accounts(SpiderFootPlugin):
                 self.siteResults[retname] = False
             return
 
-        if res['code'] != site.get('account_existence_code'):
-            with self.lock:
-                self.siteResults[retname] = False
-            return
+        if site.get('e_code') != site.get('m_code'):
+            if res['code'] != str(site.get('e_code')):
+                with self.lock:
+                    self.siteResults[retname] = False
+                return
 
-        if site.get('account_existence_string') not in res['content']:
+        if site.get('e_string') not in res['content'] or (site.get('m_string') and site.get('m_string') in res['content']):
             with self.lock:
                 self.siteResults[retname] = False
             return
@@ -305,7 +311,7 @@ class sfp_accounts(SpiderFootPlugin):
         # sites are by attempting to fetch a garbage user.
         if not self.distrustedChecked:
             # Check if a state cache exists first, to not have to do this all the time
-            content = self.sf.cacheGet("sfaccounts_state_v2", 72)
+            content = self.sf.cacheGet("sfaccounts_state_v3", 72)
             if content:
                 if content != "None":  # "None" is written to the cached file when no sites are distrusted
                     delsites = list()
@@ -328,7 +334,7 @@ class sfp_accounts(SpiderFootPlugin):
                 else:
                     # The caching code needs *some* content
                     delsites = "None"
-                self.sf.cachePut("sfaccounts_state_v2", delsites)
+                self.sf.cachePut("sfaccounts_state_v3", delsites)
 
             self.distrustedChecked = True
 
