@@ -133,7 +133,7 @@ SpiderFoot has over 200 modules, most of which *don't require API keys*, and man
 [abuse.ch](https://www.abuse.ch)|Check if a host/domain, IP address or netblock is malicious according to Abuse.ch.|Free API
 [AbuseIPDB](https://www.abuseipdb.com)|Check if an IP address is malicious according to AbuseIPDB.com blacklist.|Tiered API
 [Abusix Mail Intelligence](https://abusix.org/)|Check if a netblock or IP address is in the Abusix Mail Intelligence blacklist.|Tiered API
-Account Finder|Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc.|Internal
+Account Finder|Look for possible associated accounts on over 500 social and other websites such as Instagram, Reddit, etc.|Internal
 [AdBlock Check](https://adblockplus.org/)|Check if linked pages would be blocked by AdBlock Plus.|Tiered API
 [AdGuard DNS](https://adguard.com/)|Check if a host would be blocked by AdGuard DNS.|Free API
 [Ahmia](https://ahmia.fi/)|Search Tor 'Ahmia' search engine for mentions of the target.|Free API
@@ -223,6 +223,7 @@ File Metadata Extractor|Extracts meta data from documents and images.|Internal
 [Grayhat Warfare](https://buckets.grayhatwarfare.com/)|Find bucket names matching the keyword extracted from a domain from Grayhat API.|Tiered API
 [Greensnow](https://greensnow.co/)|Check if a netblock or IP address is malicious according to greensnow.co.|Free API
 [grep.app](https://grep.app/)|Search grep.app API for links and emails related to the specified domain.|Free API
+[GreyNoise Community](https://greynoise.io/)|Obtain IP enrichment data from GreyNoise Community API|Tiered API
 [GreyNoise](https://greynoise.io/)|Obtain IP enrichment data from GreyNoise|Tiered API
 [HackerOne (Unofficial)](http://www.nobbd.de/)|Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.|Free API
 [HackerTarget](https://hackertarget.com/)|Search HackerTarget.com for hosts sharing the same IP.|Free API
@@ -248,7 +249,7 @@ Interesting File Finder|Identifies potential files of interest, e.g. office docu
 [JsonWHOIS.com](https://jsonwhois.com)|Search JsonWHOIS.com for WHOIS records associated with a domain.|Tiered API
 Junk File Finder|Looks for old/temporary and other similar files.|Internal
 [Keybase](https://keybase.io/)|Obtain additional information about domain names and identified usernames.|Free API
-[Koodous](https://koodous.com/apks/)|Search Koodous for mobile apps.|Free API
+[Koodous](https://koodous.com/apks/)|Search Koodous for mobile apps.|Tiered API
 [LeakIX](https://leakix.net/)|Search LeakIX for host data leaks, open ports, software and geoip.|Free API
 [Leak-Lookup](https://leak-lookup.com/)|Searches Leak-Lookup.com's database of breaches.|Free API
 [Maltiverse](https://maltiverse.com)|Obtain information about any malicious activities involving IP addresses|Free API
@@ -272,7 +273,7 @@ Junk File Finder|Looks for old/temporary and other similar files.|Internal
 [OpenStreetMap](https://www.openstreetmap.org/)|Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API.|Free API
 Page Information|Obtain information about web pages (do they take passwords, do they contain forms, etc.)|Internal
 [PasteBin](https://pastebin.com/)|PasteBin search (via Google Search API) to identify related content.|Tiered API
-PGP Key Servers|Look up e-mail addresses in PGP public key servers.|Internal
+PGP Key Servers|Look up domains and e-mail addresses in PGP public key servers.|Internal
 [PhishStats](https://phishstats.info/)|Check if a netblock or IP address is malicious according to PhishStats.|Free API
 [PhishTank](https://phishtank.com/)|Check if a host/domain is malicious according to PhishTank.|Free API
 Phone Number Extractor|Identify phone numbers in scraped webpages.|Internal
@@ -312,6 +313,7 @@ Subdomain Takeover Checker|Check if affiliated subdomains are vulnerable to take
 [SURBL](http://www.surbl.org/)|Check if a netblock, IP address or domain is in the SURBL blacklist.|Free API
 [Talos Intelligence](https://talosintelligence.com/)|Check if a netblock or IP address is malicious according to TalosIntelligence.|Free API
 [TextMagic](https://www.textmagic.com/)|Obtain phone number type from TextMagic API|Tiered API
+[Threat Jammer](https://threatjammer.com)|Check if an IP address is malicious according to ThreatJammer.com|Tiered API
 [ThreatCrowd](https://www.threatcrowd.org)|Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.|Free API
 [ThreatFox](https://threatfox.abuse.ch)|Check if an IP address is malicious according to ThreatFox.|Free API
 [ThreatMiner](https://www.threatminer.org/)|Obtain information from ThreatMiner's database for passive DNS and threat intelligence.|Free API
@@ -356,6 +358,7 @@ Whois|Perform a WHOIS look-up on domain names and owned netblocks.|Internal
 [XForce Exchange](https://exchange.xforce.ibmcloud.com/)|Obtain IP reputation and passive DNS information from IBM X-Force Exchange.|Tiered API
 [Yandex DNS](https://yandex.com/)|Check if a host would be blocked by Yandex DNS.|Free API
 [Zetalytics](https://zetalytics.com/)|Query the Zetalytics database for hosts on your target domain(s).|Tiered API
+[ZoneFile.io](https://zonefiles.io)|Search ZoneFiles.io Domain query API for domain information.|Tiered API
 [Zone-H Defacement Check](https://zone-h.org/)|Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.|Free API
 
 ### DOCUMENTATION
