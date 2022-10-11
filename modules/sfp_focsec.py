@@ -145,6 +145,9 @@ class sfp_focsec(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return
+
         if eventData in self.results:
             self.debug(f"Skipping {eventData}, already checked.")
             return
