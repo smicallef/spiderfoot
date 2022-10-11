@@ -55,7 +55,7 @@ class sfp_greynoise_community(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "GreyNoise API Key.",
+        "api_key": "GreyNoise Community API Key.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
     }
 

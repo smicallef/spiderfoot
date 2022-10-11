@@ -57,7 +57,7 @@ class sfp_threatjammer(SpiderFootPlugin):
     }
 
     optdescs = {
-        'api_key': "API key",
+        'api_key': "Threat Jammer API key.",
         'api_hostname': "User API hostname",
         'risk_score_min': "Minimum Threat Jammer risk score",
         'checkaffiliates': "Apply checks to affiliates?",
@@ -213,7 +213,7 @@ class sfp_threatjammer(SpiderFootPlugin):
             return
 
         url = "https://threatjammer.com/info/"
-        detail = f"""Risk score: {risk_score} ({risk})\n<SFURL>{url}{eventData}</SFURL>"""
+        detail = f"Risk score: {risk_score} ({risk})\n<SFURL>{url}{eventData}</SFURL>"
 
         self.info(f"Malicious IP address {eventData} found in any Threat Jammer lists")
 

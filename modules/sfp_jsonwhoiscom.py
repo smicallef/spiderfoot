@@ -238,7 +238,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 if email.split("@")[0] in self.opts['_genericusers'].split(","):
                     evttype = "EMAILADDR_GENERIC"
                 else:
-                    evttype = "EMAILADR"
+                    evttype = "EMAILADDR"
                 evt = SpiderFootEvent(evttype, email, self.__name__, event)
                 self.notifyListeners(evt)
             else:
