@@ -19,7 +19,7 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_bevigil(SpiderFootPlugin):
     meta = {
         'name': "BeVigil API",
-        'summary': "Get Subdomains and URLs belonging to one target domain using OSINT Data made available by BeVigil",
+        'summary': "Get Subdomains belonging to one target domain using OSINT Data made available by BeVigil",
         'flags': ["apikey"],
         'useCases': ["Passive", "Footprint"],
         'categories': ["Crawling and Scanning"],
@@ -52,8 +52,8 @@ class sfp_bevigil(SpiderFootPlugin):
 
     optdescs = {
         "verify": "DNS Resolve each identified subdomain.",
-        "api_key": "BeVigil API Key",
-        "delay": "Delay between requests, in seconds "
+        "api_key": "BeVigil API Key.",
+        "delay": "Delay between requests, in seconds."
     }
 
     results = None
@@ -62,7 +62,7 @@ class sfp_bevigil(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.__dataSource__ = "BeVigil OSINT API"
+        # self.__dataSource__ = "BeVigil OSINT API"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -110,7 +110,8 @@ class sfp_bevigil(SpiderFootPlugin):
             except Exception as e:
                 self.error(f"Error processing JSON response from BeVigil: {e}")
 
-            if res['content'] == [] or subs['subdomains'] == []:
+            # if res['content'] == [] or subs['subdomains'] == []:
+            if subs['subdomains'] == []:
                 self.info(f'BeVigil found no subdomains')
                 return None
             else:
@@ -138,6 +139,11 @@ class sfp_bevigil(SpiderFootPlugin):
             return
         
         subdomains = self.query(eventData)
+
+        if not subdomains:
+            self.debug(f"No information found for domain {eventData}")
+            return
+
         evt = SpiderFootEvent('RAW_RIR_DATA', str(subdomains), self.__name__, event)
         self.notifyListeners(evt)
 
