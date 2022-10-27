@@ -71,7 +71,7 @@ class sfp_dnsdumpster(SpiderFootPlugin):
                 if k == "csrftoken":
                     csrftoken = str(v)
             csrfmiddlewaretoken = html.find("input", {"name": "csrfmiddlewaretoken"}).attrs.get("value", None)
-        except AttributeError:
+        except Exception:
             pass
 
         # Abort if we didn't get the tokens
