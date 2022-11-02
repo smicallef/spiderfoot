@@ -96,6 +96,11 @@ class sfp_shodan(SpiderFootPlugin):
         )
         time.sleep(1)
 
+        if res['code'] in ["403", "401"]:
+            self.error("SHODAN API key seems to have been rejected or you have exceeded usage limits.")
+            self.errorState = True
+            return None
+
         if res['content'] is None:
             self.info(f"No SHODAN info found for {qry}")
             return None
@@ -124,6 +129,12 @@ class sfp_shodan(SpiderFootPlugin):
             useragent="SpiderFoot"
         )
         time.sleep(1)
+
+        if res['code'] in ["403", "401"]:
+            self.error("SHODAN API key seems to have been rejected or you have exceeded usage limits.")
+            self.errorState = True
+            return None
+
         if res['content'] is None:
             self.info(f"No SHODAN info found for {qry}")
             return None
@@ -152,6 +163,12 @@ class sfp_shodan(SpiderFootPlugin):
             useragent="SpiderFoot"
         )
         time.sleep(1)
+
+        if res['code'] in ["403", "401"]:
+            self.error("SHODAN API key seems to have been rejected or you have exceeded usage limits.")
+            self.errorState = True
+            return None
+
         if res['content'] is None:
             self.info(f"No SHODAN info found for {qry}")
             return None
