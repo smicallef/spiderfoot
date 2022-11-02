@@ -137,7 +137,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
                     domain = r.get('domain-name')
                     if not domain:
                         domain = r.get('domain')
-                    if self.getTarget().matches(domain):
+                    if self.getTarget().matches(domain, includeParents=True):
                         continue
 
                     evt = SpiderFootEvent("SIMILARDOMAIN", domain,
