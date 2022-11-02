@@ -168,12 +168,10 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 continue
 
             if p.returncode != 0:
-                err = None
                 if "Unable to open a socket" in stdout:
-                    err = "Unable to connect"
+                    self.debug(f"Unable to read testssl.sh output for {target}: Unable to connect")
                 else:
-                    err = "Internal error"
-                self.error(f"Unable to read testssl.sh output for {target}: {err}")
+                    self.error(f"Unable to read testssl.sh output for {target}: Internal error")
                 os.unlink(fname)
                 continue
 
