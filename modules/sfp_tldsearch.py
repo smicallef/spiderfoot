@@ -118,6 +118,8 @@ class sfp_tldsearch(SpiderFootPlugin):
             time.sleep(0.1)
 
         for res in self.tldResults:
+            if self.getTarget().matches(res, includeParents=True, includeChildren=True):
+                continue
             if self.tldResults[res] and res not in self.results:
                 self.sendEvent(sourceEvent, res)
 
