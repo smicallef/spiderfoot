@@ -81,7 +81,8 @@ class sfp_clearbit(SpiderFootPlugin):
             "PHYSICAL_ADDRESS",
             "AFFILIATE_INTERNET_NAME",
             "EMAILADDR",
-            "EMAILADDR_GENERIC"
+            "EMAILADDR_GENERIC",
+            "INTERNET_NAME"
         ]
 
     def query(self, email: str):
@@ -229,8 +230,12 @@ class sfp_clearbit(SpiderFootPlugin):
                 domainAliases = company.get('domainAliases')
                 if domainAliases:
                     for d in domainAliases:
+                        if self.getTarget().matches(d):
+                            t = "INTERNET_NAME"
+                        else:
+                            t = "AFFILIATE_INTERNET_NAME"
                         evt = SpiderFootEvent(
-                            "AFFILIATE_INTERNET_NAME",
+                            t,
                             d,
                             self.__name__,
                             event
