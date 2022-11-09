@@ -144,7 +144,6 @@ Account Finder|Look for possible associated accounts on over 500 social and othe
 [Archive.org](https://archive.org/)|Identifies historic versions of interesting files/pages from the Wayback Machine.|Free API
 [ARIN](https://www.arin.net/)|Queries ARIN registry for contact information.|Free API
 [Azure Blob Finder](https://azure.microsoft.com/en-in/services/storage/blobs/)|Search for potential Azure blobs associated with the target and attempt to list their contents.|Free API
-[Bad Packets](https://badpackets.net)|Obtain information about any malicious activities involving IP addresses found|Commercial API
 Base64 Decoder|Identify Base64-encoded strings in URLs, often revealing interesting hidden information.|Internal
 [BGPView](https://bgpview.io/)|Obtain network information from BGPView API.|Free API
 Binary String Extractor|Attempt to identify strings in binary content.|Internal
