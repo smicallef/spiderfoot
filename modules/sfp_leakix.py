@@ -183,7 +183,7 @@ class sfp_leakix(SpiderFootPlugin):
                         evt = SpiderFootEvent("TCP_PORT_OPEN", eventData + ':' + port, self.__name__, event)
                         self.notifyListeners(evt)
                         ports.append(eventData + ":" + port)
-                    hostname = service.get('hostname')
+                    hostname = service.get('host')
                     if hostname and eventName == "DOMAIN_NAME" and self.getTarget().matches(hostname) and hostname not in hosts:
                         if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
                             self.debug(f"Host {hostname} could not be resolved")
@@ -229,7 +229,7 @@ class sfp_leakix(SpiderFootPlugin):
             if leaks:
                 for leak in leaks:
                     leak_protocol = leak.get('type')
-                    hostname = leak.get('hostname')
+                    hostname = leak.get('host')
                     # If protocol is web, our hostname not empty and is not an IP ,
                     # and doesn't belong to our target, discard ( happens when sharing Hosting/CDN IPs )
                     if leak_protocol == "web" and hostname and not self.sf.validIP(hostname) and not self.getTarget().matches(hostname):
