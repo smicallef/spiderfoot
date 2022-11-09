@@ -194,7 +194,7 @@ class sfp_metadefender(SpiderFootPlugin):
                 return
 
             for m in sources:
-                if not m.get('assessment')
+                if not m.get('assessment'):
                     continue
                 if m['assessment'] != "trustworthy":
                     continue
