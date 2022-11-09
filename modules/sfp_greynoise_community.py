@@ -146,7 +146,7 @@ class sfp_greynoise_community(SpiderFootPlugin):
         if not ret:
             return
 
-        if "data" not in ret and "noise" not in ret and "riot" not in ret:
+        if "data" not in ret and "noise" not in ret:
             return
 
         if "noise" in ret:
@@ -176,29 +176,5 @@ class sfp_greynoise_community(SpiderFootPlugin):
                     descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
                     e = SpiderFootEvent(evtType, descr, self.__name__, event)
                     self.notifyListeners(e)
-
-        if "riot" in ret:
-            if ret.get("riot", None):
-                lastseen = ret.get("last_seen", "1970-01-01")
-                lastseen = lastseen.split("T")[0]
-                lastseen_dt = datetime.strptime(lastseen, "%Y-%m-%d")
-                lastseen_ts = int(time.mktime(lastseen_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
-                if self.opts["age_limit_days"] > 0 and lastseen_ts < age_limit_ts:
-                    self.debug("Record found but too old, skipping.")
-                    return
-                e = SpiderFootEvent("RAW_RIR_DATA", str(ret), self.__name__, event)
-                self.notifyListeners(e)
-
-                if ret.get("name"):
-                    descr = (
-                            "GreyNoise - Common-Business Service IP Detected ["
-                            + eventData
-                    )
-                    descr += "\n - " + "Provider Name: " + ret.get("name")
-                descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
-                e = SpiderFootEvent(evtType, descr, self.__name__, event)
-                self.notifyListeners(e)
-
 
 # End of sfp_greynoise_community class

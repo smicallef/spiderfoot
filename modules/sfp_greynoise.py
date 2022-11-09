@@ -107,15 +107,13 @@ class sfp_greynoise(SpiderFootPlugin):
 
     def queryIP(self, qry, qry_type):
         gn_context_url = "https://api.greynoise.io/v2/noise/context/"
-        gn_riot_url = "https://api.greynoise.io/v2/riot/"
         gn_gnql_url = "https://api.greynoise.io/v2/experimental/gnql?query="
 
         headers = {"key": self.opts["api_key"]}
         res = {}
         if qry_type == "ip":
             self.debug(f"Querying GreyNoise for IP: {qry}")
-            ip_res = {}
-            riot_res = {}
+            res = {}
             ip_response = self.sf.fetchUrl(
                 gn_context_url + qry,
                 timeout=self.opts["_fetchtimeout"],
@@ -123,23 +121,7 @@ class sfp_greynoise(SpiderFootPlugin):
                 headers=headers,
             )
             if ip_response["code"] == "200":
-                ip_res = json.loads(ip_response["content"])
-            riot_response = self.sf.fetchUrl(
-                gn_riot_url + qry,
-                timeout=self.opts["_fetchtimeout"],
-                useragent="greynoise-spiderfoot-v1.2.0",
-                headers=headers,
-            )
-            if riot_response["code"] in ["200", "404"]:
-                riot_res = json.loads(riot_response["content"])
-
-            if ip_res and not riot_res:
-                res = ip_res
-            elif riot_res and not ip_res:
-                res = riot_res
-            else:
-                res = ip_res.copy()
-                res.update(riot_res)
+                res = json.loads(ip_response["content"])
         else:
             self.debug(f"Querying GreyNoise for Netblock: {qry}")
             query_response = self.sf.fetchUrl(
@@ -221,7 +203,7 @@ class sfp_greynoise(SpiderFootPlugin):
         if not ret:
             return
 
-        if "data" not in ret and "seen" not in ret and "riot" not in ret:
+        if "data" not in ret and "seen" not in ret:
             return
 
         if "data" in ret and len(ret["data"]) > 0:
@@ -325,32 +307,5 @@ class sfp_greynoise(SpiderFootPlugin):
                     descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
                     e = SpiderFootEvent(evtType, descr, self.__name__, event)
                     self.notifyListeners(e)
-
-        if "riot" in ret:
-            if ret.get("riot", None):
-                lastseen = ret.get("last_updated", "1970-01-01")
-                lastseen = lastseen.split("T")[0]
-                lastseen_dt = datetime.strptime(lastseen, "%Y-%m-%d")
-                lastseen_ts = int(time.mktime(lastseen_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
-                if self.opts["age_limit_days"] > 0 and lastseen_ts < age_limit_ts:
-                    self.debug("Record found but too old, skipping.")
-                    return
-
-                if ret.get("trust_level"):
-                    descr = (
-                        "GreyNoise - Common-Business Service IP Detected ["
-                        + eventData
-                        + "]\n - Trust Level: "
-                        + ret.get("trust_level")
-                    )
-                    if ret.get("name"):
-                        descr += "\n - " + "Provider Name: " + ret.get("name")
-                    if ret.get("category"):
-                        descr += "\n - " + "Provider Category: " + ret.get("category")
-                    descr += "\n<SFURL>https://viz.greynoise.io/ip/" + ret.get("ip") + "</SFURL>"
-                    e = SpiderFootEvent(evtType, descr, self.__name__, event)
-                    self.notifyListeners(e)
-
 
 # End of sfp_greynoise class
