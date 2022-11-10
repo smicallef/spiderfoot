@@ -795,7 +795,9 @@ class SpiderFootHelpers():
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link) - 1] in ['.', '#'] or link[0] == '+' or 'javascript:' in link.lower() or '()' in link:
+            if link[len(link) - 1] in ['.', '#'] or link[0] == '+' or 'javascript:' in link.lower() or '()' in link \
+               or '+"' in link or '"+' in link or "+'" in link or "'+" in link or "data:image" in link \
+               or ' +' in link or '+ ' in link:
                 continue
 
             # Filter in-page links

@@ -284,7 +284,7 @@ class sfp_spider(SpiderFootPlugin):
 
                 event = SpiderFootEvent(
                     "TARGET_WEB_CONTENT_TYPE",
-                    ctype,
+                    ctype.replace(" ", "").lower(),
                     self.__name__,
                     parentEvent
                 )
