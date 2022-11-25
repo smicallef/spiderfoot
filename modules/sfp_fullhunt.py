@@ -75,6 +75,7 @@ class sfp_fullhunt(SpiderFootPlugin):
             "TCP_PORT_OPEN",
             "PROVIDER_DNS",
             "PROVIDER_MAIL",
+            "RAW_RIR_DATA"
         ]
 
     def queryDomainDetails(self, qry):

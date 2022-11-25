@@ -69,7 +69,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
         return ["BITCOIN_ADDRESS"]
 
     def producedEvents(self):
-        return ["MALICIOUS_BITCOIN_ADDRESS"]
+        return ["MALICIOUS_BITCOIN_ADDRESS", "RAW_RIR_DATA"]
 
     def query(self, qry):
         qs = urllib.parse.urlencode({"address": qry})

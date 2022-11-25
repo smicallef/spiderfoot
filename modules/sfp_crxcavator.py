@@ -69,7 +69,8 @@ class sfp_crxcavator(SpiderFootPlugin):
             'LINKED_URL_INTERNAL',
             'AFFILIATE_INTERNET_NAME',
             'AFFILIATE_INTERNET_NAME_UNRESOLVED',
-            'PHYSICAL_ADDRESS'
+            'PHYSICAL_ADDRESS',
+            'RAW_RIR_DATA'
         ]
 
     def query(self, qry):

@@ -75,6 +75,7 @@ class sfp_koodous(SpiderFootPlugin):
     def producedEvents(self):
         return [
             'APPSTORE_ENTRY',
+            'RAW_RIR_DATA'
         ]
 
     def queryPackageName(self, qry, cursor=''):
