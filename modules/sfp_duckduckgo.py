@@ -103,11 +103,6 @@ class sfp_duckduckgo(SpiderFootPlugin):
             self.debug(f"No DuckDuckGo information for {eventData}")
             return
 
-        # Submit the DuckDuckGo results for analysis
-        evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
-                              self.__name__, event)
-        self.notifyListeners(evt)
-
         abstract_text = ret.get('AbstractText')
         if abstract_text:
             event_type = "DESCRIPTION_ABSTRACT"

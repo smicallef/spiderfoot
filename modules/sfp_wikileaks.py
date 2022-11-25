@@ -67,7 +67,7 @@ class sfp_wikileaks(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["LEAKSITE_CONTENT", "LEAKSITE_URL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -122,7 +122,6 @@ class sfp_wikileaks(SpiderFootPlugin):
             if "page=" not in res['content']:
                 keepGoing = False
 
-            valid = False
             for link in links:
                 # We can safely skip search.wikileaks.org and others.
                 if "search.wikileaks.org/" in link:
@@ -141,12 +140,6 @@ class sfp_wikileaks(SpiderFootPlugin):
                     if not link.endswith(".js") and not link.endswith(".css"):
                         evt = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
                         self.notifyListeners(evt)
-                        valid = True
-
-            if valid:
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
 
             # Fail-safe to prevent infinite looping
             if page > 50:

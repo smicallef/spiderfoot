@@ -68,8 +68,7 @@ class sfp_torch(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "DARKNET_MENTION_URL",
-            "DARKNET_MENTION_CONTENT",
-            "SEARCH_ENGINE_WEB_CONTENT"
+            "DARKNET_MENTION_CONTENT"
         ]
 
     def handleEvent(self, event):
@@ -165,12 +164,7 @@ class sfp_torch(SpiderFootPlugin):
                         self.notifyListeners(evt)
                         linkcount += 1
 
-            if linkcount > 0:
-                # Submit the search results for analysis elsewhere
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-            else:
+            if linkcount == 0:
                 # No more pages
                 return
 

@@ -76,7 +76,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -123,11 +123,6 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
             if "forward >" not in data['content']:
                 keepGoing = False
-
-            # Submit the google results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
 
             links = re.findall(r"url\.php\?u=(.[^\"\']+)[\"\']",
                                data['content'], re.IGNORECASE | re.DOTALL)

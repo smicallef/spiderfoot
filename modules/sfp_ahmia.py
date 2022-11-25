@@ -76,7 +76,7 @@ class sfp_ahmia(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -123,7 +123,6 @@ class sfp_ahmia(SpiderFootPlugin):
             self.info(f"No results for {eventData} returned from Ahmia.fi.")
             return
 
-        reported = False
         for link in links:
             if self.checkForStop():
                 return
@@ -141,7 +140,6 @@ class sfp_ahmia(SpiderFootPlugin):
             if not self.opts['fetchlinks']:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                 self.notifyListeners(evt)
-                reported = True
                 continue
 
             res = self.sf.fetchUrl(
@@ -161,7 +159,6 @@ class sfp_ahmia(SpiderFootPlugin):
 
             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
             self.notifyListeners(evt)
-            reported = True
 
             try:
                 startIndex = res['content'].index(eventData) - 120
@@ -172,16 +169,6 @@ class sfp_ahmia(SpiderFootPlugin):
 
             wdata = res['content'][startIndex:endIndex]
             evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", f"...{wdata}...", self.__name__, evt)
-            self.notifyListeners(evt)
-
-        if reported:
-            # Submit the search results for analysis
-            evt = SpiderFootEvent(
-                "SEARCH_ENGINE_WEB_CONTENT",
-                content,
-                self.__name__,
-                event
-            )
             self.notifyListeners(evt)
 
 # End of sfp_ahmia class
