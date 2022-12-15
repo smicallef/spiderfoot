@@ -235,7 +235,6 @@ Human Name Extractor|Attempt to identify human names in fetched content.|Interna
 [Hybrid Analysis](https://www.hybrid-analysis.com)|Search Hybrid Analysis for domains and URLs related to the target.|Free API
 IBAN Number Extractor|Identify International Bank Account Numbers (IBANs) in any data.|Internal
 [Iknowwhatyoudownload.com](https://iknowwhatyoudownload.com/en/peer/)|Check iknowwhatyoudownload.com for IP addresses that have been using torrents.|Tiered API
-[Instagram](https://www.instagram.com/)|Gather information from Instagram profiles.|Free API
 [IntelligenceX](https://intelx.io/)|Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers.|Tiered API
 Interesting File Finder|Identifies potential files of interest, e.g. office documents, zip files.|Internal
 [Internet Storm Center](https://isc.sans.edu)|Check if an IP address is malicious according to SANS ISC.|Free API
