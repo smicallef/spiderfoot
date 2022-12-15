@@ -124,7 +124,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 continue
 
             try:
-                answers = res.query(name, 'SRV')
+                answers = res.query(name, 'SRV', timeout=10)
             except Exception:
                 answers = []
 
