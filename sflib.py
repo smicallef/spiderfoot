@@ -1538,10 +1538,10 @@ class SpiderFoot:
 
                 if source == "nist":
                     try:
-                        if data['CVE_Items'][0]['impact'].get('baseMetricV3'):
-                            score = data['CVE_Items'][0]['impact']['baseMetricV3']['cvssV3']['baseScore']
+                        if data['result']['CVE_Items'][0]['impact'].get('baseMetricV3'):
+                            score = data['result']['CVE_Items'][0]['impact']['baseMetricV3']['cvssV3']['baseScore']
                         else:
-                            score = data['CVE_Items'][0]['impact']['baseMetricV2']['cvssV2']['baseScore']
+                            score = data['result']['CVE_Items'][0]['impact']['baseMetricV2']['cvssV2']['baseScore']
                         rating = cveRating(score)
                         if rating:
                             eventType = f"VULNERABILITY_CVE_{rating}"
@@ -1549,7 +1549,7 @@ class SpiderFoot:
                         score = "Unknown"
 
                     try:
-                        descr = data['CVE_Items'][0]['cve']['description']['description_data'][0]['value']
+                        descr = data['result']['CVE_Items'][0]['cve']['description']['description_data'][0]['value']
                     except Exception:
                         descr = "Unknown"
 
