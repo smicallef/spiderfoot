@@ -17,6 +17,7 @@ import urllib.parse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
+from modules.common_ssl_cert import process_ssl_cert_events
 
 class sfp_crt(SpiderFootPlugin):
 
@@ -216,43 +217,6 @@ class sfp_crt(SpiderFootPlugin):
                 evt = SpiderFootEvent("SSL_CERTIFICATE_RAW", str(cert_text), self.__name__, event)
                 self.notifyListeners(evt)
 
-            sans = cert.get('altnames', list())
-
-            if not sans:
-                continue
-
-            for san in sans:
-                if san.lower() == event.data.lower():
-                    continue
-                domains.append(san.lower().replace("*.", ""))
-
-        if self.opts['verify'] and len(domains) > 0:
-            self.info(f"Resolving {len(set(domains))} domains ...")
-
-        for domain in set(domains):
-            if domain in self.results:
-                continue
-
-            if not self.sf.validHost(domain, self.opts['_internettlds']):
-                continue
-
-            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
-                evt_type = 'INTERNET_NAME'
-                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                    self.debug(f"Host {domain} could not be resolved")
-                    evt_type += '_UNRESOLVED'
-            else:
-                evt_type = 'CO_HOSTED_SITE'
-
-            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
-            self.notifyListeners(evt)
-
-            if self.sf.isDomain(domain, self.opts['_internettlds']):
-                if evt_type == 'CO_HOSTED_SITE':
-                    evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
-                    self.notifyListeners(evt)
+            process_ssl_cert_events(self, cert, event)
 
 # End of sfp_crt class
