@@ -15,7 +15,7 @@ import sys
 import os.path
 import tempfile
 from netaddr import IPNetwork
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
@@ -155,8 +155,13 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
             ]
             try:
                 p = Popen(args, stdout=PIPE, stderr=PIPE)
-                out, stderr = p.communicate(input=None)
+                out, stderr = p.communicate(input=None, timeout=60)
                 stdout = out.decode(sys.stdin.encoding)
+            except TimeoutExpired:
+                p.kill()
+                stdout, stderr = p.communicate()
+                self.debug(f"Timed out waiting for onesixtyone to finish on {target}")
+                continue
             except Exception as e:
                 self.error(f"Unable to run onesixtyone: {e}")
                 continue
