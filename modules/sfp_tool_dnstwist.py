@@ -14,7 +14,7 @@
 import json
 from pathlib import Path
 from shutil import which
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
@@ -121,7 +121,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
         try:
             p = Popen(cmd + ["-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate(input=None)
+            stdout, stderr = p.communicate(input=None, timeout=300)
             if p.returncode == 0:
                 content = stdout
             else:
@@ -146,6 +146,11 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             except Exception as e:
                 self.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
                 return
+        except TimeoutExpired:
+            p.kill()
+            stdout, stderr = p.communicate()
+            self.debug(f"Timed out waiting for DNSTwist to finish on {eventData}")
+            return
         except Exception as e:
             self.error("Unable to run DNSTwist: " + str(e))
             return
