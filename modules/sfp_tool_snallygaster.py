@@ -14,7 +14,7 @@
 import sys
 import json
 import os.path
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
@@ -114,8 +114,13 @@ class sfp_tool_snallygaster(SpiderFootPlugin):
         ]
         try:
             p = Popen(args, stdout=PIPE, stderr=PIPE)
-            out, stderr = p.communicate(input=None)
+            out, stderr = p.communicate(input=None, timeout=600)
             stdout = out.decode(sys.stdin.encoding)
+        except TimeoutExpired:
+            p.kill()
+            stdout, stderr = p.communicate()
+            self.debug(f"Timed out waiting for snallygaster to finish on {eventData}")
+            return
         except Exception as e:
             self.error(f"Unable to run snallygaster: {e}")
             return
