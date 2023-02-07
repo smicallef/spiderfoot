@@ -13,7 +13,7 @@
 
 import json
 import os.path
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
@@ -128,8 +128,13 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             eventData
         ]
         try:
-            p = Popen(args, stdout=PIPE, stderr=PIPE)
+            p = Popen(args, stdout=PIPE, stderr=PIPE, timeout=300)
             stdout, stderr = p.communicate(input=None)
+        except TimeoutExpired:
+            p.kill()
+            stdout, stderr = p.communicate()
+            self.debug(f"Timed out waiting for WhatWeb to finish against {eventData}")
+            return
         except Exception as e:
             self.error(f"Unable to run WhatWeb: {e}")
             return
