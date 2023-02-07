@@ -14,7 +14,7 @@
 import sys
 import os.path
 from netaddr import IPNetwork
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
@@ -73,6 +73,7 @@ class sfp_tool_nbtscan(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        timeout = 10
 
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -107,6 +108,7 @@ class sfp_tool_nbtscan(SpiderFootPlugin):
                 if net.prefixlen < self.opts['netblockscanmax']:
                     self.debug(f"Skipping scanning of {eventData}, too big.")
                     return
+                timeout = timeout * net.size
         except BaseException as e:
             self.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
             return
@@ -132,8 +134,13 @@ class sfp_tool_nbtscan(SpiderFootPlugin):
 
         try:
             p = Popen(args, stdout=PIPE, stderr=PIPE)
-            out, _ = p.communicate(input=None)
+            out, _ = p.communicate(input=None, timeout=timeout)
             stdout = out.decode(sys.stdin.encoding)
+        except TimeoutExpired:
+            p.kill()
+            stdout, stderr = p.communicate()
+            self.debug(f"Timed out waiting for nbtscan to finish on {eventData}")
+            return
         except Exception as e:
             self.error(f"Unable to run nbtscan: {e}")
             return
