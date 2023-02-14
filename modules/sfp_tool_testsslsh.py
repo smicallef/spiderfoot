@@ -43,13 +43,15 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
     opts = {
         'testsslsh_path': '',
         'netblockscan': True,
-        'netblockscanmax': 24
+        'netblockscanmax': 24,
+        'mincve': 'LOW'
     }
 
     optdescs = {
         'testsslsh_path': "Path to your testssl.sh executable. Must be set.",
         'netblockscan': "Test all IPs within identified owned netblocks?",
-        'netblockscanmax': "Maximum netblock/subnet size to test IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'netblockscanmax': "Maximum netblock/subnet size to test IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'mincve': "Only report CVEs equal to or higher than this level, must be either LOW, MEDIUM, HIGH or CRITICAL."
     }
 
     results = None
@@ -92,6 +94,11 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
 
         if not self.opts['testsslsh_path']:
             self.error("You enabled sfp_tool_testsslsh but did not set a path to the tool!")
+            self.errorState = True
+            return
+
+        if self.opts['mincve'].upper().strip() not in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+            self.error("Invalid CVE threshold configuration. Must be CRITICAL, HIGH, MEDIUM or LOW.")
             self.errorState = True
             return
 
@@ -154,6 +161,8 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 "5",
                 "--openssl-timeout",
                 "5",
+                "--severity",
+                self.opts['mincve'].upper().strip(),
                 "--jsonfile",
                 fname,
                 target
