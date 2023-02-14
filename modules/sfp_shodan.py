@@ -83,7 +83,7 @@ class sfp_shodan(SpiderFootPlugin):
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                'RAW_RIR_DATA', 'GEOINFO',
+                'RAW_RIR_DATA', 'GEOINFO', 'IP_ADDRESS',
                 'VULNERABILITY_CVE_CRITICAL',
                 'VULNERABILITY_CVE_HIGH', 'VULNERABILITY_CVE_MEDIUM',
                 'VULNERABILITY_CVE_LOW', 'VULNERABILITY_GENERAL']
