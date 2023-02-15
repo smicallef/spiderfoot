@@ -75,7 +75,8 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
             'VULNERABILITY_CVE_HIGH',
             'VULNERABILITY_CVE_MEDIUM',
             'VULNERABILITY_CVE_LOW',
-            'VULNERABILITY_GENERAL'
+            'VULNERABILITY_GENERAL',
+            'IP_ADDRESS'
         ]
 
     def handleEvent(self, event):
@@ -144,13 +145,13 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                         # self.results will also contain hostnames
                         continue
 
-        self.results[eventData] = True
-
         # If we weren't passed a netblock, this will be empty
         if not targets:
             targets.append(eventData)
 
         for target in targets:
+            self.results[target] = True
+
             # Create a temporary output file
             _, fname = tempfile.mkstemp("testssl.json")
 
@@ -206,6 +207,25 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 self.debug(f"testssl.sh returned no output for {target}")
                 continue
 
+            pevent = event
+            # For netblocks, we need to create the IP address event so that
+            # the event is more meaningful but check if we have applicable
+            # vulnerabilities to report.
+            if eventName == 'NETBLOCK_OWNER':
+                generate = False
+                for result in result_json:
+                    if result['finding'] == "not vulnerable":
+                        continue
+
+                    if result['severity'] not in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
+                        continue
+
+                    generate = True
+
+                if generate:
+                    pevent = SpiderFootEvent("IP_ADDRESS", target, self.__name__, event)
+                    self.notifyListeners(pevent)
+
             cves = list()
             for result in result_json:
                 if result['finding'] == "not vulnerable":
@@ -220,13 +240,13 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                             continue
                         cves.append(cve)
                         etype, cvetext = self.sf.cveInfo(cve)
-                        evt = SpiderFootEvent(etype, cvetext, self.__name__, event)
+                        evt = SpiderFootEvent(etype, cvetext, self.__name__, pevent)
                         self.notifyListeners(evt)
                 else:
                     if result['id'] in cves:
                         continue
                     cves.append(result['id'])
-                    evt = SpiderFootEvent("VULNERABILITY_GENERAL", f"{result['id']} ({result['finding']})", self.__name__, event)
+                    evt = SpiderFootEvent("VULNERABILITY_GENERAL", f"{result['id']} ({result['finding']})", self.__name__, pevent)
                     self.notifyListeners(evt)
 
 # End of sfp_tool_testsslsh class
