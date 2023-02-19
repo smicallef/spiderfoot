@@ -66,10 +66,9 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
         # Write communities to file for use later on
         try:
             _, self.communitiesFile = tempfile.mkstemp("communities")
-            f = open(self.communitiesFile, "w")
-            for community in self.opts['communities'].split(","):
-                f.write(community.strip() + "\n")
-            f.close()
+            with open(self.communitiesFile, "w") as f:
+                for community in self.opts['communities'].split(","):
+                    f.write(community.strip() + "\n")
         except BaseException as e:
             self.error(f"Unable to write communities file ({self.communitiesFile}): {e}")
             self.errorState = True
@@ -133,12 +132,12 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
         if eventData in self.results:
             self.debug(f"Skipping {eventData} as already scanned.")
             return
-        else:
-            # Might be a subnet within a subnet or IP within a subnet
-            for addr in self.results:
-                if IPNetwork(eventData) in IPNetwork(addr):
-                    self.debug(f"Skipping {eventData} as already within a scanned range.")
-                    return
+
+        # Might be a subnet within a subnet or IP within a subnet
+        for addr in self.results:
+            if IPNetwork(eventData) in IPNetwork(addr):
+                self.debug(f"Skipping {eventData} as already within a scanned range.")
+                return
 
         self.results[eventData] = True
 

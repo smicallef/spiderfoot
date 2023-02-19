@@ -422,10 +422,7 @@ class SpiderFootCorrelator:
 
         if "." in field:
             key, field = field.split(".")
-            for subevent in event[key]:
-                if self.event_keep(subevent, field, patterns, patterntype):
-                    return True
-            return False
+            return any(self.event_keep(subevent, field, patterns, patterntype) for subevent in event[key])
 
         value = event[field]
 
@@ -638,10 +635,9 @@ class SpiderFootCorrelator:
                         except Exception:
                             pass
 
-                if rule['match_method'] == 'exact':
-                    if event_data in reference:
-                        self.log.debug(f"found exact match: {event_data} in {reference}")
-                        return True
+                if rule['match_method'] == 'exact' and event_data in reference:
+                    self.log.debug(f"found exact match: {event_data} in {reference}")
+                    return True
 
                 if rule['match_method'] == 'contains':
                     for r in reference:
@@ -675,7 +671,7 @@ class SpiderFootCorrelator:
 
             # delete the bucket if there are no events > collection 0
             if pluszerocount == 0:
-                del(buckets[bucket])
+                del (buckets[bucket])
 
     def analysis_first_collection_only(self, rule: dict, buckets: dict) -> None:
         """analysis_first_collection_only TBD
@@ -699,13 +695,13 @@ class SpiderFootCorrelator:
                     delete = True
                     break
             if delete:
-                del(buckets[bucket])
+                del (buckets[bucket])
 
         # Remove buckets with collection > 0 values
         for bucket in list(buckets.keys()):
             for e in buckets[bucket]:
                 if e['_collection'] > 0:
-                    del(buckets[bucket])
+                    del (buckets[bucket])
                     break
 
     def analysis_outlier(self, rule: dict, buckets: dict) -> None:
@@ -722,7 +718,7 @@ class SpiderFootCorrelator:
 
         if len(list(countmap.keys())) == 0:
             for bucket in list(buckets.keys()):
-                del(buckets[bucket])
+                del (buckets[bucket])
             return
 
         total = float(sum(countmap.values()))
@@ -733,7 +729,7 @@ class SpiderFootCorrelator:
         if avgpct < rule.get('noisy_percent', 10):
             self.log.debug(f"Not correlating because the average percent is {avgpct} (too anomalous)")
             for bucket in list(buckets.keys()):
-                del(buckets[bucket])
+                del (buckets[bucket])
             return
 
         # Figure out which buckets don't contain outliers and delete them
@@ -743,7 +739,7 @@ class SpiderFootCorrelator:
                 delbuckets.append(bucket)
 
         for bucket in set(delbuckets):
-            del(buckets[bucket])
+            del (buckets[bucket])
 
     def analysis_threshold(self, rule: dict, buckets: dict) -> None:
         """analysis_treshold TBD
@@ -769,14 +765,14 @@ class SpiderFootCorrelator:
                     # Delete the bucket of events if it didn't meet the
                     # analysis criteria.
                     if bucket in buckets:
-                        del(buckets[bucket])
+                        del (buckets[bucket])
                 continue
 
             # If we're only looking at the number of times the requested
             # field appears in the bucket...
             uniques = len(list(countmap.keys()))
             if uniques < rule.get('minimum', 0) or uniques > rule.get('maximum', 999999999):
-                del(buckets[bucket])
+                del (buckets[bucket])
 
     def analyze_field_scope(self, field: str) -> list:
         """Analysis field scope.

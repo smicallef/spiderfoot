@@ -201,7 +201,7 @@ def main() -> None:
         for m in sorted(sfModules.keys()):
             if "__" in m:
                 continue
-            print(('{0:25}  {1}'.format(m, sfModules[m]['descr'])))
+            print(f"{m.ljust(25)}  {sfModules[m]['descr']}")
         sys.exit(0)
 
     if args.types:
@@ -213,7 +213,7 @@ def main() -> None:
             types[r[1]] = r[0]
 
         for t in sorted(types.keys()):
-            print(('{0:45}  {1}'.format(t, types[t])))
+            print(f"{t.ljust(45)}  {types[t]}")
         sys.exit(0)
 
     if args.l:
@@ -413,12 +413,12 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
 
         if args.r:
             if delim == "\t":
-                headers = '{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data")
+                headers = delim.join(["Source".ljust(30), "Type".ljust(45), "Source Data", "Data"])
             else:
                 headers = delim.join(["Source", "Type", "Source Data", "Data"])
         else:
             if delim == "\t":
-                headers = '{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data")
+                headers = delim.join(["Source".ljust(30), "Type".ljust(45), "Data"])
             else:
                 headers = delim.join(["Source", "Type", "Data"])
 

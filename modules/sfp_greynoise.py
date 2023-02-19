@@ -165,28 +165,20 @@ class sfp_greynoise(SpiderFootPlugin):
         if eventName == "NETBLOCK_OWNER":
             if not self.opts["netblocklookup"]:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts["maxnetblock"]:
-                    self.debug(
-                        "Network size bigger than permitted: "
-                        + str(IPNetwork(eventData).prefixlen)
-                        + " > "
-                        + str(self.opts["maxnetblock"])
-                    )
-                    return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == "NETBLOCK_MEMBER":
             if not self.opts["subnetlookup"]:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts["maxsubnet"]:
-                    self.debug(
-                        "Network size bigger than permitted: "
-                        + str(IPNetwork(eventData).prefixlen)
-                        + " > "
-                        + str(self.opts["maxsubnet"])
-                    )
-                    return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName == "IP_ADDRESS":
             evtType = "MALICIOUS_IPADDR"
