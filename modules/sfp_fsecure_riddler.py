@@ -137,8 +137,8 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         time.sleep(1)
 
-        if res['code'] in ["400", "401", "402", "403"]:
-            self.error('Unexpected HTTP response code: ' + res['code'])
+        if res['code'] in ["400", "401", "402", "403", "500"]:
+            self.error(f"Unexpected HTTP response code {res['code']} from F-Secure Riddler")
             self.errorState = True
             return None
 
@@ -152,7 +152,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             return None
 
         if not data:
-            self.debug("No results found for " + qry)
+            self.debug(f"No results found for {qry}")
             return None
 
         return data
@@ -168,7 +168,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fsecure_riddler':
-            self.debug("Ignoring " + eventData + ", from self.")
+            self.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:
@@ -183,6 +183,11 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         if not self.token:
             self.login()
 
+            if not self.token:
+                self.error('Could not login to F-Secure Riddler')
+                self.errorState = True
+                return
+
         self.results[eventData] = True
 
         data = None
@@ -193,7 +198,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             data = self.query("ip:" + eventData)
 
         if not data:
-            self.info("No results found for " + eventData)
+            self.info(f"No results found for {eventData}")
             return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
