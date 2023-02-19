@@ -210,7 +210,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
                 # self.assertTrue(meta.get('dataSource').get('favIcon'))
                 # self.assertTrue(meta.get('dataSource').get('logo'))
                 # self.assertTrue(meta.get('dataSource').get('references'))
-                # self.assertTrue(meta.get('dataSource').get('description'))
+                self.assertTrue(meta.get('dataSource').get('description'))
 
             if module.startswith('sfp_tool_'):
                 self.assertIsInstance(meta.get('toolDetails'), dict)
