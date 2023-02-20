@@ -388,11 +388,9 @@ class SpiderFootScanner():
             psMod.notifyListeners(firstEvent)
 
             # Special case.. check if an INTERNET_NAME is also a domain
-            if self.__targetType == 'INTERNET_NAME':
-                if self.__sf.isDomain(self.__targetValue, self.__config['_internettlds']):
-                    firstEvent = SpiderFootEvent('DOMAIN_NAME', self.__targetValue,
-                                                 "SpiderFoot UI", rootEvent)
-                    psMod.notifyListeners(firstEvent)
+            if self.__targetType == 'INTERNET_NAME' and self.__sf.isDomain(self.__targetValue, self.__config['_internettlds']):
+                firstEvent = SpiderFootEvent('DOMAIN_NAME', self.__targetValue, "SpiderFoot UI", rootEvent)
+                psMod.notifyListeners(firstEvent)
 
             # If in interactive mode, loop through this shared global variable
             # waiting for inputs, and process them until my status is set to
@@ -569,11 +567,9 @@ class SpiderFootScanner():
         if not modules_running and not queues_empty:
             self.__sf.debug("Clearing queues for stalled/aborted modules.")
             for mod in self.__moduleInstances.values():
-                try:
+                with suppress(Exception):
                     while True:
                         mod.incomingEventQueue.get_nowait()
-                except Exception:
-                    pass
 
         if log_status:
             events_queued = ", ".join([f"{mod}: {qsize:,}" for mod, qsize in modules_waiting[:5] if qsize > 0])

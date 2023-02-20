@@ -329,12 +329,10 @@ class SpiderFootPlugin():
         eventName = sfEvent.eventType
         eventData = sfEvent.data
 
-        if self.__outputFilter__:
-            # Be strict about what events to pass on, unless they are
-            # the ROOT event or the event type of the target.
-            if eventName not in ('ROOT', self.getTarget().targetType):
-                if eventName not in self.__outputFilter__:
-                    return
+        # Be strict about what events to pass on, unless they are
+        # the ROOT event or the event type of the target.
+        if self.__outputFilter__ and eventName not in ['ROOT', self.getTarget().targetType, self.__outputFilter__]:
+            return
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
@@ -360,10 +358,9 @@ class SpiderFootPlugin():
 
         prevEvent = sfEvent.sourceEvent
         while prevEvent is not None:
-            if prevEvent.sourceEvent is not None:
-                if prevEvent.sourceEvent.eventType == sfEvent.eventType and prevEvent.sourceEvent.data.lower() == eventData.lower():
-                    storeOnly = True
-                    break
+            if prevEvent.sourceEvent is not None and prevEvent.sourceEvent.eventType == sfEvent.eventType and prevEvent.sourceEvent.data.lower() == eventData.lower():
+                storeOnly = True
+                break
             prevEvent = prevEvent.sourceEvent
 
         # output to queue if applicable

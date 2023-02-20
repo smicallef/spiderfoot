@@ -133,17 +133,17 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
         if eventData in self.results:
             self.debug(f"Skipping {eventData} as already scanned.")
             return
-        else:
-            if eventName != "INTERNET_NAME":
-                # Might be a subnet within a subnet or IP within a subnet
-                for addr in self.results:
-                    try:
-                        if IPNetwork(eventData) in IPNetwork(addr):
-                            self.debug(f"Skipping {eventData} as already within a scanned range.")
-                            return
-                    except BaseException:
-                        # self.results will also contain hostnames
-                        continue
+
+        if eventName != "INTERNET_NAME":
+            # Might be a subnet within a subnet or IP within a subnet
+            for addr in self.results:
+                try:
+                    if IPNetwork(eventData) in IPNetwork(addr):
+                        self.debug(f"Skipping {eventData} as already within a scanned range.")
+                        return
+                except BaseException:
+                    # self.results will also contain hostnames
+                    continue
 
         # If we weren't passed a netblock, this will be empty
         if not targets:

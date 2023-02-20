@@ -125,6 +125,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             info = json.loads(res['content'])
             if querytype == "domain":
                 return info.get('subdomains', None)
+
             if info.get("record_count", 0) > 100:
                 if len(info.get('records', [])) >= 100:
                     # Avoid throttling
@@ -134,12 +135,12 @@ class sfp_securitytrails(SpiderFootPlugin):
                     else:
                         accum = info.get('records')
                     return self.query(qry, querytype, page + 1, accum)
-                else:
-                    # We are at the last page
-                    accum.extend(info.get('records', []))
-                    return accum
-            else:
-                return info.get('records', [])
+
+                # We are at the last page
+                accum.extend(info.get('records', []))
+                return accum
+
+            return info.get('records', [])
         except Exception as e:
             self.error("Error processing JSON response from SecurityTrails: " + str(e))
             return None

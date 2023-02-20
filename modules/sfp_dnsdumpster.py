@@ -79,8 +79,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             self.error("Error obtaining CSRF tokens")
             self.errorState = True
             return ret
-        else:
-            self.debug("Successfully obtained CSRF tokens")
+
+        self.debug("Successfully obtained CSRF tokens")
 
         # Otherwise, do the needful
         url = "https://dnsdumpster.com/"

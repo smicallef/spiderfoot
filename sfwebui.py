@@ -412,7 +412,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return self.buildExcel(rows, headings, sheetNameIndex=0)
 
-        elif filetype.lower() == 'csv':
+        if filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(headings)
@@ -434,8 +434,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
-        else:
-            return self.error("Invalid export filetype.")
+        return self.error("Invalid export filetype.")
 
     @cherrypy.expose
     def scaneventresultexport(self: 'SpiderFootWebUi', id: str, type: str, filetype: str = "csv", dialect: str = "excel") -> str:
@@ -469,7 +468,7 @@ class SpiderFootWebUi:
             return self.buildExcel(rows, ["Updated", "Type", "Module", "Source",
                                    "F/P", "Data"], sheetNameIndex=1)
 
-        elif filetype.lower() == 'csv':
+        if filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
@@ -486,8 +485,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
-        else:
-            return self.error("Invalid export filetype.")
+        return self.error("Invalid export filetype.")
 
     @cherrypy.expose
     def scaneventresultexportmulti(self: 'SpiderFootWebUi', ids: str, filetype: str = "csv", dialect: str = "excel") -> str:
@@ -537,7 +535,7 @@ class SpiderFootWebUi:
             return self.buildExcel(rows, ["Scan Name", "Updated", "Type", "Module",
                                    "Source", "F/P", "Data"], sheetNameIndex=2)
 
-        elif filetype.lower() == 'csv':
+        if filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
@@ -559,8 +557,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
-        else:
-            return self.error("Invalid export filetype.")
+        return self.error("Invalid export filetype.")
 
     @cherrypy.expose
     def scansearchresultexport(self: 'SpiderFootWebUi', id: str, eventType: str = None, value: str = None, filetype: str = "csv", dialect: str = "excel") -> str:
@@ -594,7 +591,7 @@ class SpiderFootWebUi:
             return self.buildExcel(rows, ["Updated", "Type", "Module", "Source",
                                    "F/P", "Data"], sheetNameIndex=1)
 
-        elif filetype.lower() == 'csv':
+        if filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
@@ -608,8 +605,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
-        else:
-            return self.error("Invalid export filetype.")
+        return self.error("Invalid export filetype.")
 
     @cherrypy.expose
     def scanexportjsonmulti(self: 'SpiderFootWebUi', ids: str) -> str:
@@ -1106,28 +1102,28 @@ class SpiderFootWebUi:
         if str(token) != str(self.token):
             return self.error(f"Invalid token ({token})")
 
-        if configFile:  # configFile seems to get set even if a file isn't uploaded
-            if configFile.file:
+        # configFile seems to get set even if a file isn't uploaded
+        if configFile and configFile.file:
+            try:
                 contents = configFile.file.read()
 
                 if isinstance(contents, bytes):
                     contents = contents.decode('utf-8')
 
-                try:
-                    tmp = dict()
-                    for line in contents.split("\n"):
-                        if "=" not in line:
-                            continue
+                tmp = dict()
+                for line in contents.split("\n"):
+                    if "=" not in line:
+                        continue
 
-                        opt_array = line.strip().split("=")
-                        if len(opt_array) == 1:
-                            opt_array[1] = ""
+                    opt_array = line.strip().split("=")
+                    if len(opt_array) == 1:
+                        opt_array[1] = ""
 
-                        tmp[opt_array[0]] = '='.join(opt_array[1:])
+                    tmp[opt_array[0]] = '='.join(opt_array[1:])
 
-                    allopts = json.dumps(tmp).encode('utf-8')
-                except Exception as e:
-                    return self.error(f"Failed to parse input file. Was it generated from SpiderFoot? ({e})")
+                allopts = json.dumps(tmp).encode('utf-8')
+            except Exception as e:
+                return self.error(f"Failed to parse input file. Was it generated from SpiderFoot? ({e})")
 
         # Reset config to default
         if allopts == "RESET":

@@ -219,8 +219,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     self.debug("Match found: " + match)
                     if match in instances:
                         continue
-                    else:
-                        instances.append(match)
+
+                    instances.append(match)
 
                     if self.checkForStop():
                         return
@@ -242,17 +242,18 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
                         if pres["content"] is None:
                             continue
-                        else:
-                            found = False
-                            for kw in self.keywords:
-                                if re.search(
-                                    r"[^a-zA-Z\-\_]" + kw + r"[^a-zA-Z\-\_]",
-                                    pres["content"],
-                                    re.IGNORECASE,
-                                ):
-                                    found = True
-                            if not found:
-                                continue
+
+                        found = False
+                        for kw in self.keywords:
+                            if re.search(
+                                r"[^a-zA-Z\-\_]" + kw + r"[^a-zA-Z\-\_]",
+                                pres["content"],
+                                re.IGNORECASE,
+                            ):
+                                found = True
+
+                        if not found:
+                            continue
 
                     self.info("Social Media Profile found at " + site + ": " + match)
                     match = urllib.parse.unquote(match)

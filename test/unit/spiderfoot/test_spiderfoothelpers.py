@@ -178,7 +178,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
         )
 
     def test_extractLinksFromHtml_invalid_url_should_raise_TypeError(self):
-        invalid_types = [None,  bytes(), list(), dict()]
+        invalid_types = [None, bytes(), list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):

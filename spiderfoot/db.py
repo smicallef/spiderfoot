@@ -1382,9 +1382,8 @@ class SpiderFootDb:
         if not isinstance(sfEvent.module, str):
             raise TypeError(f"sfEvent.module is {type(sfEvent.module)}; expected str()") from None
 
-        if not sfEvent.module:
-            if sfEvent.eventType != "ROOT":
-                raise ValueError("sfEvent.module is empty") from None
+        if not sfEvent.module and sfEvent.eventType != "ROOT":
+            raise ValueError("sfEvent.module is empty") from None
 
         if not isinstance(sfEvent.confidence, int):
             raise TypeError(f"sfEvent.confidence is {type(sfEvent.confidence)}; expected int()") from None
@@ -1404,9 +1403,8 @@ class SpiderFootDb:
         if not 0 <= sfEvent.risk <= 100:
             raise ValueError(f"sfEvent.risk value is {type(sfEvent.risk)}; expected 0 - 100") from None
 
-        if not isinstance(sfEvent.sourceEvent, SpiderFootEvent):
-            if sfEvent.eventType != "ROOT":
-                raise TypeError(f"sfEvent.sourceEvent is {type(sfEvent.sourceEvent)}; expected str()") from None
+        if not isinstance(sfEvent.sourceEvent, SpiderFootEvent) and sfEvent.eventType != "ROOT":
+            raise TypeError(f"sfEvent.sourceEvent is {type(sfEvent.sourceEvent)}; expected str()") from None
 
         if not isinstance(sfEvent.sourceEventHash, str):
             raise TypeError(f"sfEvent.sourceEventHash is {type(sfEvent.sourceEventHash)}; expected str()") from None
@@ -1417,9 +1415,8 @@ class SpiderFootDb:
         storeData = sfEvent.data
 
         # truncate if required
-        if isinstance(truncateSize, int):
-            if truncateSize > 0:
-                storeData = storeData[0:truncateSize]
+        if isinstance(truncateSize, int) and truncateSize > 0:
+            storeData = storeData[0:truncateSize]
 
         # retrieve scan results
         qry = "INSERT INTO tbl_scan_results \
