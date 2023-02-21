@@ -1,7 +1,7 @@
 -r ../requirements.txt
 darglint==1.8.1
 dlint==0.14.0
-flake8==4.0.1
+flake8==5.0.4
 flake8-annotations==2.9.1
 flake8-blind-except==0.2.1
 flake8-bugbear==23.2.13
@@ -12,8 +12,7 @@ flake8-sfs==0.0.4
 flake8-simplify==0.19.3
 pytest==7.2.1
 pytest-cov==4.0.0
-pytest-flake8==1.1.1
 pytest-mock==3.10.0
 pytest-xdist==3.2.0
-pycodestyle==2.8.0
+pycodestyle==2.9.0
 responses==0.22.0
