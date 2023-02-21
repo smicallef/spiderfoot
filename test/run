@@ -1,8 +1,12 @@
 #!/bin/bash
-# Run unit and integration tests.
+# Run unit and integration tests (excluding module integration tests).
 # These same tests are run on all pull requests automatically.
 #
 # Must be run from SpiderFoot root directory; ie:
 # ./test/run
 
-time python3.9 -m pytest -n auto --flake8 --dist loadfile --ignore=test/integration/modules/ --durations=5 --cov-report html --cov=. .
+echo Running flake8 ...
+time python3 -m flake8 . --count --show-source --statistics || exit
+
+echo Running pytest ...
+time python3 -m pytest -n auto --dist loadfile --ignore=test/integration/modules/ --durations=5 --cov-report html --cov=. .
