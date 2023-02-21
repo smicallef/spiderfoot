@@ -178,10 +178,12 @@ class sfp_hostio(SpiderFootPlugin):
                     if isinstance(email_data, dict):
                         value = email_data["value"]
                         if value and isinstance(value, str):
-                            evt = SpiderFootEvent(
-                                "EMAILADDR", value, self.__name__, event
-                            )
-                            self.notifyListeners(evt)
+                            for email in value.split(','):
+                                email = email.strip('.')
+                                evt = SpiderFootEvent(
+                                    "EMAILADDR", email, self.__name__, event
+                                )
+                                self.notifyListeners(evt)
                             found = True
 
         web = data.get("web")
