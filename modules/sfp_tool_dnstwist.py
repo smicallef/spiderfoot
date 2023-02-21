@@ -41,13 +41,15 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
     # Default options
     opts = {
         'pythonpath': "python",
-        'dnstwistpath': ""
+        'dnstwistpath': "",
+        'skipwildcards': True
     }
 
     # Option descriptions
     optdescs = {
         'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it must be in your PATH.",
-        'dnstwistpath': "Path to the where the dnstwist.py file lives. Optional."
+        'dnstwistpath': "Path to the where the dnstwist.py file lives. Optional.",
+        'skipwildcards': "Skip TLDs and sub-TLDs that have wildcard DNS."
     }
 
     results = None
@@ -88,6 +90,15 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             return
 
         self.results[eventData] = True
+
+        dom = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+        if not dom:
+            return
+
+        tld = eventData.split(dom + ".")[-1]
+        # Check if the TLD has wildcards before testing
+        if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
+            return
 
         dnstwistLocation = which('dnstwist')
         if dnstwistLocation and Path(dnstwistLocation).is_file():
