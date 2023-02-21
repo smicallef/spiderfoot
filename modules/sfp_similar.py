@@ -70,10 +70,12 @@ class sfp_similar(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'skipwildcards': True
     }
 
     # Option descriptions
     optdescs = {
+        'skipwildcards': "Skip TLDs and sub-TLDs that have wildcard DNS."
     }
 
     # Internal results tracking
@@ -112,6 +114,10 @@ class sfp_similar(SpiderFootPlugin):
             return
 
         self.results[dom] = True
+
+        # Check if the TLD has wildcards before testing
+        if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld[1:]):
+            return
 
         domlist = list()
 
