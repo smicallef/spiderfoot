@@ -973,24 +973,6 @@ class SpiderFoot:
         sock.do_handshake()
         return sock
 
-    def sslDerToPem(self, der_cert: bytes) -> str:
-        """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
-
-        Args:
-            der_cert (bytes): certificate in DER format
-
-        Returns:
-            str: PEM-encoded certificate as a byte string
-
-        Raises:
-            TypeError: arg type was invalid
-        """
-
-        if not isinstance(der_cert, bytes):
-            raise TypeError(f"der_cert is {type(der_cert)}; expected bytes()")
-
-        return ssl.DER_cert_to_PEM_cert(der_cert)
-
     def parseCert(self, rawcert: str, fqdn: str = None, expiringdays: int = 30) -> dict:
         """Parse a PEM-format SSL certificate.
 

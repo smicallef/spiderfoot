@@ -561,23 +561,6 @@ class TestSpiderFoot(unittest.TestCase):
         sf.safeSSLSocket(None, None, None, None)
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_sslDerToPem(self):
-        sf = SpiderFoot(self.default_options)
-        pem = sf.sslDerToPem(None)
-
-        self.assertEqual(pem, None)
-
-        self.assertEqual('TBD', 'TBD')
-
-    def test_sslDerToPem_invalid_cert_should_raise_TypeError(self):
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type), self.assertRaises(TypeError):
-                sf.sslDerToPem(invalid_type)
-
     def test_parse_cert_should_return_a_dict(self):
         sf = SpiderFoot(self.default_options)
 

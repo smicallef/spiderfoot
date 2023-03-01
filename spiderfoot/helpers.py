@@ -5,6 +5,7 @@ import os
 import os.path
 import random
 import re
+import ssl
 import urllib.parse
 import uuid
 from pathlib import Path
@@ -1090,6 +1091,24 @@ class SpiderFootHelpers():
 
         # https://tools.ietf.org/html/rfc3986#section-3.3
         return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+
+    @staticmethod
+    def sslDerToPem(der_cert: bytes) -> str:
+        """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
+
+        Args:
+            der_cert (bytes): certificate in DER format
+
+        Returns:
+            str: PEM-encoded certificate as a byte string
+
+        Raises:
+            TypeError: arg type was invalid
+        """
+        if not isinstance(der_cert, bytes):
+            raise TypeError(f"der_cert is {type(der_cert)}; expected bytes()")
+
+        return ssl.DER_cert_to_PEM_cert(der_cert)
 
     @staticmethod
     def countryNameFromCountryCode(countryCode: str) -> str:
