@@ -14,6 +14,7 @@
 import argparse
 import cmd
 import codecs
+import io
 import json
 import os
 import re
@@ -789,8 +790,8 @@ class SpiderFootCli(cmd.Cmd):
 
     # Export data from a scan.
     def do_export(self, line):
-        """export <sid> [-t type]
-        Export the scan data for scan ID <sid> as type [type].
+        """export <sid> [-t type] [-f file]
+        Export the scan data for scan ID <sid> as type [type] to file [file].
         Valid types: csv, json, gexf (default: json)."""
         c = self.myparseline(line)
 
@@ -802,9 +803,18 @@ class SpiderFootCli(cmd.Cmd):
         if '-t' in c[0]:
             export_format = c[0][c[0].index("-t") + 1]
 
+        file = None
+        if '-f' in c[0]:
+            file = c[0][c[0].index("-f") + 1]
+
         base_url = self.ownopts['cli.server_baseurl']
         post = {"ids": c[0][0]}
 
+        if export_format not in ['json', 'csv', 'gexf']:
+            self.edprint(f"Invalid export format: {export_format}")
+            return
+
+        data = None
         if export_format == 'json':
             res = self.request(base_url + '/scanexportjsonmulti', post=post)
 
@@ -818,28 +828,27 @@ class SpiderFootCli(cmd.Cmd):
                 self.dprint("No results.")
                 return
 
-            self.send_output(json.dumps(j), line, titles=None, total=False, raw=True)
+            data = json.dumps(j)
 
         elif export_format == 'csv':
-            res = self.request(base_url + '/scaneventresultexportmulti', post=post)
-
-            if not res:
-                self.dprint("No results.")
-                return
-
-            self.send_output(res, line, titles=None, total=False, raw=True)
+            data = self.request(base_url + '/scaneventresultexportmulti', post=post)
 
         elif export_format == 'gexf':
-            res = self.request(base_url + '/scanvizmulti', post=post)
+            data = self.request(base_url + '/scanvizmulti', post=post)
 
-            if not res:
-                self.dprint("No results.")
-                return
+        if not data:
+            self.dprint("No results.")
+            return
 
-            self.send_output(res, line, titles=None, total=False, raw=True)
+        self.send_output(data, line, titles=None, total=False, raw=True)
 
-        else:
-            self.edprint(f"Invalid export format: {export_format}")
+        if file:
+            try:
+                with io.open(file, "w", encoding="utf-8", errors="ignore") as fp:
+                    fp.write(data)
+                self.dprint(f"Wrote scan {c[0][0]} data to {file}")
+            except Exception as e:
+                self.edprint(f"Could not write scan {c[0][0]} data to file '{file}': {e}")
 
     # Show logs.
     def do_logs(self, line):
