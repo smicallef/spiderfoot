@@ -70,7 +70,7 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
-    def loadModulesAsDict(path: str, ignore_files: list = None) -> dict:
+    def loadModulesAsDict(path: str, ignore_files: list[str] | None = None) -> dict:
         """Load modules from modules directory.
 
         Args:
