@@ -6,6 +6,7 @@ import os.path
 import random
 import re
 import ssl
+import typing
 import urllib.parse
 import uuid
 from pathlib import Path
@@ -15,6 +16,34 @@ import networkx as nx
 from bs4 import BeautifulSoup, SoupStrainer
 from networkx.readwrite.gexf import GEXFWriter
 import phonenumbers
+
+
+class _GraphNode(typing.TypedDict):
+    id: str
+    label: str
+    x: int
+    y: int
+    size: str
+    color: str
+
+
+class _GraphEdge(typing.TypedDict):
+    id: str
+    source: str
+    target: str
+
+
+class _Graph(typing.TypedDict, total=False):
+    nodes: list[_GraphNode]
+    edges: list[_GraphEdge]
+
+
+class Tree(typing.TypedDict):
+    name: str
+    children: list[typing.Self] | None
+
+
+EmptyTree = dict[None, object]
 
 
 class SpiderFootHelpers():
@@ -377,7 +406,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def buildGraphGexf(root: str, title: str, data: list, flt: list = None) -> str:
+    def buildGraphGexf(root: str, title: str, data: list[str], flt: list[str] | None = None) -> str:
         """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
@@ -395,7 +424,7 @@ class SpiderFootHelpers():
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         graph = nx.Graph()
 
-        nodelist = dict()
+        nodelist: dict[str, int] = dict()
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
@@ -432,7 +461,7 @@ class SpiderFootHelpers():
         return str(gexf).encode('utf-8')
 
     @staticmethod
-    def buildGraphJson(root: str, data: list, flt: list = None) -> str:
+    def buildGraphJson(root: str, data: list[str], flt: list[str] | None = None) -> str:
         """Convert supplied raw data into JSON format for SigmaJS.
 
         Args:
@@ -447,11 +476,11 @@ class SpiderFootHelpers():
             flt = []
 
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
-        ret = dict()
+        ret: _Graph = {}
         ret['nodes'] = list()
         ret['edges'] = list()
 
-        nodelist = dict()
+        nodelist: dict[str, int] = dict()
         ecounter = 0
         ncounter = 0
         for pair in mapping:
@@ -507,7 +536,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data: list, flt: list = None) -> set:
+    def buildGraphData(data: list[str], flt: list[str] | None = None) -> set[tuple[str, str]]:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -531,11 +560,11 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_next_parent_entities(item: str, pids: list = None) -> list:
+        def get_next_parent_entities(item: str, pids: list[str] | None = None) -> list[str]:
             if not pids:
                 pids = []
 
-            ret = list()
+            ret: list[str] = list()
 
             for [parent, entity_id] in parents[item]:
                 if entity_id in pids:
@@ -548,9 +577,9 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
-        mapping = set()
-        entities = dict()
-        parents = dict()
+        mapping: set[tuple[str, str]] = set()
+        entities: dict[str, bool] = dict()
+        parents: dict[str, list[list[str]]] = dict()
 
         for row in data:
             if len(row) != 15:
@@ -584,7 +613,7 @@ class SpiderFootHelpers():
         return mapping
 
     @staticmethod
-    def dataParentChildToTree(data: dict) -> dict:
+    def dataParentChildToTree(data: dict[str, list[str] | None]) -> Tree | EmptyTree:
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
 
@@ -604,8 +633,8 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_children(needle: str, haystack: dict) -> list:
-            ret = list()
+        def get_children(needle: str, haystack: dict[str, list[str] | None]) -> list[Tree] | None:
+            ret: list[Tree] = list()
 
             if needle not in list(haystack.keys()):
                 return None
