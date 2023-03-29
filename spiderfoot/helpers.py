@@ -197,7 +197,7 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def urlRelativeToAbsolute(url: str) -> str:
+    def urlRelativeToAbsolute(url: str) -> str | None:
         """Turn a relative URL path into an absolute path.
 
         Args:
@@ -215,7 +215,7 @@ class SpiderFootHelpers():
         if '..' not in url:
             return url
 
-        finalBits = list()
+        finalBits: list[str] = list()
 
         for chunk in url.split('/'):
             if chunk != '..':
@@ -235,7 +235,7 @@ class SpiderFootHelpers():
         return '/'.join(finalBits)
 
     @staticmethod
-    def urlBaseDir(url: str) -> str:
+    def urlBaseDir(url: str) -> str | None:
         """Extract the top level directory from a URL
 
         Args:
@@ -265,7 +265,7 @@ class SpiderFootHelpers():
         return base + '/'
 
     @staticmethod
-    def urlBaseUrl(url: str) -> str:
+    def urlBaseUrl(url: str) -> str | None:
         """Extract the scheme and domain from a URL.
 
         Note: Does not return the trailing slash! So you can do .endswith() checks.
