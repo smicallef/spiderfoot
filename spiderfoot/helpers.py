@@ -1458,7 +1458,7 @@ class SpiderFootHelpers():
         }
 
     @staticmethod
-    def sanitiseInput(cmd: str, extra: list = None) -> bool:
+    def sanitiseInput(cmd: str, extra: list[str] | None = None) -> bool:
         """Verify input command is safe to execute
 
         Args:
