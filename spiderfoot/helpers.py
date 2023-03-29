@@ -1141,7 +1141,7 @@ class SpiderFootHelpers():
         return ssl.DER_cert_to_PEM_cert(der_cert)
 
     @staticmethod
-    def countryNameFromCountryCode(countryCode: str) -> str:
+    def countryNameFromCountryCode(countryCode: str) -> str | None:
         """Convert a country code to full country name.
 
         Args:
@@ -1156,7 +1156,7 @@ class SpiderFootHelpers():
         return SpiderFootHelpers.countryCodes().get(countryCode.upper())
 
     @staticmethod
-    def countryNameFromTld(tld: str) -> str:
+    def countryNameFromTld(tld: str) -> str | None:
         """Retrieve the country name associated with a TLD.
 
         Args:
@@ -1190,7 +1190,7 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def countryCodes() -> dict:
+    def countryCodes() -> dict[str, str]:
         """Dictionary of country codes and associated country names.
 
         Returns:
