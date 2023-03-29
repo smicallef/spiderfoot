@@ -161,7 +161,7 @@ class SpiderFootHelpers():
         return correlationRulesRaw
 
     @staticmethod
-    def targetTypeFromString(target: str) -> str:
+    def targetTypeFromString(target: str) -> str | None:
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
