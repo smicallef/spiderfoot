@@ -46,6 +46,9 @@ class Tree(typing.TypedDict):
 EmptyTree = dict[None, object]
 
 
+ExtractedLink = dict[typing.Literal["source", "original"], str]
+
+
 class SpiderFootHelpers():
     """SpiderFoot helper functions.
 
@@ -751,7 +754,7 @@ class SpiderFootHelpers():
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def extractLinksFromHtml(url: str, data: str, domains: list) -> dict:
+    def extractLinksFromHtml(url: str, data: str, domains: list[str] | str) -> dict[str, ExtractedLink]:
         """Find all URLs within the supplied content.
 
         This function does not fetch any URLs.
@@ -775,7 +778,7 @@ class SpiderFootHelpers():
         Raises:
             TypeError: argument was invalid type
         """
-        returnLinks = dict()
+        returnLinks: dict[str, ExtractedLink] = dict()
 
         if not isinstance(url, str):
             raise TypeError(f"url {type(url)}; expected str()")
@@ -796,7 +799,7 @@ class SpiderFootHelpers():
             'form': 'action'
         }
 
-        links = []
+        links: list[list[str] | str] = []
 
         try:
             for t in list(tags.keys()):
@@ -809,8 +812,6 @@ class SpiderFootHelpers():
         try:
             proto = url.split(":")[0]
         except BaseException:
-            proto = "http"
-        if proto is None:
             proto = "http"
 
         # Loop through all the URLs/links found
@@ -873,7 +874,7 @@ class SpiderFootHelpers():
         return returnLinks
 
     @staticmethod
-    def extractHashesFromText(data: str) -> list:
+    def extractHashesFromText(data: str) -> list[tuple[str, str]]:
         """Extract all hashes within the supplied content.
 
         Args:
@@ -882,7 +883,7 @@ class SpiderFootHelpers():
         Returns:
             list: list of hashes
         """
-        ret = list()
+        ret: list[tuple[str, str]] = list()
 
         if not isinstance(data, str):
             return ret
@@ -902,7 +903,7 @@ class SpiderFootHelpers():
         return ret
 
     @staticmethod
-    def extractUrlsFromRobotsTxt(robotsTxtData: str) -> list:
+    def extractUrlsFromRobotsTxt(robotsTxtData: str) -> list[str]:
         """Parse the contents of robots.txt.
 
         Args:
@@ -916,7 +917,7 @@ class SpiderFootHelpers():
 
             Fix whitespace parsing; ie, " " is not a valid disallowed path
         """
-        returnArr = list()
+        returnArr: list[str] = list()
 
         if not isinstance(robotsTxtData, str):
             return returnArr
@@ -930,7 +931,7 @@ class SpiderFootHelpers():
         return returnArr
 
     @staticmethod
-    def extractPgpKeysFromText(data: str) -> list:
+    def extractPgpKeysFromText(data: str) -> list[str]:
         """Extract all PGP keys within the supplied content.
 
         Args:
@@ -942,7 +943,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        keys = set()
+        keys: set[str] = set()
 
         pattern = re.compile("(-----BEGIN.*?END.*?BLOCK-----)", re.MULTILINE | re.DOTALL)
         for key in re.findall(pattern, data):
@@ -952,7 +953,7 @@ class SpiderFootHelpers():
         return list(keys)
 
     @staticmethod
-    def extractEmailsFromText(data: str) -> list:
+    def extractEmailsFromText(data: str) -> list[str]:
         """Extract all email addresses within the supplied content.
 
         Args:
@@ -964,7 +965,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        emails = set()
+        emails: set[str] = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
@@ -974,7 +975,7 @@ class SpiderFootHelpers():
         return list(emails)
 
     @staticmethod
-    def extractIbansFromText(data: str) -> list:
+    def extractIbansFromText(data: str) -> list[str]:
         """Find all International Bank Account Numbers (IBANs) within the supplied content.
 
         Extracts possible IBANs using a generic regex.
@@ -991,7 +992,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        ibans = set()
+        ibans: set[str] = set()
 
         # Dictionary of country codes and their respective IBAN lengths
         ibanCountryLengths = {
@@ -1056,7 +1057,7 @@ class SpiderFootHelpers():
         return list(ibans)
 
     @staticmethod
-    def extractCreditCardsFromText(data: str) -> list:
+    def extractCreditCardsFromText(data: str) -> list[str]:
         """Find all credit card numbers with the supplied content.
 
         Extracts numbers with lengths ranging from 13 - 19 digits
@@ -1073,7 +1074,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        creditCards = set()
+        creditCards: set[str] = set()
 
         # Remove whitespace from data.
         # Credit cards might contain spaces between them
@@ -1106,7 +1107,7 @@ class SpiderFootHelpers():
         return list(creditCards)
 
     @staticmethod
-    def extractUrlsFromText(content: str) -> list:
+    def extractUrlsFromText(content: str) -> list[str]:
         """Extract all URLs from a string.
 
         Args:
