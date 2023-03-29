@@ -293,7 +293,7 @@ class SpiderFootHelpers():
         return bits.group(1).lower()
 
     @staticmethod
-    def dictionaryWordsFromWordlists(wordlists: list = None) -> set:
+    def dictionaryWordsFromWordlists(wordlists: list[str] | None = None) -> set[str]:
         """Return dictionary words from several language dictionaries.
 
         Args:
@@ -305,7 +305,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words = set()
+        words: set[str] = set()
 
         if wordlists is None:
             wordlists = ["english", "german", "french", "spanish"]
@@ -321,7 +321,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def humanNamesFromWordlists(wordlists: list = None) -> set:
+    def humanNamesFromWordlists(wordlists: list[str] | None = None) -> set[str]:
         """Return list of human names from wordlist file.
 
         Args:
@@ -333,7 +333,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words = set()
+        words: set[str] = set()
 
         if wordlists is None:
             wordlists = ["names"]
@@ -349,7 +349,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def usernamesFromWordlists(wordlists: list = None) -> set:
+    def usernamesFromWordlists(wordlists: list[str] | None = None) -> set[str]:
         """Return list of usernames from wordlist file.
 
         Args:
@@ -361,7 +361,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words = set()
+        words: set[str] = set()
 
         if wordlists is None:
             wordlists = ["generic-usernames"]
