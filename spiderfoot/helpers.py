@@ -124,7 +124,7 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
-    def loadCorrelationRulesRaw(path: str, ignore_files: list = None) -> dict:
+    def loadCorrelationRulesRaw(path: str, ignore_files: list[str] | None = None) -> dict[str, str]:
         """Load correlation rules from correlations directory.
 
         Args:
@@ -147,7 +147,7 @@ class SpiderFootHelpers():
         if not os.path.isdir(path):
             raise ValueError(f"Correlations directory does not exist: {path}")
 
-        correlationRulesRaw = dict()
+        correlationRulesRaw: dict[str, str] = dict()
         for filename in os.listdir(path):
             if not filename.endswith(".yaml"):
                 continue
