@@ -8,7 +8,7 @@
 #
 # Created:     11/04/2023
 # Copyright:   (c) Dominik Kukacka 2023
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
