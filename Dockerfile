@@ -47,8 +47,6 @@ RUN echo "$REQUIREMENTS"
 RUN pip3 install -U pip
 RUN pip3 install -r "$REQUIREMENTS"
 
-
-
 FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
 
