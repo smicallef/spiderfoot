@@ -94,28 +94,51 @@ To install and run SpiderFoot, you need at least Python 3.7 and a number of Pyth
 
 #### Stable build (packaged release)
 
-```bash
- wget https://github.com/smicallef/spiderfoot/archive/v4.0.tar.gz
- tar zxvf v4.0.tar.gz
- cd spiderfoot-4.0
- pip3 install -r requirements.txt
- python3 ./sf.py -l 127.0.0.1:5001
-```
+1. Download the package and unpack it
+
+    ```bash
+    wget https://github.com/smicallef/spiderfoot/archive/v4.0.tar.gz && tar zxvf v4.0.tar.gz && cd spiderfoot-4.0
+    ```
+
+1. Install the requirements
+
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
+1. Run the webserver
+
+    ```bash
+    python3 ./sf.py -l 127.0.0.1:5001
+    ```
 
 #### Development build (cloning git master branch)
 
-```bash
- git clone https://github.com/smicallef/spiderfoot.git
- cd spiderfoot
- pip3 install -r requirements.txt
- python3 ./sf.py -l 127.0.0.1:5001
-```
+1. Clone the repository
+
+    ```bash
+    git clone https://github.com/smicallef/spiderfoot.git && cd spiderfoot
+    ```
+
+1. Install the requirements
+
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
+1. Run the webserver
+
+    ```bash
+    python3 ./sf.py -l 127.0.0.1:5001
+    ```
 
 #### Docker stable build (packaged release)
 
-```bash
-sudo docker compose up -d
-```
+1. Run the Docker Compose file
+
+    ```bash
+    sudo docker compose up -d
+    ```
 
 #### Docker development build
 
