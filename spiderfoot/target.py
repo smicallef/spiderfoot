@@ -10,10 +10,10 @@ class SpiderFootTarget():
     """SpiderFoot target.
 
     Attributes:
-        validTypes (list): valid event types accepted as a target
+        validTypes (list[str]): valid event types accepted as a target
         targetType (str): target type
         targetValue (str): target value
-        targetAliases (list): target aliases
+        targetAliases (list[TargetAlias]): target aliases
     """
 
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "NETBLOCKV6_OWNER", "INTERNET_NAME",
@@ -107,7 +107,7 @@ class SpiderFootTarget():
             typeName (str): Target data type
 
         Returns:
-            list: target aliases
+            list[str]: target aliases
         """
         ret: list[str] = list()
         for item in self.targetAliases:
@@ -119,7 +119,7 @@ class SpiderFootTarget():
         """Get all domains associated with the target.
 
         Returns:
-            list: domains associated with the target
+            list[str]: domains associated with the target
         """
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
@@ -138,7 +138,7 @@ class SpiderFootTarget():
         """Get all IP subnet or IP address aliases associated with the target.
 
         Returns:
-            list: List of IP subnets and addresses
+            list[str]: List of IP subnets and addresses
         """
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
