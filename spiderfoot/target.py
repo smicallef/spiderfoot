@@ -93,7 +93,7 @@ class SpiderFootTarget():
         if not typeName:
             return
 
-        alias = {'type': typeName, 'value': value.lower()}
+        alias: TargetAlias = {'type': typeName, 'value': value.lower()}
 
         if alias in self.targetAliases:
             return
