@@ -3,7 +3,7 @@ import typing
 import netaddr
 
 
-TargetAlias = typing.TypedDict("TargetAlias", {'type': str, 'value': str})
+TargetAlias = dict[typing.Literal["type", "value"], str]
 
 
 class SpiderFootTarget():
