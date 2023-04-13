@@ -148,10 +148,10 @@ To install and run SpiderFoot, you need at least Python 3.7 and a number of Pyth
     sudo docker build -t spiderfoot .
     ```
 
-1. Run the Docker container based on the image you just built
+1. Run the Docker Compose file based on the image you just built
 
     ```bash
-    sudo docker run -p 5001:5001 -v /mydir/spiderfoot:/var/lib/spiderfoot spiderfoot
+    sudo docker compose up
     ```
 
 Check out the [documentation](https://www.spiderfoot.net/documentation) and our [asciinema videos](https://asciinema.org/~spiderfoot) for more tutorials.
