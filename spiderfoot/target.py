@@ -14,9 +14,9 @@ class SpiderFootTarget():
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "NETBLOCKV6_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME",
                    "BITCOIN_ADDRESS"]
-    _targetType = None
-    _targetValue = None
-    _targetAliases = list()
+    _targetType: str
+    _targetValue: str
+    _targetAliases: list[dict[str, str]]
 
     def __init__(self, targetValue: str, typeName: str) -> None:
         """Initialize SpiderFoot target.
@@ -57,11 +57,11 @@ class SpiderFootTarget():
         self._targetValue = targetValue
 
     @property
-    def targetAliases(self) -> list:
+    def targetAliases(self) -> list[dict[str, str]]:
         return self._targetAliases
 
     @targetAliases.setter
-    def targetAliases(self, value: list) -> None:
+    def targetAliases(self, value: list[dict[str, str]]) -> None:
         self._targetAliases = value
 
     def setAlias(self, value: str, typeName: str) -> None:
@@ -95,7 +95,7 @@ class SpiderFootTarget():
 
         self.targetAliases.append(alias)
 
-    def _getEquivalents(self, typeName: str) -> list:
+    def _getEquivalents(self, typeName: str) -> list[str]:
         """Get all aliases of the specfied target data type.
 
         Args:
@@ -104,13 +104,13 @@ class SpiderFootTarget():
         Returns:
             list: target aliases
         """
-        ret = list()
+        ret: list[str] = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
         return ret
 
-    def getNames(self) -> list:
+    def getNames(self) -> list[str]:
         """Get all domains associated with the target.
 
         Returns:
@@ -120,7 +120,7 @@ class SpiderFootTarget():
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
 
-        names = list()
+        names: list[str] = list()
         for name in e:
             if isinstance(name, bytes):
                 names.append(name.decode("utf-8"))
@@ -129,7 +129,7 @@ class SpiderFootTarget():
 
         return names
 
-    def getAddresses(self) -> list:
+    def getAddresses(self) -> list[str]:
         """Get all IP subnet or IP address aliases associated with the target.
 
         Returns:
