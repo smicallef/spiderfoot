@@ -1,4 +1,9 @@
+import typing
+
 import netaddr
+
+
+TargetAlias = typing.TypedDict("TargetAlias", {'type': str, 'value': str})
 
 
 class SpiderFootTarget():
@@ -16,7 +21,7 @@ class SpiderFootTarget():
                    "BITCOIN_ADDRESS"]
     _targetType: str
     _targetValue: str
-    _targetAliases: list[dict[str, str]]
+    _targetAliases: list[TargetAlias]
 
     def __init__(self, targetValue: str, typeName: str) -> None:
         """Initialize SpiderFoot target.
@@ -57,11 +62,11 @@ class SpiderFootTarget():
         self._targetValue = targetValue
 
     @property
-    def targetAliases(self) -> list[dict[str, str]]:
+    def targetAliases(self) -> list[TargetAlias]:
         return self._targetAliases
 
     @targetAliases.setter
-    def targetAliases(self, value: list[dict[str, str]]) -> None:
+    def targetAliases(self, value: list[TargetAlias]) -> None:
         self._targetAliases = value
 
     def setAlias(self, value: str, typeName: str) -> None:
