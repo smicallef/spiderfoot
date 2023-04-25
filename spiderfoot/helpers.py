@@ -539,7 +539,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data: typing.List[str], flt: typing.List[str] | None = None) -> typing.Set[tuple[str, str]]:
+    def buildGraphData(data: typing.List[str], flt: typing.List[str] | None = None) -> typing.Set[typing.Tuple[str, str]]:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -580,7 +580,7 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
-        mapping: typing.Set[tuple[str, str]] = set()
+        mapping: typing.Set[typing.Tuple[str, str]] = set()
         entities: typing.Dict[str, bool] = dict()
         parents: typing.Dict[str, typing.List[typing.List[str]]] = dict()
 
@@ -874,7 +874,7 @@ class SpiderFootHelpers():
         return returnLinks
 
     @staticmethod
-    def extractHashesFromText(data: str) -> typing.List[tuple[str, str]]:
+    def extractHashesFromText(data: str) -> typing.List[typing.Tuple[str, str]]:
         """Extract all hashes within the supplied content.
 
         Args:
@@ -883,7 +883,7 @@ class SpiderFootHelpers():
         Returns:
             list: list of hashes
         """
-        ret: typing.List[tuple[str, str]] = list()
+        ret: typing.List[typing.Tuple[str, str]] = list()
 
         if not isinstance(data, str):
             return ret
