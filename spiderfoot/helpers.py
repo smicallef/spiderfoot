@@ -325,7 +325,7 @@ class SpiderFootHelpers():
         return bits.group(1).lower()
 
     @staticmethod
-    def dictionaryWordsFromWordlists(wordlists: typing.List[str] | None = None) -> set[str]:
+    def dictionaryWordsFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
         """Return dictionary words from several language dictionaries.
 
         Args:
@@ -337,7 +337,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words: set[str] = set()
+        words: typing.Set[str] = set()
 
         if wordlists is None:
             wordlists = ["english", "german", "french", "spanish"]
@@ -353,7 +353,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def humanNamesFromWordlists(wordlists: typing.List[str] | None = None) -> set[str]:
+    def humanNamesFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
         """Return list of human names from wordlist file.
 
         Args:
@@ -365,7 +365,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words: set[str] = set()
+        words: typing.Set[str] = set()
 
         if wordlists is None:
             wordlists = ["names"]
@@ -381,7 +381,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def usernamesFromWordlists(wordlists: typing.List[str] | None = None) -> set[str]:
+    def usernamesFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
         """Return list of usernames from wordlist file.
 
         Args:
@@ -393,7 +393,7 @@ class SpiderFootHelpers():
         Raises:
             IOError: Error reading wordlist file
         """
-        words: set[str] = set()
+        words: typing.Set[str] = set()
 
         if wordlists is None:
             wordlists = ["generic-usernames"]
@@ -539,7 +539,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data: typing.List[str], flt: typing.List[str] | None = None) -> set[tuple[str, str]]:
+    def buildGraphData(data: typing.List[str], flt: typing.List[str] | None = None) -> typing.Set[tuple[str, str]]:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -580,7 +580,7 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
-        mapping: set[tuple[str, str]] = set()
+        mapping: typing.Set[tuple[str, str]] = set()
         entities: typing.Dict[str, bool] = dict()
         parents: typing.Dict[str, typing.List[typing.List[str]]] = dict()
 
@@ -943,7 +943,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        keys: set[str] = set()
+        keys: typing.Set[str] = set()
 
         pattern = re.compile("(-----BEGIN.*?END.*?BLOCK-----)", re.MULTILINE | re.DOTALL)
         for key in re.findall(pattern, data):
@@ -965,7 +965,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        emails: set[str] = set()
+        emails: typing.Set[str] = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
@@ -992,7 +992,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        ibans: set[str] = set()
+        ibans: typing.Set[str] = set()
 
         # Dictionary of country codes and their respective IBAN lengths
         ibanCountryLengths = {
@@ -1074,7 +1074,7 @@ class SpiderFootHelpers():
         if not isinstance(data, str):
             return list()
 
-        creditCards: set[str] = set()
+        creditCards: typing.Set[str] = set()
 
         # Remove whitespace from data.
         # Credit cards might contain spaces between them
