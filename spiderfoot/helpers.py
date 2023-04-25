@@ -161,10 +161,10 @@ class SpiderFootHelpers():
 
         Args:
             path (str): file system path for correlations directory
-            ignore_files (list): List of module file names to ignore
+            ignore_files (list[str]): List of module file names to ignore
 
         Returns:
-            dict: raw correlation rules
+            dict[str, str]: raw correlation rules
 
         Raises:
             TypeError: ignore file list was invalid
@@ -329,10 +329,10 @@ class SpiderFootHelpers():
         """Return dictionary words from several language dictionaries.
 
         Args:
-            wordlists (list): list of wordlist file names to read (excluding file extension).
+            wordlists (list[str]): list of wordlist file names to read (excluding file extension).
 
         Returns:
-            set: words from dictionaries
+            set[str]: words from dictionaries
 
         Raises:
             IOError: Error reading wordlist file
@@ -357,10 +357,10 @@ class SpiderFootHelpers():
         """Return list of human names from wordlist file.
 
         Args:
-            wordlists (list): list of wordlist file names to read (excluding file extension).
+            wordlists (list[str]): list of wordlist file names to read (excluding file extension).
 
         Returns:
-            set: human names from wordlists
+            set[str]: human names from wordlists
 
         Raises:
             IOError: Error reading wordlist file
@@ -385,10 +385,10 @@ class SpiderFootHelpers():
         """Return list of usernames from wordlist file.
 
         Args:
-            wordlists (list): list of wordlist file names to read (excluding file extension).
+            wordlists (list[str]): list of wordlist file names to read (excluding file extension).
 
         Returns:
-            set: usernames from wordlists
+            set[str]: usernames from wordlists
 
         Raises:
             IOError: Error reading wordlist file
@@ -415,8 +415,8 @@ class SpiderFootHelpers():
         Args:
             root (str): TBD
             title (str): unused
-            data (list): Scan result as list
-            flt (list): List of event types to include. If not set everything is included.
+            data (list[str]): Scan result as list
+            flt (list[str]): List of event types to include. If not set everything is included.
 
         Returns:
             str: GEXF formatted XML
@@ -469,8 +469,8 @@ class SpiderFootHelpers():
 
         Args:
             root (str): TBD
-            data (list): Scan result as list
-            flt (list): List of event types to include. If not set everything is included.
+            data (list[str]): Scan result as list
+            flt (list[str]): List of event types to include. If not set everything is included.
 
         Returns:
             str: TBD
@@ -544,11 +544,11 @@ class SpiderFootHelpers():
         basis for building graphs in various formats.
 
         Args:
-            data (list): Scan result as list
-            flt (list): List of event types to include. If not set everything is included.
+            data (list[str]): Scan result as list
+            flt (list[str]): List of event types to include. If not set everything is included.
 
         Returns:
-            set: TBD
+            set[tuple[str, str]]: TBD
 
         Raises:
             ValueError: data value was invalid
@@ -881,7 +881,7 @@ class SpiderFootHelpers():
             data (str): text to search for hashes
 
         Returns:
-            list: list of hashes
+            list[tuple[str, str]]: list of hashes
         """
         ret: typing.List[typing.Tuple[str, str]] = list()
 
@@ -910,7 +910,7 @@ class SpiderFootHelpers():
             robotsTxtData (str): robots.txt file contents
 
         Returns:
-            list: list of patterns which should not be followed
+            list[str]: list of patterns which should not be followed
 
         Todo:
             Check and parse User-Agent.
@@ -938,7 +938,7 @@ class SpiderFootHelpers():
             data (str): text to search for PGP keys
 
         Returns:
-            list: list of PGP keys
+            list[str]: list of PGP keys
         """
         if not isinstance(data, str):
             return list()
@@ -960,7 +960,7 @@ class SpiderFootHelpers():
             data (str): text to search for email addresses
 
         Returns:
-            list: list of email addresses
+            list[str]: list of email addresses
         """
         if not isinstance(data, str):
             return list()
@@ -987,7 +987,7 @@ class SpiderFootHelpers():
             data (str): text to search for IBANs
 
         Returns:
-            list: list of IBAN
+            list[str]: list of IBAN
         """
         if not isinstance(data, str):
             return list()
@@ -1069,7 +1069,7 @@ class SpiderFootHelpers():
             data (str): text to search for credit card numbers
 
         Returns:
-            list: list of credit card numbers
+            list[str]: list of credit card numbers
         """
         if not isinstance(data, str):
             return list()
@@ -1114,7 +1114,7 @@ class SpiderFootHelpers():
             content (str): text to search for URLs
 
         Returns:
-            list: list of identified URLs
+            list[str]: list of identified URLs
         """
         if not isinstance(content, str):
             return []
@@ -1194,7 +1194,7 @@ class SpiderFootHelpers():
         """Dictionary of country codes and associated country names.
 
         Returns:
-            dict: country codes and associated country names
+            dict[str, str]: country codes and associated country names
         """
 
         return {
@@ -1463,7 +1463,7 @@ class SpiderFootHelpers():
 
         Args:
             cmd (str): The command to check
-            extra (list): Additional characters to consider safe
+            extra (list[str]): Additional characters to consider safe
 
         Returns:
             bool: command is "safe"
