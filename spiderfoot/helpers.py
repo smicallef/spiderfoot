@@ -19,7 +19,7 @@ import phonenumbers
 
 
 class _GraphNode(typing.TypedDict):
-    id: str
+    id: str  # noqa: A003
     label: str
     x: int
     y: int
@@ -28,7 +28,7 @@ class _GraphNode(typing.TypedDict):
 
 
 class _GraphEdge(typing.TypedDict):
-    id: str
+    id: str  # noqa: A003
     source: str
     target: str
 
