@@ -43,10 +43,10 @@ class Tree(typing.TypedDict):
     children: list[typing.Self] | None
 
 
-EmptyTree = dict[None, object]
+EmptyTree = typing.Dict[None, object]
 
 
-ExtractedLink = dict[typing.Literal["source", "original"], str]
+ExtractedLink = typing.Dict[typing.Literal["source", "original"], str]
 
 
 class SpiderFootHelpers():
@@ -156,7 +156,7 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
-    def loadCorrelationRulesRaw(path: str, ignore_files: list[str] | None = None) -> dict[str, str]:
+    def loadCorrelationRulesRaw(path: str, ignore_files: list[str] | None = None) -> typing.Dict[str, str]:
         """Load correlation rules from correlations directory.
 
         Args:
@@ -179,7 +179,7 @@ class SpiderFootHelpers():
         if not os.path.isdir(path):
             raise ValueError(f"Correlations directory does not exist: {path}")
 
-        correlationRulesRaw: dict[str, str] = dict()
+        correlationRulesRaw: typing.Dict[str, str] = dict()
         for filename in os.listdir(path):
             if not filename.endswith(".yaml"):
                 continue
@@ -427,7 +427,7 @@ class SpiderFootHelpers():
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         graph = nx.Graph()
 
-        nodelist: dict[str, int] = dict()
+        nodelist: typing.Dict[str, int] = dict()
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
@@ -483,7 +483,7 @@ class SpiderFootHelpers():
         ret['nodes'] = list()
         ret['edges'] = list()
 
-        nodelist: dict[str, int] = dict()
+        nodelist: typing.Dict[str, int] = dict()
         ecounter = 0
         ncounter = 0
         for pair in mapping:
@@ -581,8 +581,8 @@ class SpiderFootHelpers():
             return ret
 
         mapping: set[tuple[str, str]] = set()
-        entities: dict[str, bool] = dict()
-        parents: dict[str, list[list[str]]] = dict()
+        entities: typing.Dict[str, bool] = dict()
+        parents: typing.Dict[str, list[list[str]]] = dict()
 
         for row in data:
             if len(row) != 15:
@@ -616,7 +616,7 @@ class SpiderFootHelpers():
         return mapping
 
     @staticmethod
-    def dataParentChildToTree(data: dict[str, list[str] | None]) -> Tree | EmptyTree:
+    def dataParentChildToTree(data: typing.Dict[str, list[str] | None]) -> Tree | EmptyTree:
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
 
@@ -636,7 +636,7 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_children(needle: str, haystack: dict[str, list[str] | None]) -> list[Tree] | None:
+        def get_children(needle: str, haystack: typing.Dict[str, list[str] | None]) -> list[Tree] | None:
             ret: list[Tree] = list()
 
             if needle not in list(haystack.keys()):
@@ -754,7 +754,7 @@ class SpiderFootHelpers():
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def extractLinksFromHtml(url: str, data: str, domains: list[str] | str) -> dict[str, ExtractedLink]:
+    def extractLinksFromHtml(url: str, data: str, domains: list[str] | str) -> typing.Dict[str, ExtractedLink]:
         """Find all URLs within the supplied content.
 
         This function does not fetch any URLs.
@@ -778,7 +778,7 @@ class SpiderFootHelpers():
         Raises:
             TypeError: argument was invalid type
         """
-        returnLinks: dict[str, ExtractedLink] = dict()
+        returnLinks: typing.Dict[str, ExtractedLink] = dict()
 
         if not isinstance(url, str):
             raise TypeError(f"url {type(url)}; expected str()")
@@ -1190,7 +1190,7 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def countryCodes() -> dict[str, str]:
+    def countryCodes() -> typing.Dict[str, str]:
         """Dictionary of country codes and associated country names.
 
         Returns:
