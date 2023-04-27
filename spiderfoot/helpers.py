@@ -448,7 +448,7 @@ class SpiderFootHelpers():
                     color['r'] = 255
                 graph.add_node(dst)
                 graph.nodes[dst]['viz'] = {'color': color}
-                nodetyping.List[dst] = ncounter
+                nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
@@ -456,7 +456,7 @@ class SpiderFootHelpers():
                     color['r'] = 255
                 graph.add_node(src)
                 graph.nodes[src]['viz'] = {'color': color}
-                nodetyping.List[src] = ncounter
+                nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
 
@@ -509,7 +509,7 @@ class SpiderFootHelpers():
                     'color': col
                 })
 
-                nodetyping.List[dst] = ncounter
+                nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
@@ -526,14 +526,14 @@ class SpiderFootHelpers():
                     'color': col
                 })
 
-                nodetyping.List[src] = ncounter
+                nodelist[src] = ncounter
 
             ecounter = ecounter + 1
 
             ret['edges'].append({
                 'id': str(ecounter),
-                'source': str(nodetyping.List[src]),
-                'target': str(nodetyping.List[dst])
+                'source': str(nodelist[src]),
+                'target': str(nodelist[dst])
             })
 
         return json.dumps(ret)
