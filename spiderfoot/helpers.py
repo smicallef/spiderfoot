@@ -40,7 +40,7 @@ class _Graph(typing.TypedDict, total=False):
 
 class Tree(typing.TypedDict):
     name: str
-    children: typing.List[typing.Self] | None
+    children: typing.List["Tree"] | None
 
 
 EmptyTree = typing.Dict[None, object]
