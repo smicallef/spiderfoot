@@ -4,11 +4,10 @@ import typing
 import netaddr
 
 
-if typing.TYPE_CHECKING:
-    if sys.version_info >= (3, 8):  # PEP 589 support (TypedDict)
-        TargetAlias = typing.TypedDict("TargetAlias", {"type": str, "value": str})
-    else:
-        TargetAlias = typing.Dict[str, str]
+if sys.version_info >= (3, 8):  # PEP 589 support (TypedDict)
+    TargetAlias = typing.TypedDict("TargetAlias", {"type": str, "value": str})
+else:
+    TargetAlias = typing.Dict[str, str]
 
 
 class SpiderFootTarget():
