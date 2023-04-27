@@ -1,9 +1,14 @@
+import sys
 import typing
 
 import netaddr
 
 
-TargetAlias = typing.TypedDict("TargetAlias", {"type": str, "value": str})
+if typing.TYPE_CHECKING:
+    if sys.version_info >= (3, 8):
+        TargetAlias = typing.TypedDict("TargetAlias", {"type": str, "value": str})
+    else:
+        TargetAlias = typing.Dict[str, str]
 
 
 class SpiderFootTarget():
