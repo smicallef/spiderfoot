@@ -27,38 +27,38 @@ if sys.version_info >= (3, 8):  # PEP 589 support (TypedDict)
         y: int
         size: str
         color: str
-    
+
     class _GraphEdge(typing.TypedDict):
         id: str  # noqa: A003
         source: str
         target: str
-    
+
     class _Graph(typing.TypedDict, total=False):
         nodes: typing.List[_GraphNode]
         edges: typing.List[_GraphEdge]
-    
+
     class Tree(typing.TypedDict):
         name: str
         children: typing.List["Tree"] | None
-    
+
     class ExtractedLink(typing.TypedDict):
         source: str
         original: str
 else:
     _GraphNode = typing.Dict[str, typing.Union[str, int]]
-    
+
     _GraphEdge = typing.Dict[str, str]
-    
+
     _GraphObject = typing.Union[_GraphNode, _GraphEdge]
-    
+
     _Graph = typing.Dict[str, typing.List[_GraphObject]]
-    
+
     _Tree_name = str
-    
+
     _Tree_children = typing.List["Tree"] | None
-    
+
     Tree = typing.Dict[str, typing.Union[_Tree_name, _Tree_children]]
-    
+
     ExtractedLink = typing.Dict[str, str]
 
 
