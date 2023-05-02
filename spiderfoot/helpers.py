@@ -39,7 +39,7 @@ if sys.version_info >= (3, 8):  # PEP 589 support (TypedDict)
 
     class Tree(typing.TypedDict):
         name: str
-        children: typing.List["Tree"] | None
+        children: typing.Optional[typing.List["Tree"]]
 
     class ExtractedLink(typing.TypedDict):
         source: str
@@ -55,7 +55,7 @@ else:
 
     _Tree_name = str
 
-    _Tree_children = typing.List["Tree"] | None
+    _Tree_children = typing.Optional[typing.List["Tree"]]
 
     Tree = typing.Dict[str, typing.Union[_Tree_name, _Tree_children]]
 
@@ -118,7 +118,7 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
-    def loadModulesAsDict(path: str, ignore_files: typing.List[str] | None = None) -> dict:
+    def loadModulesAsDict(path: str, ignore_files: typing.Optional[typing.List[str]] = None) -> dict:
         """Load modules from modules directory.
 
         Args:
@@ -172,7 +172,7 @@ class SpiderFootHelpers():
         return sfModules
 
     @staticmethod
-    def loadCorrelationRulesRaw(path: str, ignore_files: typing.List[str] | None = None) -> typing.Dict[str, str]:
+    def loadCorrelationRulesRaw(path: str, ignore_files: typing.Optional[typing.List[str]] = None) -> typing.Dict[str, str]:
         """Load correlation rules from correlations directory.
 
         Args:
@@ -209,7 +209,7 @@ class SpiderFootHelpers():
         return correlationRulesRaw
 
     @staticmethod
-    def targetTypeFromString(target: str) -> str | None:
+    def targetTypeFromString(target: str) -> typing.Optional[str]:
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
@@ -245,7 +245,7 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def urlRelativeToAbsolute(url: str) -> str | None:
+    def urlRelativeToAbsolute(url: str) -> typing.Optional[str]:
         """Turn a relative URL path into an absolute path.
 
         Args:
@@ -283,7 +283,7 @@ class SpiderFootHelpers():
         return '/'.join(finalBits)
 
     @staticmethod
-    def urlBaseDir(url: str) -> str | None:
+    def urlBaseDir(url: str) -> typing.Optional[str]:
         """Extract the top level directory from a URL
 
         Args:
@@ -313,7 +313,7 @@ class SpiderFootHelpers():
         return base + '/'
 
     @staticmethod
-    def urlBaseUrl(url: str) -> str | None:
+    def urlBaseUrl(url: str) -> typing.Optional[str]:
         """Extract the scheme and domain from a URL.
 
         Note: Does not return the trailing slash! So you can do .endswith() checks.
@@ -341,7 +341,7 @@ class SpiderFootHelpers():
         return bits.group(1).lower()
 
     @staticmethod
-    def dictionaryWordsFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
+    def dictionaryWordsFromWordlists(wordlists: typing.Optional[typing.List[str]] = None) -> typing.Set[str]:
         """Return dictionary words from several language dictionaries.
 
         Args:
@@ -369,7 +369,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def humanNamesFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
+    def humanNamesFromWordlists(wordlists: typing.Optional[typing.List[str]] = None) -> typing.Set[str]:
         """Return list of human names from wordlist file.
 
         Args:
@@ -397,7 +397,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def usernamesFromWordlists(wordlists: typing.List[str] | None = None) -> typing.Set[str]:
+    def usernamesFromWordlists(wordlists: typing.Optional[typing.List[str]] = None) -> typing.Set[str]:
         """Return list of usernames from wordlist file.
 
         Args:
@@ -425,7 +425,7 @@ class SpiderFootHelpers():
         return words
 
     @staticmethod
-    def buildGraphGexf(root: str, title: str, data: typing.List[str], flt: typing.List[str] | None = None) -> str:
+    def buildGraphGexf(root: str, title: str, data: typing.List[str], flt: typing.Optional[typing.List[str]] = None) -> str:
         """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
@@ -480,7 +480,7 @@ class SpiderFootHelpers():
         return str(gexf).encode('utf-8')
 
     @staticmethod
-    def buildGraphJson(root: str, data: typing.List[str], flt: typing.List[str] | None = None) -> str:
+    def buildGraphJson(root: str, data: typing.List[str], flt: typing.Optional[typing.List[str]] = None) -> str:
         """Convert supplied raw data into JSON format for SigmaJS.
 
         Args:
@@ -555,7 +555,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data: typing.List[str], flt: typing.List[str] | None = None) -> typing.Set[typing.Tuple[str, str]]:
+    def buildGraphData(data: typing.List[str], flt: typing.Optional[typing.List[str]] = None) -> typing.Set[typing.Tuple[str, str]]:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -579,7 +579,7 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_next_parent_entities(item: str, pids: typing.List[str] | None = None) -> typing.List[str]:
+        def get_next_parent_entities(item: str, pids: typing.Optional[typing.List[str]] = None) -> typing.List[str]:
             if not pids:
                 pids = []
 
@@ -632,7 +632,7 @@ class SpiderFootHelpers():
         return mapping
 
     @staticmethod
-    def dataParentChildToTree(data: typing.Dict[str, typing.List[str] | None]) -> Tree | EmptyTree:
+    def dataParentChildToTree(data: typing.Dict[str, typing.Optional[typing.List[str]]]) -> typing.Union[Tree, EmptyTree]:
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
 
@@ -652,7 +652,7 @@ class SpiderFootHelpers():
         if not data:
             raise ValueError("data is empty")
 
-        def get_children(needle: str, haystack: typing.Dict[str, typing.List[str] | None]) -> typing.List[Tree] | None:
+        def get_children(needle: str, haystack: typing.Dict[str, typing.Optional[typing.List[str]]]) -> typing.Optional[typing.List[Tree]]:
             ret: typing.List[Tree] = list()
 
             if needle not in list(haystack.keys()):
@@ -770,7 +770,7 @@ class SpiderFootHelpers():
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def extractLinksFromHtml(url: str, data: str, domains: typing.List[str] | str) -> typing.Dict[str, ExtractedLink]:
+    def extractLinksFromHtml(url: str, data: str, domains: typing.Optional[typing.List[str]]) -> typing.Dict[str, ExtractedLink]:
         """Find all URLs within the supplied content.
 
         This function does not fetch any URLs.
@@ -815,7 +815,7 @@ class SpiderFootHelpers():
             'form': 'action'
         }
 
-        links: typing.List[typing.List[str] | str] = []
+        links: typing.List[typing.Union[typing.List[str], str]] = []
 
         try:
             for t in list(tags.keys()):
@@ -1157,7 +1157,7 @@ class SpiderFootHelpers():
         return ssl.DER_cert_to_PEM_cert(der_cert)
 
     @staticmethod
-    def countryNameFromCountryCode(countryCode: str) -> str | None:
+    def countryNameFromCountryCode(countryCode: str) -> typing.Optional[str]:
         """Convert a country code to full country name.
 
         Args:
@@ -1172,7 +1172,7 @@ class SpiderFootHelpers():
         return SpiderFootHelpers.countryCodes().get(countryCode.upper())
 
     @staticmethod
-    def countryNameFromTld(tld: str) -> str | None:
+    def countryNameFromTld(tld: str) -> typing.Optional[str]:
         """Retrieve the country name associated with a TLD.
 
         Args:
@@ -1474,7 +1474,7 @@ class SpiderFootHelpers():
         }
 
     @staticmethod
-    def sanitiseInput(cmd: str, extra: typing.List[str] | None = None) -> bool:
+    def sanitiseInput(cmd: str, extra: typing.Optional[typing.List[str]] = None) -> bool:
         """Verify input command is safe to execute
 
         Args:
