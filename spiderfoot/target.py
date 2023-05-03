@@ -1,22 +1,31 @@
+import sys
+import typing
+
 import netaddr
+
+
+if sys.version_info >= (3, 8):  # PEP 589 support (TypedDict)
+    TargetAlias = typing.TypedDict("TargetAlias", {"type": str, "value": str})
+else:
+    TargetAlias = typing.Dict[str, str]
 
 
 class SpiderFootTarget():
     """SpiderFoot target.
 
     Attributes:
-        validTypes (list): valid event types accepted as a target
+        validTypes (typing.List[str]): valid event types accepted as a target
         targetType (str): target type
         targetValue (str): target value
-        targetAliases (list): target aliases
+        targetAliases (typing.List[TargetAlias]): target aliases
     """
 
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "NETBLOCKV6_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME",
                    "BITCOIN_ADDRESS"]
-    _targetType = None
-    _targetValue = None
-    _targetAliases = list()
+    _targetType: str
+    _targetValue: str
+    _targetAliases: typing.List[TargetAlias]
 
     def __init__(self, targetValue: str, typeName: str) -> None:
         """Initialize SpiderFoot target.
@@ -57,11 +66,11 @@ class SpiderFootTarget():
         self._targetValue = targetValue
 
     @property
-    def targetAliases(self) -> list:
+    def targetAliases(self) -> typing.List[TargetAlias]:
         return self._targetAliases
 
     @targetAliases.setter
-    def targetAliases(self, value: list) -> None:
+    def targetAliases(self, value: typing.List[TargetAlias]) -> None:
         self._targetAliases = value
 
     def setAlias(self, value: str, typeName: str) -> None:
@@ -88,39 +97,39 @@ class SpiderFootTarget():
         if not typeName:
             return
 
-        alias = {'type': typeName, 'value': value.lower()}
+        alias: TargetAlias = {'type': typeName, 'value': value.lower()}
 
         if alias in self.targetAliases:
             return
 
         self.targetAliases.append(alias)
 
-    def _getEquivalents(self, typeName: str) -> list:
+    def _getEquivalents(self, typeName: str) -> typing.List[str]:
         """Get all aliases of the specfied target data type.
 
         Args:
             typeName (str): Target data type
 
         Returns:
-            list: target aliases
+            typing.List[str]: target aliases
         """
-        ret = list()
+        ret: typing.List[str] = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
         return ret
 
-    def getNames(self) -> list:
+    def getNames(self) -> typing.List[str]:
         """Get all domains associated with the target.
 
         Returns:
-            list: domains associated with the target
+            typing.List[str]: domains associated with the target
         """
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
 
-        names = list()
+        names: typing.List[str] = list()
         for name in e:
             if isinstance(name, bytes):
                 names.append(name.decode("utf-8"))
@@ -129,11 +138,11 @@ class SpiderFootTarget():
 
         return names
 
-    def getAddresses(self) -> list:
+    def getAddresses(self) -> typing.List[str]:
         """Get all IP subnet or IP address aliases associated with the target.
 
         Returns:
-            list: List of IP subnets and addresses
+            typing.List[str]: List of IP subnets and addresses
         """
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
