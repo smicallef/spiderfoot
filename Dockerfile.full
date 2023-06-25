@@ -41,7 +41,7 @@ RUN apt remove -y cmdtest \
     && apt-get install yarn -y \
     && yarn install \
     && curl -fsSL https://deb.nodesource.com/setup_17.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y npm \
     && npm install -g retire
 
 # Install Google Chrome the New Way (Not via apt-key)
