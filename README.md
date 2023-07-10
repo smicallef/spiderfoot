@@ -132,7 +132,7 @@ SpiderFoot has over 200 modules, most of which *don't require API keys*, and man
 [AbstractAPI](https://app.abstractapi.com/)|Look up domain, phone and IP address information from AbstractAPI.|Tiered API
 [abuse.ch](https://www.abuse.ch)|Check if a host/domain, IP address or netblock is malicious according to Abuse.ch.|Free API
 [AbuseIPDB](https://www.abuseipdb.com)|Check if an IP address is malicious according to AbuseIPDB.com blacklist.|Tiered API
-[Abusix Mail Intelligence](https://abusix.org/)|Check if a netblock or IP address is in the Abusix Mail Intelligence blacklist.|Tiered API
+[Abusix Mail Intelligence](https://abusix.com/)|Check if a netblock or IP address is in the Abusix Mail Intelligence blacklist.|Tiered API
 Account Finder|Look for possible associated accounts on over 500 social and other websites such as Instagram, Reddit, etc.|Internal
 [AdBlock Check](https://adblockplus.org/)|Check if linked pages would be blocked by AdBlock Plus.|Tiered API
 [AdGuard DNS](https://adguard.com/)|Check if a host would be blocked by AdGuard DNS.|Free API
