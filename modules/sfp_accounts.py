@@ -90,7 +90,7 @@ class sfp_accounts(SpiderFootPlugin):
             self.sf.cachePut("sfaccountsv2", content)
 
         try:
-            self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
+            self.sites = [site for site in json.loads(content)['sites'] if not site.get('valid', True) == False]
         except Exception as e:
             self.error(f"Unable to parse social media accounts list: {e}")
             self.errorState = True
