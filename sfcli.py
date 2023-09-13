@@ -1157,6 +1157,7 @@ class SpiderFootCli(cmd.Cmd):
             ["delete", "Delete a scan."],
             ["scaninfo", "Scan information."],
             ["data", "Show data from a scan's results."],
+            ["export", "Export scan results to file."],
             ["correlations", "Show correlation results from a scan."],
             ["summary", "Scan result summary."],
             ["find", "Search for data within scan results."],
