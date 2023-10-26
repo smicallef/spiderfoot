@@ -1,0 +1,35 @@
+Steve@rouge:~/Downloads/spiderfoot$ #
+steve@rogue:~/Downloads/spiderfoot$ # will see the malicious link as residing on
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # You can read more about it here: https://0
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # Checking for this with SpiderFoot is prett
+steve@rogue:~/Downloads/spiderfoot$ # modules working together. A big thanks to 
+steve@rogue:~/Downloads/spiderfoot$ # contribution!                             
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # We need to enable sfp_dnsresolve and sfp_d
+steve@rogue:~/Downloads/spiderfoot$ # DNS records (the CNAMEs) during the scan, 
+steve@rogue:~/Downloads/spiderfoot$ # sfp_dnsbrute and even sfp_spider to find a
+steve@rogue:~/Downloads/spiderfoot$ # that might point to a cloud service. Final
+steve@rogue:~/Downloads/spiderfoot$ # enable sfp_subdomain_takeover to perform t
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$                             steve@rogue:~/Downloads/spiderfoot$ # will see the malicious link as residing on
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # You can read more about it here: https://0
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # Checking for this with SpiderFoot is prett
+steve@rogue:~/Downloads/spiderfoot$ # modules working together. A big thanks to 
+steve@rogue:~/Downloads/spiderfoot$ # contribution!                             
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$ # We need to enable sfp_dnsresolve and sfp_d
+steve@rogue:~/Downloads/spiderfoot$ # DNS records (the CNAMEs) during the scan, 
+steve@rogue:~/Downloads/spiderfoot$ # sfp_dnsbrute and even sfp_spider to find a
+steve@rogue:~/Downloads/spiderfoot$ # that might point to a cloud service. Final
+steve@rogue:~/Downloads/spiderfoot$ # enable sfp_subdomain_takeover to perform t
+steve@rogue:~/Downloads/spiderfoot$                                             
+steve@rogue:~/Downloads/spiderfoot$                                     steve@rogue:~/Downloads/spiderfoot$ # will see the malicious link as residing on
+steve@rogue:~/Downloads/spiderfoot$                                          #enable sfp_subdomain_takeover to perform t
+        #enable sfp_subdomain_takeover to perform t
+       #enable sfp_subdomain_takeover to perform t
+  #enable sfp_subdomain_takeover to perform t
+                                                                                                                                                                                                                                               
