@@ -97,6 +97,22 @@ class sfp_webanalytics(SpiderFootPlugin):
                 evt.moduleDataSource = datasource
                 self.notifyListeners(evt)
 
+            # Google Tag Manager
+            matches = re.findall(r"\b(GTM-[0-9a-zA-Z]{6,10})\b", eventData)
+            for m in set(matches):
+                if m.lower().startswith('GTM-XXXXXX'):
+                    continue
+
+                self.debug(f"Google Tag Manager match: {m}")
+                evt = SpiderFootEvent(
+                    "WEB_ANALYTICS_ID",
+                    f"Google Tag Manager: {m}",
+                    self.__name__,
+                    event
+                )
+                evt.moduleDataSource = datasource
+                self.notifyListeners(evt)
+
             # Google Website Verification
             # https://developers.google.com/site-verification/v1/getting_started
             matches = re.findall(r'<meta name="google-site-verification" content="([a-z0-9\-\+_=]{43,44})"', eventData, re.IGNORECASE)
