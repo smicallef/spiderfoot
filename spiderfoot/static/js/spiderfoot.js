@@ -83,7 +83,7 @@ sf.remove_sfurltag = function (data) {
 
 sf.search = function (scan_id, value, type, postFunc) {
   sf.fetchData(
-    "/search",
+    docroot + "/search",
     { id: scan_id, eventType: type, value: value },
     postFunc
   );
@@ -92,7 +92,7 @@ sf.search = function (scan_id, value, type, postFunc) {
 sf.deleteScan = function(scan_id, callback) {
     var req = $.ajax({
       type: "GET",
-      url: "/scandelete?id=" + scan_id
+      url: docroot + "/scandelete?id=" + scan_id
     });
     req.done(function() {
         alertify.success('<i class="glyphicon glyphicon-ok-circle"></i> <b>Scans Deleted</b><br/><br/>' + scan_id.replace(/,/g, "<br/>"));
@@ -108,7 +108,7 @@ sf.deleteScan = function(scan_id, callback) {
 sf.stopScan = function(scan_id, callback) {
     var req = $.ajax({
       type: "GET",
-      url: "/stopscan?id=" + scan_id
+      url: docroot + "/stopscan?id=" + scan_id
     });
     req.done(function() {
         alertify.success('<i class="glyphicon glyphicon-ok-circle"></i> <b>Scans Aborted</b><br/><br/>' + scan_id.replace(/,/g, "<br/>"));
