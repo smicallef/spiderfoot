@@ -455,7 +455,8 @@ class SpiderFootHelpers():
             color = {
                 'r': 0,
                 'g': 0,
-                'b': 0
+                'b': 0,
+                'a': 0
             }
 
             if dst not in nodelist:
