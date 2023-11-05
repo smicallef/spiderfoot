@@ -442,6 +442,13 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
         if not info:
             continue
         if info[5] in ["ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED"]:
+            # allow 60 seconds for post-scan correlations to complete
+            timeout = 60
+            p.join(timeout=timeout)
+            if (p.is_alive()):
+                log.error(f"Timeout reached ({timeout}s) waiting for scan {scanId} post-processing to complete.")
+                sys.exit(-1)
+
             if sfConfig['__logging']:
                 log.info(f"Scan completed with status {info[5]}")
             if args.o == "json":
