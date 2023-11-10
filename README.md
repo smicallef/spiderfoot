@@ -1,6 +1,5 @@
 <a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
 
-
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.7+-green)](https://www.python.org)
 [![Stable Release](https://img.shields.io/badge/version-4.0-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v4.0)
@@ -10,11 +9,11 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/spiderfoot?label=follow&style=social)](https://twitter.com/spiderfoot)
 [![Discord](https://img.shields.io/discord/770524432464216074)](https://discord.gg/vyvztrG)
 
-**SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
+**SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate.
 
 SpiderFoot has an embedded web-server for providing a clean and intuitive web-based interface but can also be used completely via the command-line.  It's written in **Python 3** and **MIT-licensed**.
 
-<img src="https://www.spiderfoot.net/wp-content/uploads/2022/04/opensource-screenshot-v4.png" />
+<img src="https://www.spiderfoot.net/wp-content/uploads/2022/04/opensource-screenshot-v4.png"/>
 
 ### FEATURES
 
@@ -36,6 +35,7 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 ### WANT MORE?
 
 Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/hx) for:
+
 - 100% Cloud-based and managed for you
 - Attack Surface Monitoring with change notifications by email, REST and Slack
 - Multiple targets per scan
@@ -58,17 +58,17 @@ SpiderFoot can be used offensively (e.g. in a red team exercise or penetration t
 
 You can target the following entities in a SpiderFoot scan:
 
- - IP address
- - Domain/sub-domain name
- - Hostname
- - Network subnet (CIDR)
- - ASN
- - E-mail address
- - Phone number
- - Username
- - Person's name
- - Bitcoin address
- 
+- IP address
+- Domain/sub-domain name
+- Hostname
+- Network subnet (CIDR)
+- ASN
+- E-mail address
+- Phone number
+- Username
+- Person's name
+- Bitcoin address
+
 SpiderFoot's 200+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
 
 - [Host/sub-domain/TLD enumeration/extraction](https://asciinema.org/a/295912)
@@ -92,24 +92,75 @@ SpiderFoot's 200+ modules feed each other in a publisher/subscriber model to ens
 
 To install and run SpiderFoot, you need at least Python 3.7 and a number of Python libraries which you can install with `pip`. We recommend you install a packaged release since master will often have bleeding edge features and modules that aren't fully tested.
 
-#### Stable build (packaged release):
+#### Stable build (packaged release)
 
-```
- wget https://github.com/smicallef/spiderfoot/archive/v4.0.tar.gz
- tar zxvf v4.0.tar.gz
- cd spiderfoot-4.0
- pip3 install -r requirements.txt
- python3 ./sf.py -l 127.0.0.1:5001
-```
+1. Download the package and unpack it
 
-#### Development build (cloning git master branch):
+    ```bash
+    wget https://github.com/smicallef/spiderfoot/archive/v4.0.tar.gz && tar zxvf v4.0.tar.gz && cd spiderfoot-4.0
+    ```
 
-```
- git clone https://github.com/smicallef/spiderfoot.git
- cd spiderfoot
- pip3 install -r requirements.txt
- python3 ./sf.py -l 127.0.0.1:5001
-```
+1. Install the requirements
+
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
+1. Run the webserver
+
+    ```bash
+    python3 ./sf.py -l 127.0.0.1:5001
+    ```
+
+#### Development build (cloning git master branch)
+
+1. Clone the repository
+
+    ```bash
+    git clone https://github.com/smicallef/spiderfoot.git && cd spiderfoot
+    ```
+
+1. Install the requirements
+
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
+1. Run the webserver
+
+    ```bash
+    python3 ./sf.py -l 127.0.0.1:5001
+    ```
+
+#### Docker stable build (packaged release)
+
+1. Run the Docker Compose file
+
+    ```bash
+    sudo docker compose up -d
+    ```
+
+#### Docker development build
+
+1. Build the Docker image from source
+
+    ```bash
+    sudo docker build -t spiderfoot .
+    ```
+
+1. Run the Docker Compose file based on the image you just built
+
+    ```bash
+    sudo docker compose up
+    ```
+
+#### Docker full build
+
+1. Run the Docker Compose file
+
+    ```bash
+    sudo docker-compose -f docker-compose.yml -f docker-compose-full.yml up
+    ```
 
 Check out the [documentation](https://www.spiderfoot.net/documentation) and our [asciinema videos](https://asciinema.org/~spiderfoot) for more tutorials.
 
