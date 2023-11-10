@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
+from modules.common_ssl_cert import process_ssl_cert_events
 
 class sfp_sslcert(SpiderFootPlugin):
 
@@ -128,47 +129,8 @@ class sfp_sslcert(SpiderFootPlugin):
         rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
         self.notifyListeners(rawevt)
 
-        if cert.get('issued'):
-            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', cert['issued'], self.__name__, event)
-            self.notifyListeners(evt)
+        process_ssl_cert_events(self, cert, event)
 
-        if cert.get('issuer'):
-            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', cert['issuer'], self.__name__, event)
-            self.notifyListeners(evt)
-
-        if eventName != "IP_ADDRESS" and cert.get('mismatch'):
-            evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(cert.get('hosts')), self.__name__, event)
-            self.notifyListeners(evt)
-
-        for san in set(cert.get('altnames', list())):
-            domain = san.replace("*.", "")
-
-            if self.getTarget().matches(domain, includeChildren=True):
-                evt_type = 'INTERNET_NAME'
-                if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
-                    self.debug(f"Host {domain} could not be resolved")
-                    evt_type += '_UNRESOLVED'
-            else:
-                evt_type = 'CO_HOSTED_SITE'
-
-            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
-            self.notifyListeners(evt)
-
-            if self.sf.isDomain(domain, self.opts['_internettlds']):
-                if evt_type == 'CO_HOSTED_SITE':
-                    evt = SpiderFootEvent('CO_HOSTED_SITE_DOMAIN', domain, self.__name__, event)
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
-                    self.notifyListeners(evt)
-
-        if cert.get('expired'):
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)
-            self.notifyListeners(evt)
-            return
-
-        if cert.get('expiring'):
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", cert.get('expirystr', 'Unknown'), self.__name__, event)
-            self.notifyListeners(evt)
+        
 
 # End of sfp_sslcert class

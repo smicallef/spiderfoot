@@ -15,7 +15,6 @@ import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
-
 class sfp_company(SpiderFootPlugin):
 
     meta = {
@@ -56,6 +55,8 @@ class sfp_company(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        found_company_names = list()
+
         # Various ways to identify companies in text
         # Support up to three word company names with each starting with
         # a capital letter, allowing for hyphens brackets and numbers within.
@@ -95,8 +96,17 @@ class sfp_company(SpiderFootPlugin):
         try:
             if eventName == "SSL_CERTIFICATE_ISSUED":
                 eventData = eventData.split("O=")[1]
-        except Exception:
+
+                # Try to get O= as easy company name
+                o_match = re.search(r"(.+)[,]", eventData)
+
+                if o_match:
+                    company_name = o_match.groups()[0]
+                    found_company_names.append(company_name)
+                    eventData = eventData[len(company_name):]
+        except Exception as e:
             self.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
+            self.debug(e)
 
         # Find chunks of text containing what might be a company name first.
         # This is to avoid running very expensive regexps on large chunks of
@@ -116,7 +126,6 @@ class sfp_company(SpiderFootPlugin):
                 offset = m + len(pat)
                 m = eventData.find(pat, offset)
 
-        myres = list()
         for chunk in chunks:
             for pat in pattern_match_re:
                 matches = re.findall(pattern_prefix + "(" + pat + ")" + pattern_suffix, chunk, re.MULTILINE | re.DOTALL)
@@ -141,22 +150,23 @@ class sfp_company(SpiderFootPlugin):
 
                     self.info("Found company name: " + fullcompany)
 
-                    if fullcompany in myres:
+                    if fullcompany in found_company_names:
                         self.debug("Already found from this source.")
                         continue
 
-                    myres.append(fullcompany)
+                    found_company_names.append(fullcompany)
 
-                    if "AFFILIATE_" in eventName:
-                        etype = "AFFILIATE_COMPANY_NAME"
-                    else:
-                        etype = "COMPANY_NAME"
+        if "AFFILIATE_" in eventName:
+            etype = "AFFILIATE_COMPANY_NAME"
+        else:
+            etype = "COMPANY_NAME"
 
-                    evt = SpiderFootEvent(etype, fullcompany, self.__name__, event)
-                    if event.moduleDataSource:
-                        evt.moduleDataSource = event.moduleDataSource
-                    else:
-                        evt.moduleDataSource = "Unknown"
-                    self.notifyListeners(evt)
+        for company_name in found_company_names:
+            evt = SpiderFootEvent(etype, company_name, self.__name__, event)
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                evt.moduleDataSource = "Unknown"
+            self.notifyListeners(evt)
 
 # End of sfp_company class
