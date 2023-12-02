@@ -7,7 +7,7 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuleIntegrationShodan(unittest.TestCase):
+class TestModuleIntegrationInternetDB(unittest.TestCase):
 
     def test_handleEvent(self):
         sf = SpiderFoot(self.default_options)
