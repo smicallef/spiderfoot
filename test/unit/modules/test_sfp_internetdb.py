@@ -3,11 +3,10 @@ import unittest
 
 from modules.sfp_internetdb import sfp_internetdb
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModuleShodan(unittest.TestCase):
+class TestModuleInternetDB(unittest.TestCase):
 
     def test_opts(self):
         module = sfp_internetdb()
