@@ -67,10 +67,15 @@ class sfp_internetdb(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["TCP_PORT_OPEN", 'RAW_RIR_DATA', 
-                'IP_ADDRESS', 'VULNERABILITY_CVE_CRITICAL',
-                'VULNERABILITY_CVE_HIGH', 'VULNERABILITY_CVE_MEDIUM',
-                'VULNERABILITY_CVE_LOW', 'VULNERABILITY_GENERAL']
+        return ["INTERNET_NAME",
+                'IP_ADDRESS', 
+                'RAW_RIR_DATA', 
+                "TCP_PORT_OPEN", 
+                'VULNERABILITY_CVE_CRITICAL',
+                'VULNERABILITY_CVE_HIGH', 
+                'VULNERABILITY_CVE_MEDIUM',
+                'VULNERABILITY_CVE_LOW', 
+                'VULNERABILITY_GENERAL']
 
     def queryHost(self, qry):
         res = self.sf.fetchUrl(
@@ -160,15 +165,21 @@ class sfp_internetdb(SpiderFootPlugin):
             self.info(f"Found InternetDB data for {eventData}")
             ports = rec.get('ports')
             vulns = rec.get('vulns')
+            hostnames = rec.get('hostnames')
 
             for port in ports:
                 cp = addr + ":" + str(port)
+                # InternetDB does not specify TCP or UDP, however, there is no generic PORT_OPEN event.
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, pevent)
                 self.notifyListeners(evt)
 
             for vuln in vulns:
                 etype, cvetext = self.sf.cveInfo(vuln)
                 evt = SpiderFootEvent(etype, cvetext, self.__name__, pevent)
+                self.notifyListeners(evt)
+
+            for hostname in hostnames:
+                evt = SpiderFootEvent("INTERNET_NAME", hostname, self.__name__, pevent)
                 self.notifyListeners(evt)
 
 # End of sfp_internetdb class
