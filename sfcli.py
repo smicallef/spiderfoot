@@ -1368,8 +1368,7 @@ if __name__ == "__main__":
     # Load commands from a file
     if args.e:
         try:
-            with open(args.e, 'r') as f:
-                cin = f.read()
+            cin = open(args.e, 'r')
         except BaseException as e:
             print(f"Unable to open {args.e}: ({e})")
             sys.exit(-1)
