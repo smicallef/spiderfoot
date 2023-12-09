@@ -21,7 +21,7 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 - Web based UI or CLI
 - Over 200 modules (see below)
 - Python 3.7+
-- YAML-configurable [correlation engine](/correlations/README.md) with [37 pre-defined rules](/correlations)
+- YAML-configurable [correlation engine](/correlations/README.md) with [38 pre-defined rules](/correlations)
 - CSV/JSON/GEXF export
 - API key export/import
 - SQLite back-end for custom querying
@@ -121,7 +121,7 @@ Whether you're a contributor, user or just curious about SpiderFoot and OSINT in
 
 We have a comprehensive write-up and reference of the correlation rule-set introduced in SpiderFoot 4.0 [here](/correlations/README.md).
 
-Also take a look at the [template.yaml](/correlations/template.yaml) file for a walk through. The existing [37 rules](/correlations) are also quite readable and good as starting points for additional rules.
+Also take a look at the [template.yaml](/correlations/template.yaml) file for a walk through. The existing [38 rules](/correlations) are also quite readable and good as starting points for additional rules.
 
 ### MODULES / INTEGRATIONS
 
