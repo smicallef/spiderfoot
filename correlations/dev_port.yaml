@@ -1,0 +1,25 @@
+id: dev_port
+version: 1
+meta:
+  name: A common port appearing to be a test or development service was found
+  description: >
+    A host with an open tcp
+    port that is often used for development purposes
+    was found. This may indicate a system that is exposed
+    over the Internet unintentionally, and/or may be less secure
+    than other systems.
+  risk: MEDIUM
+collections:
+  - collect:
+      - method: exact
+        field: type
+        value: TCP_PORT_OPEN
+      - method: regex
+        field: data
+        value:
+          - .*:8000$
+          - .*:8080$
+          - .*:8888$
+aggregation:
+  field: source.data
+headline: "Development or internal service found: {source.data}"
