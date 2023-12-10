@@ -168,6 +168,7 @@ class sfp_accounts(SpiderFootPlugin):
                         self.checkSite(username, site)
                     except Exception as e:
                         self.debug(f'Thread {threading.current_thread().name} exception: {e}')
+                    if self.checkForStop(): return
             except QueueEmpty:
                 return
 
@@ -441,6 +442,7 @@ class sfp_accounts(SpiderFootPlugin):
             if self.opts['permutate']:
                 permutations = self.generatePermutations(user, self.opts['permutate_num'] > 25, self.opts['permutate_num'])
                 for puser in permutations:
+                    if self.checkForStop(): return
                     res = self.checkSites(puser)
                     for site in res:
                         evt = SpiderFootEvent(
