@@ -37,6 +37,7 @@ class sfp_accounts(SpiderFootPlugin):
         "musthavename": True,
         "userfromemail": True,
         "permutate": False,
+        "permutate_num": 20,
         "usernamesize": 4,
         "_maxthreads": 20
     }
@@ -48,6 +49,7 @@ class sfp_accounts(SpiderFootPlugin):
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
         "permutate": "Look for the existence of account name permutations. Useful to identify fraudulent social media accounts or account squatting.",
+        "permutate_num": "How many account name permutations must be generated",
         "usernamesize": "The minimum length of a username to query across social media sites. Helps avoid false positives for very common short usernames.",
         "_maxthreads": "Maximum threads"
     }
@@ -107,6 +109,10 @@ class sfp_accounts(SpiderFootPlugin):
         if 'uri_check' not in site:
             return
 
+        if site.get('strip_bad_char'):
+            # Remove unsupported characters (see https://github.com/WebBreacher/WhatsMyName/issues/738)
+            for char in site['strip_bad_char']: name=name.replace(char, "")
+        
         url = site['uri_check'].format(account=name)
         if 'uri_pretty' in site:
             ret_url = site['uri_pretty'].format(account=name)
@@ -150,15 +156,6 @@ class sfp_accounts(SpiderFootPlugin):
                     self.siteResults[retname] = False
                 return
 
-        # Some sites can't handle periods so treat bob.abc and bob as the same
-        # TODO: fix this once WhatsMyName has support for usernames with '.'
-        if "." in name:
-            firstname = name.split(".")[0]
-            if firstname + "<" in res['content'] or firstname + '"' in res['content']:
-                with self.lock:
-                    self.siteResults[retname] = False
-                return
-
         with self.lock:
             self.siteResults[retname] = True
 
@@ -171,6 +168,7 @@ class sfp_accounts(SpiderFootPlugin):
                         self.checkSite(username, site)
                     except Exception as e:
                         self.debug(f'Thread {threading.current_thread().name} exception: {e}')
+                    if self.checkForStop(): return
             except QueueEmpty:
                 return
 
@@ -206,46 +204,85 @@ class sfp_accounts(SpiderFootPlugin):
 
         return [site for site, found in self.siteResults.items() if found]
 
-    def generatePermutations(self, username):
-        permutations = list()
-        prefixsuffix = ['_', '-']
-        replacements = {
-            'a': ['4', 's'],
-            'b': ['v', 'n'],
-            'c': ['x', 'v'],
-            'd': ['s', 'f'],
-            'e': ['w', 'r'],
-            'f': ['d', 'g'],
-            'g': ['f', 'h'],
-            'h': ['g', 'j', 'n'],
-            'i': ['o', 'u', '1'],
-            'j': ['k', 'h', 'i'],
-            'k': ['l', 'j'],
-            'l': ['i', '1', 'k'],
-            'm': ['n'],
-            'n': ['m'],
-            'o': ['p', 'i', '0'],
-            'p': ['o', 'q'],
-            'r': ['t', 'e'],
-            's': ['a', 'd', '5'],
-            't': ['7', 'y', 'z', 'r'],
-            'u': ['v', 'i', 'y', 'z'],
-            'v': ['u', 'c', 'b'],
-            'w': ['v', 'vv', 'q', 'e'],
-            'x': ['z', 'y', 'c'],
-            'y': ['z', 'x'],
-            'z': ['y', 'x'],
-            '0': ['o'],
-            '1': ['l'],
-            '2': ['5'],
-            '3': ['e'],
-            '4': ['a'],
-            '5': ['s'],
-            '6': ['b'],
-            '7': ['t'],
-            '8': ['b'],
-            '9': []
-        }
+    def generatePermutations(self, username, rare=False, upto=None):
+        if not username: return []
+        permutations = set()
+        prefixsuffix = ['_']
+        if rare: prefixsuffix += ['-']
+        if rare:
+            replacements = {
+                'a': ['4', 's'],
+                'b': ['v', 'n'],
+                'c': ['x', 'v'],
+                'd': ['s', 'f'],
+                'e': ['w', 'r'],
+                'f': ['d', 'g'],
+                'g': ['f', 'h'],
+                'h': ['g', 'j', 'n'],
+                'i': ['o', 'u', '1'],
+                'j': ['k', 'h', 'i'],
+                'k': ['l', 'j'],
+                'l': ['i', '1', 'k'],
+                'm': ['n'],
+                'n': ['m'],
+                'o': ['p', 'i', '0'],
+                'p': ['o', 'q'],
+                'r': ['t', 'e'],
+                's': ['a', 'd', '5'],
+                't': ['7', 'y', 'z', 'r'],
+                'u': ['v', 'i', 'y', 'z'],
+                'v': ['u', 'c', 'b'],
+                'w': ['v', 'vv', 'q', 'e'],
+                'x': ['z', 'y', 'c'],
+                'y': ['z', 'x'],
+                'z': ['y', 'x'],
+                '0': ['o'],
+                '1': ['l', 'i'],
+                '2': ['5'],
+                '3': ['e'],
+                '4': ['a'],
+                '5': ['s'],
+                '6': ['b'],
+                '7': ['t'],
+                '8': ['b'],
+                '9': ['8']
+            }
+        else:
+            replacements = {
+                'a': ['4'],
+                'b': ['v'],
+                'c': ['v'],
+                'd': ['s'],
+                'e': ['r'],
+                'f': ['d', 'g'],
+                'g': ['f', 'h'],
+                'h': ['g', 'j'],
+                'i': ['o', '1'],
+                'j': ['k', 'h', 'i'],
+                'l': ['i', '1'],
+                'm': ['n'],
+                'n': ['m'],
+                'o': ['p', '0'],
+                'p': ['o', 'r'],
+                'r': ['t', 'e'],
+                's': ['a', 'd'],
+                't': ['y', 'r'],
+                'u': ['v', 'y', 'z'],
+                'v': ['u', 'c', 'b'],
+                'w': ['v', 'vv', 'e'],
+                'x': ['z', 'y'],
+                'y': ['z', 'x'],
+                'z': ['y', 'x'],
+                '0': ['o'],
+                '1': ['l'],
+                '2': ['5'],
+                '3': ['e'],
+                '4': ['a'],
+                '5': ['s'],
+                '6': ['b'],
+                '7': ['t'],
+                '8': ['b']
+            }
         pairs = {
             'oo': ['00'],
             'll': ['l1l', 'l1l', '111', '11'],
@@ -263,28 +300,36 @@ class sfp_accounts(SpiderFootPlugin):
             npos = pos + 1
             for xc in replacements[c]:
                 newuser = username[0:pos] + xc + username[npos:len(username)]
-                permutations.append(newuser)
+                permutations.add(newuser)
 
             pos += 1
+
+        # Change case for the first letter
+        for p in permutations.copy():
+            newuser = p[0].swapcase() + p[1:]
+            permutations.add(newuser)
 
         # Search for common double-letter replacements
         for p in pairs:
             if p in username:
                 for r in pairs[p]:
-                    permutations.append(username.replace(p, r))
+                    permutations.add(username.replace(p, r))
 
         # Search for prefixed and suffixed usernames
         for c in prefixsuffix:
-            permutations.append(username + c)
-            permutations.append(c + username)
+            permutations.add(username + c)
+            permutations.add(c + username)
 
         # Search for double character usernames
         pos = 0
         for c in username:
-            permutations.append(username[0:pos] + c + c + username[(pos + 1):len(username)])
+            permutations.add(username[0:pos] + c + c + username[(pos + 1):len(username)])
             pos += 1
 
-        return list(set(permutations))
+        permutations = list(permutations)
+        if upto and upto < len(permutations):
+            permutations = random.Random(len(permutations)).sample(permutations, upto) # truncate (seeded with length)
+        return permutations
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -395,8 +440,9 @@ class sfp_accounts(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if self.opts['permutate']:
-                permutations = self.generatePermutations(user)
+                permutations = self.generatePermutations(user, self.opts['permutate_num'] > 25, self.opts['permutate_num'])
                 for puser in permutations:
+                    if self.checkForStop(): return
                     res = self.checkSites(puser)
                     for site in res:
                         evt = SpiderFootEvent(
