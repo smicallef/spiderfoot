@@ -79,6 +79,7 @@ class sfp_whoisfreaks(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [
+            'AFFILIATE_INTERNET_NAME',
             'AFFILIATE_DOMAIN_NAME'
         ]
 
