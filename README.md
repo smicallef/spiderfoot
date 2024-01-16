@@ -349,6 +349,7 @@ Web Spider|Spidering of web-pages to extract content for searching.|Internal
 [WhatCMS](https://whatcms.org/)|Check web technology using WhatCMS.org API.|Tiered API
 [Whoisology](https://whoisology.com/)|Reverse Whois lookups using Whoisology.com.|Commercial API
 Whois|Perform a WHOIS look-up on domain names and owned netblocks.|Internal
+[WhoisFreaks](https://whoisfreaks.com/)|Reverse Whois lookup by owner name, email or company name|Tiered API
 [Whoxy](https://www.whoxy.com/)|Reverse Whois lookups using Whoxy.com.|Commercial API
 [WiGLE](https://wigle.net/)|Query WiGLE to identify nearby WiFi access points.|Free API
 [Wikileaks](https://wikileaks.org/)|Search Wikileaks for mentions of domain names and e-mail addresses.|Free API
