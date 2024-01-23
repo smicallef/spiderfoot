@@ -113,6 +113,8 @@ WORKDIR /home/spiderfoot
 
 EXPOSE 5001
 
+USER root
+
 # Run the application
 CMD python -c 'from spiderfoot import SpiderFootDb; \
 db = SpiderFootDb({"__database": "/var/lib/spiderfoot/spiderfoot.db"}); \
