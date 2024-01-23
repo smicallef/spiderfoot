@@ -6,7 +6,7 @@
 # Written by: TheTechromancer
 #
 
-FROM python:3
+FROM python:3.11
 
 # Install tools/dependencies from apt
 RUN apt-get -y update && apt-get -y install nbtscan onesixtyone nmap
@@ -16,7 +16,7 @@ RUN mkdir /tools || true
 WORKDIR /tools
 
 # Install Golang tools
-RUN apt-get -y update && apt-get -y install golang
+RUN apt-get -y update && apt-get -y install golang npm
 ENV GOPATH="/go"
 ENV PATH="$GOPATH/bin:$PATH"
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin"
@@ -41,7 +41,7 @@ RUN apt remove -y cmdtest \
     && apt-get install yarn -y \
     && yarn install \
     && curl -fsSL https://deb.nodesource.com/setup_17.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y nodejs npm \
     && npm install -g retire
 
 # Install Google Chrome the New Way (Not via apt-key)
@@ -50,9 +50,9 @@ RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor
     && apt -y update && apt install --allow-unauthenticated -y google-chrome-stable
 
 # Install Wappalyzer
-RUN git clone https://github.com/AliasIO/wappalyzer.git \
-    && cd wappalyzer \
-    && yarn install && yarn run link
+RUN git clone https://github.com/Lissy93/wapalyzer \
+    && cd wapalyzer \
+    && yarn install && yarn run lint
 
 # Install Nuclei
 RUN wget https://github.com/projectdiscovery/nuclei/releases/download/v2.6.5/nuclei_2.6.5_linux_amd64.zip \
@@ -113,6 +113,8 @@ WORKDIR /home/spiderfoot
 
 EXPOSE 5001
 
+USER root
+
 # Run the application
 CMD python -c 'from spiderfoot import SpiderFootDb; \
 db = SpiderFootDb({"__database": "/var/lib/spiderfoot/spiderfoot.db"}); \
@@ -131,4 +133,4 @@ db.configSet({ \
     "sfp_tool_wappalyzer:wappalyzer_path": "/tools/wappalyzer/src/drivers/npm/cli.js", \
     "sfp_tool_nbtscan:nbtscan_path": "/usr/bin/nbtscan", \
     "sfp_tool_nmap:nmappath": "DISABLED_BECAUSE_NMAP_REQUIRES_ROOT_TO_WORK" \
-})' || true && ./sf.py -l 0.0.0.0:5001
+})' || true && chmod +x sf.py && ./sf.py -l 0.0.0.0:5001
