@@ -5,3 +5,12 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile.full
+    volumes:
+      - spiderfoot-data:/var/lib/spiderfoot
+    container_name: spiderfoot
+    ports:
+      - "5002:5001"
+    restart: unless-stopped
+
+volumes:
+  spiderfoot-data:
