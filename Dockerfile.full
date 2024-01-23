@@ -113,9 +113,6 @@ WORKDIR /home/spiderfoot
 
 EXPOSE 5001
 
-USER root
-#RUN sed -i 's/import lib/import importlib/' /opt/venv/lib/python3.12/site-packages/future/standard_library/__init__.py
-
 # Run the application
 CMD python -c 'from spiderfoot import SpiderFootDb; \
 db = SpiderFootDb({"__database": "/var/lib/spiderfoot/spiderfoot.db"}); \
