@@ -354,6 +354,7 @@ Whois|Perform a WHOIS look-up on domain names and owned netblocks.|Internal
 [Wikileaks](https://wikileaks.org/)|Search Wikileaks for mentions of domain names and e-mail addresses.|Free API
 [Wikipedia Edits](https://www.wikipedia.org/)|Identify edits to Wikipedia articles made from a given IP address or username.|Free API
 [XForce Exchange](https://exchange.xforce.ibmcloud.com/)|Obtain IP reputation and passive DNS information from IBM X-Force Exchange.|Tiered API
+[Xquik](https://xquik.com/)|Enrich X/Twitter profiles with profile and location data from Xquik. Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.|Commercial API
 [Yandex DNS](https://yandex.com/)|Check if a host would be blocked by Yandex DNS.|Free API
 [Zetalytics](https://zetalytics.com/)|Query the Zetalytics database for hosts on your target domain(s).|Tiered API
 [ZoneFile.io](https://zonefiles.io)|Search ZoneFiles.io Domain query API for domain information.|Tiered API
