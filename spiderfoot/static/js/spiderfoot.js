@@ -52,6 +52,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 var sf = {};
 
+// Escape HTML metacharacters in OSINT-collected data before it is rendered
+// into innerHTML, preventing stored XSS via correlation/event results.
+sf.escapeHtml = function (data) {
+  return String(data).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+};
+
 sf.replace_sfurltag = function (data) {
   if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
     data = data.replace(
