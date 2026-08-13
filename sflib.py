@@ -1114,7 +1114,7 @@ class SpiderFoot:
 
         ret = url
         for pat in pats:
-            ret = re.sub(pat, pats[pat], ret, re.IGNORECASE)
+            ret = re.sub(pat, pats[pat], ret, flags=re.IGNORECASE)
 
         return ret
 
