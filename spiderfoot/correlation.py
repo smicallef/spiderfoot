@@ -170,9 +170,11 @@ class SpiderFootCorrelator:
                 else:
                     regexps = matchrule['value']
 
-                for r in regexps:
+                # Pre-compile regex patterns for efficiency
+                compiled_regexps = [re.compile(r) for r in regexps]
+                for compiled_re in compiled_regexps:
                     for t in self.types:
-                        if re.search(r, t[1]):
+                        if compiled_re.search(t[1]):
                             criterias['eventType'].append(t[1])
 
             if matchrule['method'] == 'exact':
@@ -227,19 +229,21 @@ class SpiderFootCorrelator:
         if not isinstance(events, dict):
             raise TypeError(f"events is {type(events)}; expected dict()")
 
-        event_chunks = [list(events.keys())[x:(x + 5000)] for x in range(0, len(list(events.keys())), 5000)]
+        event_ids = list(events.keys())
+        event_chunks = [event_ids[x:(x + 5000)] for x in range(0, len(event_ids), 5000)]
 
         for chunk in event_chunks:
             # Get sources
             self.log.debug(f"Getting sources for {len(chunk)} events")
             source_data = self.dbh.scanElementSourcesDirect(self.scanId, chunk)
             for row in source_data:
+                entity_type = self.type_entity_map.get(row[15])
                 events[row[8]]['source'].append({
                     'type': row[15],
                     'data': row[2],
                     'module': row[16],
                     'id': row[9],
-                    'entity_type': self.type_entity_map[row[15]]
+                    'entity_type': entity_type
                 })
 
     def enrich_event_children(self, events: dict) -> None:
@@ -254,7 +258,8 @@ class SpiderFootCorrelator:
         if not isinstance(events, dict):
             raise TypeError(f"events is {type(events)}; expected dict()")
 
-        event_chunks = [list(events.keys())[x:x + 5000] for x in range(0, len(list(events.keys())), 5000)]
+        event_ids = list(events.keys())
+        event_chunks = [event_ids[x:x + 5000] for x in range(0, len(event_ids), 5000)]
 
         for chunk in event_chunks:
             # Get children
@@ -306,8 +311,10 @@ class SpiderFootCorrelator:
             self.log.debug(f"{len(entity_missing.keys())} entities are missing, going deeper...")
             new_missing = dict()
             self.log.debug(f"Getting sources for {len(entity_missing.keys())} items")
-            if len(entity_missing.keys()) > 5000:
-                chunks = [list(entity_missing.keys())[x:x + 5000] for x in range(0, len(list(entity_missing.keys())), 5000)]
+            
+            missing_ids = list(entity_missing.keys())
+            if len(missing_ids) > 5000:
+                chunks = [missing_ids[x:x + 5000] for x in range(0, len(missing_ids), 5000)]
                 entity_data = list()
                 self.log.debug("Fetching data in chunks")
                 for chunk in chunks:
@@ -315,11 +322,12 @@ class SpiderFootCorrelator:
                     entity_data.extend(self.dbh.scanElementSourcesDirect(self.scanId, chunk))
             else:
                 self.log.debug(f"fetching sources for {len(entity_missing)} items")
-                entity_data = self.dbh.scanElementSourcesDirect(self.scanId, list(entity_missing.keys()))
+                entity_data = self.dbh.scanElementSourcesDirect(self.scanId, missing_ids)
 
             for entity_candidate in entity_data:
                 event_id = entity_missing[entity_candidate[8]]
-                if self.type_entity_map[entity_candidate[15]] not in ['ENTITY', 'INTERNAL']:
+                entity_type = self.type_entity_map.get(entity_candidate[15])
+                if entity_type not in ['ENTITY', 'INTERNAL']:
                     # key of this dictionary is the id we need to now get a source for,
                     # and the value is the original ID of the item missing an entity
                     new_missing[entity_candidate[9]] = event_id
@@ -329,13 +337,13 @@ class SpiderFootCorrelator:
                         'data': entity_candidate[2],
                         'module': entity_candidate[16],
                         'id': entity_candidate[9],
-                        'entity_type': self.type_entity_map[entity_candidate[15]]
+                        'entity_type': entity_type
                     })
 
             if len(new_missing) == 0:
                 break
 
-            entity_missing = deepcopy(new_missing)
+            entity_missing = new_missing
 
     def collect_from_db(self, matchrule: dict, fetchChildren: bool, fetchSources: bool, fetchEntities: bool) -> list:
         """Collect event values from database.
@@ -362,12 +370,13 @@ class SpiderFootCorrelator:
         query_args['instanceId'] = self.scanId
         self.log.debug(f"db query: {query_args}")
         for row in self.dbh.scanResultEvent(**query_args):
+            entity_type = self.type_entity_map.get(row[4])
             events[row[8]] = {
                 'type': row[4],
                 'data': row[1],
                 'module': row[3],
                 'id': row[8],
-                'entity_type': self.type_entity_map[row[4]],
+                'entity_type': entity_type,
                 'source': [],
                 'child': [],
                 'entity': []
@@ -407,13 +416,13 @@ class SpiderFootCorrelator:
 
         return [event[field]]
 
-    def event_keep(self, event: dict, field: str, patterns: str, patterntype: str) -> bool:
+    def event_keep(self, event: dict, field: str, patterns: list, patterntype: str) -> bool:
         """Keep event field.
 
         Args:
             event (dict): event
             field (str): TBD
-            patterns (str): TBD
+            patterns (list): TBD
             patterntype (str): TBD
 
         Returns:
@@ -431,7 +440,7 @@ class SpiderFootCorrelator:
             for pattern in patterns:
                 if pattern.startswith("not "):
                     ret = True
-                    pattern = re.sub(r"^not\s+", "", pattern)
+                    pattern = pattern[4:].lstrip()  # Faster than re.sub
                     if value == pattern:
                         return False
                 else:
@@ -447,7 +456,7 @@ class SpiderFootCorrelator:
             for pattern in patterns:
                 if pattern.startswith("not "):
                     ret = True
-                    pattern = re.sub(r"^not\s+", "", pattern)
+                    pattern = pattern[4:].lstrip()  # Faster than re.sub
                     if re.search(pattern, value, re.IGNORECASE):
                         return False
                 else:
@@ -478,12 +487,8 @@ class SpiderFootCorrelator:
         field = matchrule['field']
         self.log.debug(f"attempting to match {patterns} against the {field} field in {len(events)} events")
 
-        # Go through each event, remove it if we shouldn't keep it
-        # according to the match rule patterns.
-        for event in events[:]:
-            if not self.event_keep(event, field, patterns, matchrule['method']):
-                self.log.debug(f"removing {event} because of {field}")
-                events.remove(event)
+        # Use list comprehension instead of .remove() in loop (O(n) instead of O(n²))
+        events[:] = [e for e in events if self.event_keep(e, field, patterns, matchrule['method'])]
 
     def collect_events(self, collection: dict, fetchChildren: bool, fetchSources: bool, fetchEntities: bool, collectIndex: int) -> list:
         """Collect data for aggregation and analysis.
@@ -555,9 +560,8 @@ class SpiderFootCorrelator:
             """
             topfield, subfield = field.split(".")
             if field.startswith(topfield + "."):
-                for s in event[topfield]:
-                    if s[subfield] != value:
-                        event[topfield].remove(s)
+                # Use list comprehension to avoid O(n²) removal
+                event[topfield] = [s for s in event[topfield] if s[subfield] == value]
 
         ret = dict()
         for e in events:
@@ -614,12 +618,12 @@ class SpiderFootCorrelator:
         """
         self.log.debug(f"called with buckets {buckets}")
 
-        def check_event(events: list, reference: list) -> bool:
+        def check_event(events: list, reference: set) -> bool:
             """Check event.
 
             Args:
                 events (list): TBD
-                reference (list): TBD
+                reference (set): TBD
 
             Returns:
                 bool: TBD
@@ -660,14 +664,20 @@ class SpiderFootCorrelator:
 
         for bucket in list(buckets.keys()):
             pluszerocount = 0
-            for event in buckets[bucket][:]:
+            # Use list comprehension to filter events instead of .remove()
+            filtered_events = []
+            for event in buckets[bucket]:
                 if event['_collection'] == 0:
+                    filtered_events.append(event)
                     continue
                 pluszerocount += 1
 
-                if not check_event(self.event_extract(event, rule['field']), reference):
-                    buckets[bucket].remove(event)
+                if check_event(self.event_extract(event, rule['field']), reference):
+                    filtered_events.append(event)
+                else:
                     pluszerocount -= 1
+            
+            buckets[bucket] = filtered_events
 
             # delete the bucket if there are no events > collection 0
             if pluszerocount == 0:
@@ -923,6 +933,7 @@ class SpiderFootCorrelator:
                 v = self.event_extract(data[0], m)[0]
             except Exception:
                 self.log.error(f"Field requested was not available: {m}")
+                continue
             title = title.replace("{" + m + "}", v.replace("\r", "").split("\n")[0])
         return title
 
@@ -943,9 +954,7 @@ class SpiderFootCorrelator:
         if readonly:
             return True
 
-        eventIds = list()
-        for e in data:
-            eventIds.append(e['id'])
+        eventIds = [e['id'] for e in data]
 
         corrId = self.dbh.correlationResultCreate(self.scanId,
                                                   rule['id'],
