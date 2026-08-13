@@ -1536,8 +1536,8 @@ class SpiderFootDb:
             tbl_event_types st \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND st.event = s.type AND \
-            t.event = c.type AND c.hash in ('%s')" % "','".join(hashIds)
-        qvars = [instanceId]
+            t.event = c.type AND c.hash in (%s)" % ",".join("?" * len(hashIds))
+        qvars = [instanceId] + hashIds
 
         with self.dbhLock:
             try:
@@ -1585,8 +1585,8 @@ class SpiderFootDb:
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
-            t.event = c.type AND s.hash in ('%s')" % "','".join(hashIds)
-        qvars = [instanceId]
+            t.event = c.type AND s.hash in (%s)" % ",".join("?" * len(hashIds))
+        qvars = [instanceId] + hashIds
 
         with self.dbhLock:
             try:
