@@ -5,7 +5,6 @@ from modules.sfp_leakix import sfp_leakix
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleLeakix(unittest.TestCase):
 
     def test_opts(self):

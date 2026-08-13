@@ -5,7 +5,6 @@ from modules.sfp_venmo import sfp_venmo
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleVenmo(unittest.TestCase):
 
     def test_opts(self):

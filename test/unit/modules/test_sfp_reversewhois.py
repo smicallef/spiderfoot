@@ -5,7 +5,6 @@ from modules.sfp_reversewhois import sfp_reversewhois
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleReversewhois(unittest.TestCase):
 
     def test_opts(self):

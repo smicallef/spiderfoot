@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationOpenNic(unittest.TestCase):
 
     def test_handleEvent_event_data_internet_name_with_opennic_tld_should_return_ip_address_event(self):

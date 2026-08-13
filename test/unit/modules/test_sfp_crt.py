@@ -5,7 +5,6 @@ from modules.sfp_crt import sfp_crt
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCrt(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_keybase import sfp_keybase
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleKeybase(unittest.TestCase):
 
     def test_opts(self):

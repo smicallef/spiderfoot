@@ -5,7 +5,6 @@ from modules.sfp_cleanbrowsing import sfp_cleanbrowsing
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCleanbrowsing(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_openbugbounty import sfp_openbugbounty
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleOpenbugbounty(unittest.TestCase):
 
     def test_opts(self):

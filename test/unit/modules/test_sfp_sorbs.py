@@ -5,7 +5,6 @@ from modules.sfp_sorbs import sfp_sorbs
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSorbs(unittest.TestCase):
 
     def test_opts(self):

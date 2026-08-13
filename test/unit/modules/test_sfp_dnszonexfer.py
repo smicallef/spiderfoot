@@ -5,7 +5,6 @@ from modules.sfp_dnszonexfer import sfp_dnszonexfer
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsZonexfer(unittest.TestCase):
 
     def test_opts(self):

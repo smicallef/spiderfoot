@@ -5,7 +5,6 @@ from modules.sfp_debounce import sfp_debounce
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDebounce(unittest.TestCase):
 
     def test_opts(self):

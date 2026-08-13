@@ -5,7 +5,6 @@ from modules.sfp_dns_for_family import sfp_dns_for_family
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsForFamily(unittest.TestCase):
 
     def test_opts(self):

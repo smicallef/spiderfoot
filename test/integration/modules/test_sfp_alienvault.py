@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationalienvault(unittest.TestCase):
 
     @unittest.skip("todo")

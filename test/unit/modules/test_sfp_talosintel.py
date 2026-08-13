@@ -5,7 +5,6 @@ from modules.sfp_talosintel import sfp_talosintel
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleTalosintel(unittest.TestCase):
 
     def test_opts(self):

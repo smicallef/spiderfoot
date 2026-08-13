@@ -5,7 +5,6 @@ from modules.sfp_opencorporates import sfp_opencorporates
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleOpencorporates(unittest.TestCase):
 
     def test_opts(self):

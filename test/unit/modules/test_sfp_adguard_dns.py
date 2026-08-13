@@ -5,7 +5,6 @@ from modules.sfp_adguard_dns import sfp_adguard_dns
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAdGuardDns(unittest.TestCase):
 
     def test_opts(self):

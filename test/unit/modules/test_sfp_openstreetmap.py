@@ -5,7 +5,6 @@ from modules.sfp_openstreetmap import sfp_openstreetmap
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleopenstreetmap(unittest.TestCase):
 
     def test_opts(self):

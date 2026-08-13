@@ -5,7 +5,6 @@ from modules.sfp_s3bucket import sfp_s3bucket
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleS3bucket(unittest.TestCase):
 
     def test_opts(self):

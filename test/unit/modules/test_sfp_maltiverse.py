@@ -5,7 +5,6 @@ from modules.sfp_maltiverse import sfp_maltiverse
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleMaltiverse(unittest.TestCase):
 
     def test_opts(self):

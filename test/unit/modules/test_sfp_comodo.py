@@ -5,7 +5,6 @@ from modules.sfp_comodo import sfp_comodo
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleComodo(unittest.TestCase):
 
     def test_opts(self):

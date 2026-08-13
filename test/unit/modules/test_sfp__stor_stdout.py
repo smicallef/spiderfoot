@@ -5,7 +5,6 @@ from modules.sfp__stor_stdout import sfp__stor_stdout
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleStor_stdout(unittest.TestCase):
 
     @unittest.skip("This module contains an extra private option")

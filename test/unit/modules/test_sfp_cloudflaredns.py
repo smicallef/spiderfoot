@@ -5,7 +5,6 @@ from modules.sfp_cloudflaredns import sfp_cloudflaredns
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCloudflaredns(unittest.TestCase):
 
     def test_opts(self):

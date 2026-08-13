@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationCoinblocker(unittest.TestCase):
 
     @unittest.skip("todo")

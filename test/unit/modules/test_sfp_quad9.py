@@ -5,7 +5,6 @@ from modules.sfp_quad9 import sfp_quad9
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleQuad9(unittest.TestCase):
 
     def test_opts(self):

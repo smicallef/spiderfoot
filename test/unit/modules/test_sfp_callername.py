@@ -5,7 +5,6 @@ from modules.sfp_callername import sfp_callername
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCallername(unittest.TestCase):
 
     def test_opts(self):

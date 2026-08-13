@@ -5,7 +5,6 @@ from modules.sfp_botscout import sfp_botscout
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleBotscout(unittest.TestCase):
 
     def test_opts(self):

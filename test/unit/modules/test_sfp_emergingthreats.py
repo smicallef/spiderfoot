@@ -5,7 +5,6 @@ from modules.sfp_emergingthreats import sfp_emergingthreats
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleEmergingthreats(unittest.TestCase):
 
     def test_opts(self):

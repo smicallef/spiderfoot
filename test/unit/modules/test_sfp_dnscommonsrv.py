@@ -5,7 +5,6 @@ from modules.sfp_dnscommonsrv import sfp_dnscommonsrv
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsCommonsrv(unittest.TestCase):
 
     def test_opts(self):

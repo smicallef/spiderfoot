@@ -5,7 +5,6 @@ from modules.sfp_accounts import sfp_accounts
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAccounts(unittest.TestCase):
 
     def test_opts(self):

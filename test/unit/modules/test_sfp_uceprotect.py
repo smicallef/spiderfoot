@@ -5,7 +5,6 @@ from modules.sfp_uceprotect import sfp_uceprotect
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleUceprotect(unittest.TestCase):
 
     def test_opts(self):

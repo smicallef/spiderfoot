@@ -5,7 +5,6 @@ from modules.sfp_subdomain_takeover import sfp_subdomain_takeover
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSubdomain_takeover(unittest.TestCase):
 
     def test_opts(self):

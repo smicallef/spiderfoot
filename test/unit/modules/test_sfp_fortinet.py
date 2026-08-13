@@ -5,7 +5,6 @@ from modules.sfp_fortinet import sfp_fortinet
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleFortinet(unittest.TestCase):
 
     def test_opts(self):

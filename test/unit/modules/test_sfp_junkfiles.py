@@ -5,7 +5,6 @@ from modules.sfp_junkfiles import sfp_junkfiles
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleJunkfiles(unittest.TestCase):
 
     def test_opts(self):

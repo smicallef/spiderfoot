@@ -5,7 +5,6 @@ import unittest
 from spiderfoot import SpiderFootThreadPool
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootThreadPool(unittest.TestCase):
     """
     Test SpiderFoot

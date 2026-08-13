@@ -5,7 +5,6 @@ from modules.sfp_emailformat import sfp_emailformat
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleEmailformat(unittest.TestCase):
 
     def test_opts(self):

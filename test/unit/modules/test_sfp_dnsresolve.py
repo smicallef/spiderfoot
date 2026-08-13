@@ -5,7 +5,6 @@ from modules.sfp_dnsresolve import sfp_dnsresolve
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsResolve(unittest.TestCase):
 
     def test_opts(self):

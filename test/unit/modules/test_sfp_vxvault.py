@@ -5,7 +5,6 @@ from modules.sfp_vxvault import sfp_vxvault
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleVxvault(unittest.TestCase):
 
     def test_opts(self):

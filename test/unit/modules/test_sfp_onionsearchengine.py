@@ -5,7 +5,6 @@ from modules.sfp_onionsearchengine import sfp_onionsearchengine
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleOnionsearchengine(unittest.TestCase):
 
     def test_opts(self):

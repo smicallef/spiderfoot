@@ -5,7 +5,6 @@ from modules.sfp_dnsraw import sfp_dnsraw
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsRaw(unittest.TestCase):
 
     def test_opts(self):

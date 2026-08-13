@@ -5,7 +5,6 @@ from modules.sfp_opendns import sfp_opendns
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleOpendns(unittest.TestCase):
 
     def test_opts(self):

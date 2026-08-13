@@ -5,7 +5,6 @@ from modules.sfp_apple_itunes import sfp_apple_itunes
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAppleItunes(unittest.TestCase):
 
     def test_opts(self):

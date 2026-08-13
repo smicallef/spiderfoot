@@ -5,7 +5,6 @@ from modules.sfp_surbl import sfp_surbl
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSurbl(unittest.TestCase):
 
     def test_opts(self):

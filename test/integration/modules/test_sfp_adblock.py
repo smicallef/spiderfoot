@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationAdblock(unittest.TestCase):
 
     def test_handleEvent_event_data_provider_javascript_url_matching_ad_filter_should_return_event(self):

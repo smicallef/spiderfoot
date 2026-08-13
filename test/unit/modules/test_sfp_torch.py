@@ -5,7 +5,6 @@ from modules.sfp_torch import sfp_torch
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleTorch(unittest.TestCase):
 
     def test_opts(self):

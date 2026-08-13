@@ -5,7 +5,6 @@ import unittest
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestSpiderFoot(unittest.TestCase):
 
     default_modules = [

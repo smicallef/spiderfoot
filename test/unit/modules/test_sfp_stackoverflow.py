@@ -5,7 +5,6 @@ from modules.sfp_stackoverflow import sfp_stackoverflow
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleStackoverflow(unittest.TestCase):
 
     def test_opts(self):

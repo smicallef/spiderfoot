@@ -5,7 +5,6 @@ from modules.sfp_yandexdns import sfp_yandexdns
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleYandexdns(unittest.TestCase):
 
     def test_opts(self):

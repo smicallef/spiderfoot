@@ -5,7 +5,6 @@ from modules.sfp_mnemonic import sfp_mnemonic
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleMnemonic(unittest.TestCase):
 
     def test_opts(self):

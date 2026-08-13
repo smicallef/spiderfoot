@@ -5,7 +5,6 @@ from modules.sfp_isc import sfp_isc
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleisc(unittest.TestCase):
 
     def test_opts(self):

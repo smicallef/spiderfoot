@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootPlugin(unittest.TestCase):
     """
     Test SpiderFoot

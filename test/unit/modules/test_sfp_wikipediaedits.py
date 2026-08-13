@@ -5,7 +5,6 @@ from modules.sfp_wikipediaedits import sfp_wikipediaedits
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulewikipediaedits(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_botvrij import sfp_botvrij
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulebotvrij(unittest.TestCase):
 
     def test_opts(self):

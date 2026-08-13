@@ -5,7 +5,6 @@ from modules.sfp_dnsneighbor import sfp_dnsneighbor
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsNeighbor(unittest.TestCase):
 
     def test_opts(self):

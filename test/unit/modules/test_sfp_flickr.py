@@ -5,7 +5,6 @@ from modules.sfp_flickr import sfp_flickr
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleFlickr(unittest.TestCase):
 
     def test_opts(self):

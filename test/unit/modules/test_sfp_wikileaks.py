@@ -5,7 +5,6 @@ from modules.sfp_wikileaks import sfp_wikileaks
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulewikileaks(unittest.TestCase):
 
     def test_opts(self):

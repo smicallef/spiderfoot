@@ -5,7 +5,6 @@ from modules.sfp_voipbl import sfp_voipbl
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleVoipbl(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_emailrep import sfp_emailrep
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleEmailrep(unittest.TestCase):
 
     def test_opts(self):

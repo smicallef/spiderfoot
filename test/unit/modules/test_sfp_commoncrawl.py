@@ -5,7 +5,6 @@ from modules.sfp_commoncrawl import sfp_commoncrawl
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCommoncrawl(unittest.TestCase):
 
     def test_opts(self):

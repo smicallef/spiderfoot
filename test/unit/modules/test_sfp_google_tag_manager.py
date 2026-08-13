@@ -5,7 +5,6 @@ from modules.sfp_google_tag_manager import sfp_google_tag_manager
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulesGoogleTagManager(unittest.TestCase):
 
     def test_opts(self):

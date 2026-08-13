@@ -5,7 +5,6 @@ from modules.sfp_spamhaus import sfp_spamhaus
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSpamhaus(unittest.TestCase):
 
     def test_opts(self):

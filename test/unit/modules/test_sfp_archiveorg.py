@@ -5,7 +5,6 @@ from modules.sfp_archiveorg import sfp_archiveorg
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleArchiveorg(unittest.TestCase):
 
     def test_opts(self):

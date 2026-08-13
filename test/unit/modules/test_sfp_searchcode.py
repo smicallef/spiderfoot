@@ -5,7 +5,6 @@ from modules.sfp_searchcode import sfp_searchcode
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCodesearch(unittest.TestCase):
 
     def test_opts(self):

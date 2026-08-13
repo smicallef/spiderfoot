@@ -5,7 +5,6 @@ from modules.sfp_psbdmp import sfp_psbdmp
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulePsbdmp(unittest.TestCase):
 
     def test_opts(self):

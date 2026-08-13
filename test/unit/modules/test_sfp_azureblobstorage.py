@@ -5,7 +5,6 @@ from modules.sfp_azureblobstorage import sfp_azureblobstorage
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAzureblobstorage(unittest.TestCase):
 
     def test_opts(self):

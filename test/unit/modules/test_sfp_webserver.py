@@ -5,7 +5,6 @@ from modules.sfp_webserver import sfp_webserver
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleWebserver(unittest.TestCase):
 
     def test_opts(self):

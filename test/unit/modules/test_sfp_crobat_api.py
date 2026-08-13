@@ -5,7 +5,6 @@ from modules.sfp_crobat_api import sfp_crobat_api
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCrobatApi(unittest.TestCase):
 
     def test_opts(self):

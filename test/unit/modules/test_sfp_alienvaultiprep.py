@@ -5,7 +5,6 @@ from modules.sfp_alienvaultiprep import sfp_alienvaultiprep
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAlienvaultiprep(unittest.TestCase):
 
     def test_opts(self):

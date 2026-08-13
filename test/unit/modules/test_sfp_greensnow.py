@@ -5,7 +5,6 @@ from modules.sfp_greensnow import sfp_greensnow
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleGreensnow(unittest.TestCase):
 
     def test_opts(self):

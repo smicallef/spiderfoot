@@ -5,7 +5,6 @@ from modules.sfp_robtex import sfp_robtex
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleRobtex(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_coinblocker import sfp_coinblocker
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCoinblocker(unittest.TestCase):
 
     def test_opts(self):

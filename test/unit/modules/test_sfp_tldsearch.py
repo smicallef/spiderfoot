@@ -5,7 +5,6 @@ from modules.sfp_tldsearch import sfp_tldsearch
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleTldsearch(unittest.TestCase):
 
     def test_opts(self):

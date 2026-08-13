@@ -5,7 +5,6 @@ from modules.sfp_duckduckgo import sfp_duckduckgo
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDuckduckgo(unittest.TestCase):
 
     def test_opts(self):

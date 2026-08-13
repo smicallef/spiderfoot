@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationDnsResolve(unittest.TestCase):
 
     def test_enrichTarget_should_return_SpiderFootTarget(self):

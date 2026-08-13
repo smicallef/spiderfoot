@@ -5,7 +5,6 @@ from modules.sfp_bgpview import sfp_bgpview
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleBgpview(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_ripe import sfp_ripe
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleRipe(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_cybercrimetracker import sfp_cybercrimetracker
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCybercrimetracker(unittest.TestCase):
 
     def test_opts(self):

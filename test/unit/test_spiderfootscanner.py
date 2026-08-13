@@ -6,7 +6,6 @@ import uuid
 from sfscan import SpiderFootScanner
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootScanner(unittest.TestCase):
     """
     Test SpiderFootScanStatus

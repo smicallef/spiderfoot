@@ -5,7 +5,6 @@ from modules.sfp_sublist3r import sfp_sublist3r
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSublist3r(unittest.TestCase):
 
     def test_opts(self):

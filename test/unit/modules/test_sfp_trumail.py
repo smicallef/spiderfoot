@@ -5,7 +5,6 @@ from modules.sfp_trumail import sfp_trumail
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleTrumail(unittest.TestCase):
 
     def test_opts(self):

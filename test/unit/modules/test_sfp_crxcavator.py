@@ -5,7 +5,6 @@ from modules.sfp_crxcavator import sfp_crxcavator
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCrxcavator(unittest.TestCase):
 
     def test_opts(self):

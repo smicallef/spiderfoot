@@ -5,7 +5,6 @@ from modules.sfp_dronebl import sfp_dronebl
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDronebl(unittest.TestCase):
 
     def test_opts(self):

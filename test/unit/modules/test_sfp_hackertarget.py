@@ -5,7 +5,6 @@ from modules.sfp_hackertarget import sfp_hackertarget
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleHackertarget(unittest.TestCase):
 
     def test_opts(self):

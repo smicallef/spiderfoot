@@ -5,7 +5,6 @@ from modules.sfp_adblock import sfp_adblock
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAdblock(unittest.TestCase):
 
     def test_opts(self):

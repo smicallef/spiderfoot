@@ -5,7 +5,6 @@ from modules.sfp_crossref import sfp_crossref
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCrossref(unittest.TestCase):
 
     def test_opts(self):

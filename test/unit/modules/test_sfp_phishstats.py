@@ -5,7 +5,6 @@ from modules.sfp_phishstats import sfp_phishstats
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulePhishstats(unittest.TestCase):
 
     def test_opts(self):

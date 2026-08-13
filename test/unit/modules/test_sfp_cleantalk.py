@@ -5,7 +5,6 @@ from modules.sfp_cleantalk import sfp_cleantalk
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCleantalk(unittest.TestCase):
 
     def test_opts(self):

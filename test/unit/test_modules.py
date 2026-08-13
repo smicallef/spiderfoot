@@ -8,7 +8,6 @@ from spiderfoot import SpiderFootDb
 from spiderfoot import SpiderFootHelpers
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootModuleLoading(unittest.TestCase):
     """
     Test SpiderFoot module loading

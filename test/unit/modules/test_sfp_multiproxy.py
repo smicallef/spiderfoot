@@ -5,7 +5,6 @@ from modules.sfp_multiproxy import sfp_multiproxy
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleMultiproxy(unittest.TestCase):
 
     def test_opts(self):

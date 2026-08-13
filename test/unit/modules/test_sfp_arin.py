@@ -5,7 +5,6 @@ from modules.sfp_arin import sfp_arin
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleArin(unittest.TestCase):
 
     def test_opts(self):

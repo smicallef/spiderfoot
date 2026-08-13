@@ -5,7 +5,6 @@ from modules.sfp__stor_db import sfp__stor_db
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleStor_db(unittest.TestCase):
 
     @unittest.skip("This module contains an extra private option")

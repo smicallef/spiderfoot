@@ -5,7 +5,6 @@ from modules.sfp_spamcop import sfp_spamcop
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleSpamcop(unittest.TestCase):
 
     def test_opts(self):

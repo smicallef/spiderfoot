@@ -5,7 +5,6 @@ from modules.sfp_blocklistde import sfp_blocklistde
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleBlocklistde(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_filemeta import sfp_filemeta
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleFilemeta(unittest.TestCase):
 
     def test_opts(self):

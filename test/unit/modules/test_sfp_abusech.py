@@ -5,7 +5,6 @@ from modules.sfp_abusech import sfp_abusech
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAbusech(unittest.TestCase):
 
     def test_opts(self):

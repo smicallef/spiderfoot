@@ -5,7 +5,6 @@ import unittest
 from spiderfoot import SpiderFootDb, SpiderFootEvent
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootDb(unittest.TestCase):
     """
     Test SpiderFootDb

@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationAdGuardDns(unittest.TestCase):
 
     def test_handleEvent_event_data_adult_internet_name_blocked_should_return_event(self):

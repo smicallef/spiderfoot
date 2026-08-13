@@ -5,7 +5,6 @@ from modules.sfp_punkspider import sfp_punkspider
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulePunkspider(unittest.TestCase):
 
     def test_opts(self):

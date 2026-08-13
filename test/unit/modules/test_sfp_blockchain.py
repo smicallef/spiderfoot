@@ -5,7 +5,6 @@ from modules.sfp_blockchain import sfp_blockchain
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleBlockchain(unittest.TestCase):
 
     def test_opts(self):

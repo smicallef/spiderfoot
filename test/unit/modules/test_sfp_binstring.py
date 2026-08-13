@@ -5,7 +5,6 @@ from modules.sfp_binstring import sfp_binstring
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleBinstring(unittest.TestCase):
 
     def test_opts(self):

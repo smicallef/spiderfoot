@@ -5,7 +5,6 @@ from modules.sfp_digitaloceanspace import sfp_digitaloceanspace
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDigitaloceanspace(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_googleobjectstorage import sfp_googleobjectstorage
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleGoogleobjectstorage(unittest.TestCase):
 
     def test_opts(self):

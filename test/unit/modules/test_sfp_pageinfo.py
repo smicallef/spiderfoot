@@ -5,7 +5,6 @@ from modules.sfp_pageinfo import sfp_pageinfo
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulePageInfo(unittest.TestCase):
 
     def test_opts(self):

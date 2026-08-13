@@ -5,7 +5,6 @@ from modules.sfp_cinsscore import sfp_cinsscore
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleCinsscore(unittest.TestCase):
 
     def test_opts(self):

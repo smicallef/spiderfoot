@@ -5,7 +5,6 @@ from modules.sfp_whois import sfp_whois
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleWhois(unittest.TestCase):
 
     def test_opts(self):

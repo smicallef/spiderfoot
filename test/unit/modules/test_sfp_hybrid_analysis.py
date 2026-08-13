@@ -5,7 +5,6 @@ from modules.sfp_hybrid_analysis import sfp_hybrid_analysis
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleHybridAnalysis(unittest.TestCase):
 
     def test_opts(self):

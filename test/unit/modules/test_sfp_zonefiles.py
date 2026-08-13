@@ -5,7 +5,6 @@ from modules.sfp_zonefiles import sfp_zonefiles
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleZoneFiles(unittest.TestCase):
 
     def test_opts(self):

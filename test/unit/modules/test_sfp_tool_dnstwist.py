@@ -5,7 +5,6 @@ from modules.sfp_tool_dnstwist import sfp_tool_dnstwist
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleToolDnstwist(unittest.TestCase):
 
     def test_opts(self):

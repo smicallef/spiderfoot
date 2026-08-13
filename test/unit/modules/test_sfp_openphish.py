@@ -5,7 +5,6 @@ from modules.sfp_openphish import sfp_openphish
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleOpenphish(unittest.TestCase):
 
     def test_opts(self):

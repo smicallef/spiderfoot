@@ -5,7 +5,6 @@ from modules.sfp_ahmia import sfp_ahmia
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleAhmia(unittest.TestCase):
 
     def test_opts(self):

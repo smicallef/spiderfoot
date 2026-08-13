@@ -5,7 +5,6 @@ from modules.sfp_dnsdumpster import sfp_dnsdumpster
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleDnsDumpster(unittest.TestCase):
 
     def test_opts(self):

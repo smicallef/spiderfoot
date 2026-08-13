@@ -6,7 +6,6 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-@pytest.mark.usefixtures
 class TestModuleIntegrationSpamhaus(unittest.TestCase):
 
     def test_handleEvent_event_data_safe_ip_address_not_blocked_should_not_return_event(self):

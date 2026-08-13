@@ -5,7 +5,6 @@ from modules.sfp_urlscan import sfp_urlscan
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleUrlscan(unittest.TestCase):
 
     def test_opts(self):

@@ -5,7 +5,6 @@ from modules.sfp_threatfox import sfp_threatfox
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleThreatFox(unittest.TestCase):
 
     def test_opts(self):

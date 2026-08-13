@@ -5,7 +5,6 @@ from modules.sfp_ipapico import sfp_ipapico
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModuleipApico(unittest.TestCase):
 
     def test_opts(self):

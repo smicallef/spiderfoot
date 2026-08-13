@@ -5,7 +5,6 @@ from modules.sfp_citadel import sfp_citadel
 from sflib import SpiderFoot
 
 
-@pytest.mark.usefixtures
 class TestModulecitadel(unittest.TestCase):
 
     def test_opts(self):

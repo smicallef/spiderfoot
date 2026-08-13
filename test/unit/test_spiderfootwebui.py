@@ -5,7 +5,6 @@ import unittest
 from sfwebui import SpiderFootWebUi
 
 
-@pytest.mark.usefixtures
 class TestSpiderFootWebUi(unittest.TestCase):
     """
     Test SpiderFootWebUi
