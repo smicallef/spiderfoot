@@ -77,13 +77,11 @@ class sfp_lunarcyber(SpiderFootPlugin):
             'domain': qry
         })
 
-        res = self.sf.fetchUrl(
+        return self.sf.fetchUrl(
             f"https://api.lunarcyber.com/domain-exposure?{params}",
             timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'],
         )
-
-        return res
 
     def parseApiResponse(self, res):
         """Parse the API response.

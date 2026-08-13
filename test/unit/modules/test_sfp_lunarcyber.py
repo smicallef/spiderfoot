@@ -79,7 +79,13 @@ class TestModuleLunarCyber(unittest.TestCase):
     def _run_handle_event(self, module, mocked_response, event_data='example.com'):
         """Run handleEvent with a mocked fetchUrl response.
 
-        Returns the list of emitted (event_type, event_data) tuples.
+        Args:
+            module: module instance
+            mocked_response: mocked fetchUrl response
+            event_data (str): event data
+
+        Returns:
+            list: emitted (event_type, event_data) tuples
         """
 
         module.opts = dict(module.opts)
@@ -101,7 +107,7 @@ class TestModuleLunarCyber(unittest.TestCase):
         evt = SpiderFootEvent('INTERNET_NAME', event_data, 'sfp_test', source_evt)
         module.handleEvent(evt)
 
-        return emitted
+        return emitted # noqa R504
 
     def test_handleEvent_report_ready_should_emit_raw_and_malicious_events(self):
         sf = SpiderFoot(self.default_options)

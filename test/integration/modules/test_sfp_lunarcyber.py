@@ -28,3 +28,5 @@ class TestModuleIntegrationLunarCyber(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         result = module.handleEvent(evt)
+
+        self.assertIsNone(result)
