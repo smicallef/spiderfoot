@@ -39,7 +39,10 @@ COPYRIGHT_INFO = "               by Steve Micallef | @spiderfoot\n"
 try:
     import readline
 except ImportError:
-    import pyreadline as readline
+    try:
+        import pyreadline3 as readline
+    except ImportError:
+        import pyreadline as readline
 
 
 # Colors to make things purty
