@@ -35,7 +35,7 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 
 ### WANT MORE?
 
-Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/hx) for:
+Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/) for:
 - 100% Cloud-based and managed for you
 - Attack Surface Monitoring with change notifications by email, REST and Slack
 - Multiple targets per scan
@@ -50,7 +50,7 @@ Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/
 - Bring your own Python SpiderFoot modules
 - Feed scan data to Splunk, ElasticSearch and REST endpoints
 
-See the full set of differences between SpiderFoot HX and the open source version [here](https://www.spiderfoot.net/open-source-vs-hx/).
+See the full set of differences between SpiderFoot HX and the open source version [here](https://www.spiderfoot.net/).
 
 ### USES
 
@@ -111,7 +111,7 @@ To install and run SpiderFoot, you need at least Python 3.7 and a number of Pyth
  python3 ./sf.py -l 127.0.0.1:5001
 ```
 
-Check out the [documentation](https://www.spiderfoot.net/documentation) and our [asciinema videos](https://asciinema.org/~spiderfoot) for more tutorials.
+Check out the [documentation](https://www.spiderfoot.net/) and our [asciinema videos](https://asciinema.org/~spiderfoot) for more tutorials.
 
 ### COMMUNITY
 
