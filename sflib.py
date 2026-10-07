@@ -26,7 +26,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 
 import cryptography
 import dns.resolver
@@ -1011,7 +1011,7 @@ class SpiderFoot:
         # Expiry info
         try:
             notafter = datetime.strptime(sslcert.get_notAfter().decode('utf-8'), "%Y%m%d%H%M%SZ")
-            ret['expiry'] = int(notafter.strftime("%s"))
+            ret['expiry'] = int(notafter.replace(tzinfo=timezone.utc).timestamp())
             ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
             now = int(time.time())
             warnexp = now + (expiringdays * 86400)
