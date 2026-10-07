@@ -1,6 +1,7 @@
 # test_spiderfoot.py
 import pytest
 import unittest
+import time
 
 from sflib import SpiderFoot
 
@@ -571,6 +572,36 @@ class TestSpiderFoot(unittest.TestCase):
 
         parse_cert = sf.parseCert(cert, 'spiderfoot.net')
         self.assertIsInstance(parse_cert, dict)
+
+    @unittest.skipUnless(hasattr(time, 'tzset'), 'requires POSIX TZ support')
+    def test_parse_cert_expiry_uses_utc_in_every_local_timezone(self):
+        import os
+        from datetime import datetime
+        from unittest.mock import patch
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.x509.oid import NameOID
+
+        key = ec.generate_private_key(ec.SECP256R1())
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'example.test')])
+        cert = (x509.CertificateBuilder().subject_name(name).issuer_name(name)
+                .public_key(key.public_key()).serial_number(1)
+                .not_valid_before(datetime(2020, 1, 1))
+                .not_valid_after(datetime(2030, 1, 1)).sign(key, hashes.SHA256()))
+        pem = cert.public_bytes(serialization.Encoding.PEM).decode("ascii")
+        sf = SpiderFoot(self.default_options)
+        try:
+            for zone in ('UTC0', 'EST5', 'JST-9'):
+                with self.subTest(zone=zone), patch.dict(os.environ, {'TZ': zone}):
+                    time.tzset()
+                    with patch('sflib.time.time', return_value=1893457800):
+                        result = sf.parseCert(pem)
+                    self.assertFalse(result['certerror'])
+                    self.assertEqual(result['expiry'], 1893456000)
+                    self.assertTrue(result['expired'])
+        finally:
+            time.tzset()
 
     def test_parse_cert_invalid_cert_should_return_none(self):
         sf = SpiderFoot(self.default_options)
