@@ -240,6 +240,7 @@ Interesting File Finder|Identifies potential files of interest, e.g. office docu
 [Internet Storm Center](https://isc.sans.edu)|Check if an IP address is malicious according to SANS ISC.|Free API
 [ipapi.co](https://ipapi.co/)|Queries ipapi.co to identify geolocation of IP Addresses using ipapi.co API|Tiered API
 [ipapi.com](https://ipapi.com/)|Queries ipapi.com to identify geolocation of IP Addresses using ipapi.com API|Tiered API
+[ipapi.is](https://ipapi.is/)|Obtain geolocation, network owner, abuse contact and VPN, proxy, Tor, datacenter and abuser detection for IP addresses from ipapi.is.|Tiered API
 [IPInfo.io](https://ipinfo.io)|Identifies the physical location of IP addresses identified using ipinfo.io.|Tiered API
 [IPQualityScore](https://www.ipqualityscore.com/)|Determine if target is malicious using IPQualityScore API|Tiered API
 [ipregistry](https://ipregistry.co/)|Query the ipregistry.co database for reputation and geo-location.|Tiered API
