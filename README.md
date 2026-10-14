@@ -113,6 +113,17 @@ To install and run SpiderFoot, you need at least Python 3.7 and a number of Pyth
 
 Check out the [documentation](https://www.spiderfoot.net/documentation) and our [asciinema videos](https://asciinema.org/~spiderfoot) for more tutorials.
 
+#### Linux, with OTinstaller:
+
+On Linux, [OTinstaller](https://github.com/OSINTVerseHQ/OTinstaller) is a third-party tool manager that clones this repository and installs it into its own virtualenv. It isn't maintained by the SpiderFoot authors, so please report problems with it [on the OTinstaller tracker](https://github.com/OSINTVerseHQ/OTinstaller/issues).
+
+```
+ pipx install otinstaller
+ otinstaller init
+ otinstaller install spiderfoot
+ otinstaller run spiderfoot -- -s example.com -o csv   # same as python3 ./sf.py -u passive -s example.com -o csv
+```
+
 ### COMMUNITY
 
 Whether you're a contributor, user or just curious about SpiderFoot and OSINT in general, we'd love to have you join our community! SpiderFoot now has a [Discord server](https://discord.gg/vyvztrG) for seeking help from the community, requesting features or just general OSINT chit-chat.
