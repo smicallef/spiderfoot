@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:        sfp_zonefiles
-# Purpose:     Search ZoneFiles.io Domain query API for domain information.
+# Purpose:     Search the NetAPI domain query API (compatible with the former
+#              ZoneFiles.io API) for domain information.
 #
 # Authors:     <bcoles@gmail.com>
 #
@@ -19,24 +20,24 @@ from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 class sfp_zonefiles(SpiderFootPlugin):
 
     meta = {
-        'name': "ZoneFile.io",
-        'summary': "Search ZoneFiles.io Domain query API for domain information.",
+        'name': "NetAPI",
+        'summary': "Search the NetAPI domain query API (compatible with the former ZoneFiles.io API) for domain information.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         "dataSource": {
-            "website": "https://zonefiles.io",
+            "website": "https://netapi.com/",
             'model': "FREE_AUTH_LIMITED",
-            "references": ["https://zonefiles.io/query-api/"],
+            "references": ["https://netapi.com/zonefiles-io-api/"],
             "apiKeyInstructions": [
-                "Visit https://zonefiles.io",
-                "Register an account",
-                "Visit https://zonefiles.io/profile/",
-                "The API key is listed next to 'Your API token'"
+                "Visit https://netapi.com/signinup/",
+                "Register a free account",
+                "Visit https://netapi.com/dashboard/",
+                "The API key is listed under 'Your API token'"
             ],
-            "favIcon": "https://zonefiles.io/favicon.ico",
-            "logo": "https://zonefiles.io/static/images/logo.png",
-            "description": "You can fetch data for any domain name with our pay-as-you-go API."
+            "favIcon": "https://netapi.com/favicon.ico",
+            "logo": "https://netapi.com/static/images/logo-netapi.png",
+            "description": "Domain lists and datasets for 1,500+ TLDs with DNS, IP, email and phone data. Free accounts get 100 domain queries a day."
         }
     }
 
@@ -47,7 +48,7 @@ class sfp_zonefiles(SpiderFootPlugin):
     }
 
     optdescs = {
-        "api_key": "ZoneFiles.io API key.",
+        "api_key": "NetAPI API key.",
         "verify": "Verify specified domains still resolve to the identified IP address.",
         "delay": "Delay between requests, in seconds."
     }
@@ -90,7 +91,7 @@ class sfp_zonefiles(SpiderFootPlugin):
             "Accept": "application/json"
         }
         res = self.sf.fetchUrl(
-            f"https://zonefiles.io/q/{self.opts['api_key']}/{qry}",
+            f"https://netapi.com/zf-api/q/{self.opts['api_key']}/{qry}/",
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']
@@ -102,23 +103,23 @@ class sfp_zonefiles(SpiderFootPlugin):
 
     def parseApiResponse(self, res: dict):
         if not res:
-            self.error("No response from ZoneFiles.")
+            self.error("No response from NetAPI.")
             return None
 
-        # Future proofing - ZoneFiles.io does not implement rate limiting
+        # NetAPI answers 429 when the daily query limit is reached
         if res['code'] == '429':
-            self.error("You are being rate-limited by ZoneFiles.")
+            self.error("You are being rate-limited by NetAPI.")
             self.errorState = True
             return None
 
         if res['code'] == '500' or res['code'] == '502' or res['code'] == '503':
-            self.error("ZoneFiles.io service is unavailable")
+            self.error("NetAPI service is unavailable")
             self.errorState = True
             return None
 
         # Catch all other non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.error("Failed to retrieve content from ZoneFiles.")
+            self.error("Failed to retrieve content from NetAPI.")
             self.errorState = True
             return None
 

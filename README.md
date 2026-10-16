@@ -257,6 +257,7 @@ Junk File Finder|Looks for old/temporary and other similar files.|Internal
 [multiproxy.org Open Proxies](https://multiproxy.org/)|Check if an IP address is an open proxy according to multiproxy.org open proxy list.|Free API
 [MySpace](https://myspace.com/)|Gather username and location from MySpace.com profiles.|Free API
 [NameAPI](https://www.nameapi.org/)|Check whether an email is disposable|Tiered API
+[NetAPI](https://netapi.com/)|Search the NetAPI domain query API (compatible with the former ZoneFiles.io API) for domain information.|Tiered API
 [NetworksDB](https://networksdb.io/)|Search NetworksDB.io API for IP address and domain information.|Tiered API
 [NeutrinoAPI](https://www.neutrinoapi.com/)|Search NeutrinoAPI for phone location information, IP address information, and host reputation.|Tiered API
 [numverify](http://numverify.com/)|Lookup phone number location and carrier information from numverify.com.|Tiered API
@@ -356,7 +357,6 @@ Whois|Perform a WHOIS look-up on domain names and owned netblocks.|Internal
 [XForce Exchange](https://exchange.xforce.ibmcloud.com/)|Obtain IP reputation and passive DNS information from IBM X-Force Exchange.|Tiered API
 [Yandex DNS](https://yandex.com/)|Check if a host would be blocked by Yandex DNS.|Free API
 [Zetalytics](https://zetalytics.com/)|Query the Zetalytics database for hosts on your target domain(s).|Tiered API
-[ZoneFile.io](https://zonefiles.io)|Search ZoneFiles.io Domain query API for domain information.|Tiered API
 [Zone-H Defacement Check](https://zone-h.org/)|Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.|Free API
 
 ### DOCUMENTATION
