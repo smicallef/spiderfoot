@@ -396,6 +396,45 @@ class TestSpiderFootWebUi(unittest.TestCase):
         correlationrules = sfwebui.correlationrules()
         self.assertIsInstance(correlationrules, list)
 
+    def test_detecttarget_should_classify_input(self):
+        """
+        Test detecttarget(self, target)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        res = sfwebui.detecttarget('bob@example.com')
+        self.assertTrue(res['ok'])
+        self.assertEqual('EMAILADDR', res['target_type'])
+        self.assertFalse(sfwebui.detecttarget('@@@')['ok'])
+        self.assertFalse(sfwebui.detecttarget('')['ok'])
+
+    def test_llmproviders_should_list_free_and_local_engines_without_secrets(self):
+        """
+        Test llmproviders(self)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        res = sfwebui.llmproviders()
+        ids = [p['id'] for p in res['providers']]
+        self.assertIn('ollama_local', ids)
+        self.assertIn('ollama_cloud', ids)
+        for p in res['providers']:
+            self.assertTrue(p['badge'])
+            self.assertTrue(p['tooltip'])
+            self.assertNotIn('key', [k for k in p if k.endswith('_value')])
+
+    def test_state_changing_ai_endpoints_should_reject_get_requests(self):
+        """
+        Test llmsave(self, ...), llmtest(self, ...), aisummary(self, ...)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        for res in (sfwebui.llmsave('groq', 'm', 'k'), sfwebui.llmtest('groq'), sfwebui.aisummary('abc')):
+            self.assertFalse(res['ok'])
+
     def test_ping_should_return_list(self):
         """
         Test ping(self)
@@ -480,8 +519,8 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        start_scan = sfwebui.startscan('example scan name', 'example scan target', 'example module list', None, None)
-        self.assertIn('Invalid target type. Could not recognize it as a target SpiderFoot supports.', start_scan)
+        start_scan = sfwebui.startscan('example scan name', '@@@', 'example module list', None, None)
+        self.assertIn('Could not tell what this is', start_scan)
 
     def test_start_scan_invalid_modules_should_return_error(self):
         """

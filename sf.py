@@ -273,20 +273,18 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
         log.error("-D can only be used when using the csv output format.")
         sys.exit(-1)
 
-    target = args.s
-    # Usernames and names - quoted on the commandline - won't have quotes,
-    # so add them.
-    if " " in target:
-        target = f"\"{target}\""
-    if "." not in target and not target.startswith("+") and '"' not in target:
-        target = f"\"{target}\""
-    targetType = SpiderFootHelpers.targetTypeFromString(target)
+    from spiderfoot.detect import detect_target
+    detection = detect_target(args.s)
 
-    if not targetType:
-        log.error(f"Could not determine target type. Invalid target: {target}")
+    if not detection.ok:
+        log.error(f"Could not determine target type. Invalid target: {args.s} ({detection.error})")
         sys.exit(-1)
 
-    target = target.strip('"')
+    target = detection.value
+    targetType = detection.target_type
+    log.info(f"Detected target as {detection.label} ({detection.confidence} confidence): {target}")
+    for note in detection.notes:
+        log.info(note)
 
     modlist = list()
     if not args.t and not args.m and not args.u:
@@ -605,8 +603,8 @@ def handle_abort(signal, frame) -> None:
 
 
 if __name__ == '__main__':
-    if sys.version_info < (3, 7):
-        print("SpiderFoot requires Python 3.7 or higher.")
+    if sys.version_info < (3, 9):
+        print("llamaFoot requires Python 3.9 or higher.")
         sys.exit(-1)
 
     if len(sys.argv) <= 1:

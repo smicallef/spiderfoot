@@ -218,31 +218,12 @@ class SpiderFootHelpers():
         Returns:
             str: scan target seed data type
         """
-        if not target:
+        from spiderfoot.detect import detect_target
+
+        result = detect_target(target)
+        if not result.ok:
             return None
-
-        # NOTE: the regex order is important
-        regexToType = [
-            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
-            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
-            {r"^.*@.*$": "EMAILADDR"},
-            {r"^\+[0-9]+$": "PHONE_NUMBER"},
-            {r"^\".+\s+.+\"$": "HUMAN_NAME"},
-            {r"^\".+\"$": "USERNAME"},
-            {r"^[0-9]+$": "BGP_AS_OWNER"},
-            {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
-            {r"^[0-9a-f:]+::/[0-9]+$": "NETBLOCKV6_OWNER"},
-            {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"},
-            {r"^(bc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})|[13][a-km-zA-HJ-NP-Z1-9]{25,35})$": "BITCOIN_ADDRESS"},
-        ]
-
-        # Parse the target and set the target type
-        for rxpair in regexToType:
-            rx = list(rxpair.keys())[0]
-            if re.match(rx, target, re.IGNORECASE | re.UNICODE):
-                return list(rxpair.values())[0]
-
-        return None
+        return result.target_type
 
     @staticmethod
     def urlRelativeToAbsolute(url: str) -> typing.Optional[str]:

@@ -16,7 +16,6 @@ collections:
         value:
           - sfp_sslcert
           - sfp_crt
-          - sfp_certspotter
       - method: exact
         field: source.type
         value:

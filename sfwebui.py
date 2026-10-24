@@ -17,6 +17,7 @@ import multiprocessing as mp
 import random
 import string
 import time
+import typing
 from copy import deepcopy
 from io import BytesIO, StringIO
 from operator import itemgetter
@@ -38,6 +39,9 @@ from sfscan import startSpiderFootScanner
 from spiderfoot import SpiderFootDb
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import __version__
+from spiderfoot import ai, llm
+from spiderfoot.detect import detect_target
+from spiderfoot.routing import modules_for_target
 from spiderfoot.logger import logListenerSetup, logWorkerSetup
 
 mp.set_start_method("spawn", force=True)
@@ -1344,6 +1348,133 @@ class SpiderFootWebUi:
         """
         return ["SUCCESS", __version__]
 
+    @staticmethod
+    def _state_changing_guard() -> typing.Optional[dict]:
+        """Guard for endpoints that change settings or spend provider quota.
+
+        Requires POST plus an X-Requested-With header. Browsers will not add that
+        header to a cross-site request unless CORS allows it, which blocks CSRF.
+
+        Returns:
+            dict: an error response, or None if the request may proceed
+        """
+        if cherrypy.request.method != "POST":
+            cherrypy.response.status = 405
+            return {"ok": False, "error": "POST required."}
+        if cherrypy.request.headers.get("X-Requested-With") != "XMLHttpRequest":
+            cherrypy.response.status = 403
+            return {"ok": False, "error": "Forbidden."}
+        return None
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def detecttarget(self: 'SpiderFootWebUi', target: str = "") -> dict:
+        """Work out what kind of thing a search term is, for live feedback in the UI.
+
+        Args:
+            target (str): whatever the user typed
+
+        Returns:
+            dict: detection result (type, label, normalised value, confidence, notes, alternatives)
+        """
+        return detect_target(target).to_dict()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def llmproviders(self: 'SpiderFootWebUi') -> dict:
+        """List AI providers with their free/local badge, setup tooltip and configuration state.
+
+        Returns:
+            dict: providers, selected provider and whether the UI may change settings
+        """
+        provider, model = llm.active_selection()
+        return {"providers": llm.list_providers(), "selected": provider, "model": model,
+                "writable": not llm.ui_writes_disabled()}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def llmmodels(self: 'SpiderFootWebUi', provider: str = "") -> dict:
+        """List the models a provider offers.
+
+        Args:
+            provider (str): provider id
+
+        Returns:
+            dict: models, or an error message
+        """
+        try:
+            return {"models": llm.list_models(provider)}
+        except llm.LLMError as e:
+            return {"models": [], "error": str(e)}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def llmsave(self: 'SpiderFootWebUi', provider: str = "", model: str = "", apikey: str = None) -> dict:
+        """Save the chosen AI provider, model and optional API key. POST only.
+
+        Args:
+            provider (str): provider id
+            model (str): model name
+            apikey (str): API key for the provider; omit to keep the stored one
+
+        Returns:
+            dict: ok flag and error message if any
+        """
+        blocked = self._state_changing_guard()
+        if blocked:
+            return blocked
+        try:
+            llm.save_config(provider, model, apikey)
+        except llm.LLMError as e:
+            return {"ok": False, "error": str(e)}
+        return {"ok": True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def llmtest(self: 'SpiderFootWebUi', provider: str = "", model: str = "") -> dict:
+        """Check that a provider, key and model work. POST only.
+
+        Args:
+            provider (str): provider id
+            model (str): model name
+
+        Returns:
+            dict: ok flag and error message if any
+        """
+        blocked = self._state_changing_guard()
+        if blocked:
+            return blocked
+        try:
+            llm.test_connection(provider, model or None)
+        except llm.LLMError as e:
+            return {"ok": False, "error": str(e)}
+        return {"ok": True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def aisummary(self: 'SpiderFootWebUi', id: str = "", provider: str = "", model: str = "") -> dict:
+        """Write an AI analysis of a scan. POST only, because it spends the provider's quota.
+
+        Args:
+            id (str): scan instance id
+            provider (str): provider id; blank uses the saved selection
+            model (str): model name; blank uses the saved model
+
+        Returns:
+            dict: summary text with provider and model, or an error message
+        """
+        blocked = self._state_changing_guard()
+        if blocked:
+            return blocked
+        dbh = SpiderFootDb(self.config)
+        try:
+            result = ai.summarize_scan(dbh, id, provider or None, model or None)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        except llm.LLMError as e:
+            return {"ok": False, "error": str(e)}
+        return {"ok": True, **result}
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def query(self: 'SpiderFootWebUi', query: str) -> str:
@@ -1389,6 +1520,9 @@ class SpiderFootWebUi:
             HTTPRedirect: redirect to new scan info page
         """
         scanname = self.cleanUserInput([scanname])[0]
+        # Detect on the raw input: HTML-escaping would mangle apostrophes in names.
+        # Detected values are restricted to safe characters, so no escaping is needed afterwards.
+        rawtarget = scantarget
         scantarget = self.cleanUserInput([scantarget])[0]
 
         if not scanname:
@@ -1412,13 +1546,16 @@ class SpiderFootWebUi:
 
             return self.error("Invalid request: no modules specified for scan.")
 
-        targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
-        if targetType is None:
+        detection = detect_target(rawtarget)
+        if not detection.ok:
             if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Unrecognised target type."]).encode('utf-8')
+                return json.dumps(["ERROR", detection.error or "Unrecognised target type."]).encode('utf-8')
 
-            return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
+            return self.error(detection.error or "Invalid target type. Could not recognize it as a target SpiderFoot supports.")
+
+        targetType = detection.target_type
+        scantarget = detection.value
 
         # Swap the globalscantable for the database handler
         dbh = SpiderFootDb(self.config)
@@ -1453,6 +1590,11 @@ class SpiderFootWebUi:
                 newmodcpy = deepcopy(newmods)
                 newmods = list()
 
+        # Smart mode: pick every relevant module for the detected target type
+        if len(modlist) == 0 and usecase in ('auto', 'autodeep'):
+            modlist = modules_for_target(self.config['__modules__'], targetType, deep=(usecase == 'autodeep'),
+                                         max_hops=None if usecase == 'autodeep' else 2)
+
         # User selected a use case
         if len(modlist) == 0 and usecase:
             for mod in self.config['__modules__']:
@@ -1475,12 +1617,6 @@ class SpiderFootWebUi:
         # Delete the stdout module in case it crept in
         if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
-
-        # Start running a new scan
-        if targetType in ["HUMAN_NAME", "USERNAME", "BITCOIN_ADDRESS"]:
-            scantarget = scantarget.replace("\"", "")
-        else:
-            scantarget = scantarget.lower()
 
         # Start running a new scan
         scanId = SpiderFootHelpers.genScanInstanceId()

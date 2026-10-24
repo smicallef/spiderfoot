@@ -19,7 +19,6 @@ collections:
         field: module
         value:
           - sfp_crt
-          - sfp_certspotter
   - collect:
       - method: exact
         field: type
@@ -28,7 +27,6 @@ collections:
         field: module
         value:
           - not sfp_crt
-          - not sfp_certspotter
           - not sfp_dnsresolve
 aggregation:
   field: data

@@ -1,5 +1,6 @@
 ## -*- coding: utf-8 -*-
 <%include file="HEADER.tmpl"/>
+<script src="${docroot}/static/js/spiderfoot.ai.js"></script>
 <%
   if status == "FINISHED":
     statusy = "alert-success"
@@ -22,6 +23,7 @@
       <a id='btn-graph' class="btn btn-default" onClick='graphEvents("${id}")'><i class='glyphicon glyphicon-asterisk'></i>&nbsp;Graph</a>
       <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn btn-default" onClick='viewScanLog("${id}")'><i class='glyphicon glyphicon-book'></i>&nbsp;Log</a>
+      <a id='btn-ai' class="btn btn-default" onClick='llamafootAiSummary("${id}")'><i class='glyphicon glyphicon-flash'></i>&nbsp;AI Summary</a>
     </div>
     <div class='btn-group pull-right'>
         <div id='btn-search' class='input-group pull-right'>
