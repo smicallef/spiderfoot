@@ -97,6 +97,7 @@ def main():
     p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
     p.add_argument("-C", "--correlate", metavar="scanID", help="Run correlation rules against a scan ID.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
+    p.add_argument("--target-type", choices=["USERNAME"], help="Override automatic target detection for a username.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
     p.add_argument("-u", choices=["all", "footprint", "investigate", "passive"], type=str, help="Select modules automatically by use case")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
@@ -298,7 +299,7 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
         target = f"\"{target}\""
     if "." not in target and not target.startswith("+") and '"' not in target:
         target = f"\"{target}\""
-    targetType = SpiderFootHelpers.targetTypeFromString(target)
+    targetType = args.target_type or SpiderFootHelpers.targetTypeFromString(target)
 
     if not targetType:
         log.error(f"Could not determine target type. Invalid target: {target}")
@@ -416,7 +417,7 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
 
     # Prepare scan output headers
     if args.o == "json":
-        print("[", end='')
+        print("[", end='', flush=True)
     elif not args.H:
         delim = "\t"
 
@@ -460,6 +461,9 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
         if not info:
             continue
         if info[5] in ["ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED"]:
+            # The scanner can update its status before its stdout is flushed.
+            # Wait for it to exit before writing the closing JSON bracket.
+            p.join()
             if sfConfig['__logging']:
                 log.info(f"Scan completed with status {info[5]}")
             if args.o == "json":

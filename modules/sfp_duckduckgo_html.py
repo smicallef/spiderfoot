@@ -35,7 +35,7 @@ def result_url(link):
 class sfp_duckduckgo_html(SpiderFootPlugin):
     meta = {
         "name": "DuckDuckGo HTML (experimental)",
-        "summary": "Discover links for the target using DuckDuckGo HTML results.",
+        "summary": "Discover links for a domain or phone number using DuckDuckGo HTML results.",
         "flags": [],
         "useCases": [],
         "categories": ["Search Engines"],
@@ -50,27 +50,35 @@ class sfp_duckduckgo_html(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["INTERNET_NAME"]
+        return ["INTERNET_NAME", "PHONE_NUMBER"]
 
     def producedEvents(self):
         return ["LINKED_URL_INTERNAL", "LINKED_URL_EXTERNAL"]
 
     def handleEvent(self, event):
         target = self.getTarget()
-        if target.targetType != "INTERNET_NAME":
+        if target.targetType not in ("INTERNET_NAME", "PHONE_NUMBER"):
             return
-        host = target.targetValue.rstrip(".").lower()
-        if event.data.rstrip(".").lower() != host or host in self.results:
+        target_value = target.targetValue.rstrip(".").lower()
+        if event.data.rstrip(".").lower() != target_value or target_value in self.results:
             return
-        self.results[host] = True
-        query = urlencode({"q": "site:" + host})
+        self.results[target_value] = True
+        is_domain = target.targetType == "INTERNET_NAME"
+        query = urlencode({"q": "site:" + target_value if is_domain else '"' + target_value + '"'})
         response = self.sf.fetchUrl(
             "https://html.duckduckgo.com/html/?" + query,
             timeout=self.opts["_fetchtimeout"],
             useragent=self.opts["_useragent"],
         )
-        if not response or response.get("code") != "200" or not response.get("content"):
-            self.error("DuckDuckGo HTML no respondió correctamente; puede haber un bloqueo o limitación.")
+        if not response:
+            self.error("DuckDuckGo HTML no devolvió respuesta; revisa la conexión.")
+            return
+        code = str(response.get("code") or "desconocido")
+        if code != "200":
+            self.error(f"DuckDuckGo HTML respondió con HTTP {code}; no se procesaron resultados.")
+            return
+        if not response.get("content"):
+            self.error("DuckDuckGo HTML respondió con HTTP 200 pero sin contenido.")
             return
         parser = ResultParser()
         parser.feed(response["content"])
@@ -86,9 +94,9 @@ class sfp_duckduckgo_html(SpiderFootPlugin):
                 continue
             emitted.add(url)
             result_host = urlsplit(url).hostname.rstrip(".").lower()
-            internal = result_host == host or result_host.endswith("." + host)
+            internal = is_domain and (result_host == target_value or result_host.endswith("." + target_value))
             kind = "LINKED_URL_INTERNAL" if internal else "LINKED_URL_EXTERNAL"
             self.notifyListeners(SpiderFootEvent(kind, url, self.__name__, event))
             if len(emitted) >= max(1, int(self.opts["max_results"])):
                 break
-        self.info(f"DuckDuckGo HTML: {len(emitted)} enlaces emitidos para {host}.")
+        self.info(f"DuckDuckGo HTML: {len(emitted)} enlaces emitidos para {target_value}.")

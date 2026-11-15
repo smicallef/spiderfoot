@@ -77,10 +77,7 @@ class sfp_github(SpiderFootPlugin):
             self.debug("Incomplete Github information found (url).")
             return None
 
-        description = item.get('description')
-        if description is None:
-            self.debug("Incomplete Github information found (description).")
-            return None
+        description = item.get('description') or ""
 
         return "\n".join([f"Name: {name}", f"URL: {html_url}", f"Description: {description}"])
 
@@ -240,6 +237,8 @@ class sfp_github(SpiderFootPlugin):
         if not failed:
             # For each user matching the username, get their repos
             for item in ret['items']:
+                if eventName == "USERNAME" and str(item.get('login', '')).lower() != username.lower():
+                    continue
                 if item.get('repos_url') is None:
                     self.debug("Incomplete Github information found (repos_url).")
                     continue
@@ -269,9 +268,9 @@ class sfp_github(SpiderFootPlugin):
 
                     repo_info = self.buildRepoInfo(item)
                     if repo_info is not None:
-                        if self.opts['namesonly'] and item['name'] != username:
+                        if eventName != "USERNAME" and self.opts['namesonly'] and item['name'] != username:
                             continue
-                        if eventName == "USERNAME" and "/" + username + "/" not in item.get('html_url', ''):
+                        if eventName == "USERNAME" and str((item.get('owner') or {}).get('login', '')).lower() != username.lower():
                             continue
 
                         evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info,
