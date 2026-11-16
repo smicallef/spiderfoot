@@ -97,6 +97,9 @@ class sfp_ipapiis(SpiderFootPlugin):
         params = {'q': qry}
         if self.opts['api_key']:
             params['key'] = self.opts['api_key']
+            # The response format parsed below. Without it, ipapi.is answers
+            # in the format the key's account is set to.
+            params['v'] = 1
 
         res = self.sf.fetchUrl(
             "https://api.ipapi.is/",

@@ -167,7 +167,7 @@ class TestModuleIpapiis(unittest.TestCase):
         args, kwargs = module.sf.fetchUrl.call_args
         self.assertEqual(args[0], "https://api.ipapi.is/")
         self.assertEqual(kwargs['headers']['Content-Type'], "application/json")
-        self.assertEqual(json.loads(kwargs['postData']), {"q": "85.203.46.163", "key": "example key"})
+        self.assertEqual(json.loads(kwargs['postData']), {"q": "85.203.46.163", "key": "example key", "v": 1})
 
     def test_handleEvent_datacenter_response_should_return_events(self):
         module, events = self.lookup("45.33.12.34", json.dumps(DATACENTER_RESPONSE))
