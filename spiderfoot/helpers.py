@@ -931,8 +931,6 @@ class SpiderFootHelpers():
 
         Todo:
             Check and parse User-Agent.
-
-            Fix whitespace parsing; ie, " " is not a valid disallowed path
         """
         returnArr: typing.List[str] = list()
 
@@ -941,7 +939,10 @@ class SpiderFootHelpers():
 
         for line in robotsTxtData.splitlines():
             if line.lower().startswith('disallow:'):
-                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
+                # The path must start with a non-whitespace character, so a
+                # line like "Disallow: " (whitespace only, no path) isn't
+                # mistaken for a disallowed path consisting of a space.
+                m = re.match(r'disallow:\s*([^\s#][^ #]*)', line, re.IGNORECASE)
                 if m:
                     returnArr.append(m.group(1))
 

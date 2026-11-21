@@ -481,6 +481,22 @@ class TestSpiderFootHelpers(unittest.TestCase):
         self.assertIsInstance(robots_txt, list)
         self.assertIn("/disallowed/path", robots_txt)
 
+        # Regression test: a "Disallow:" line with only whitespace (no
+        # actual path) must not be parsed as a disallowed path of " ".
+        robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt("disallow: \n")
+        self.assertIsInstance(robots_txt, list)
+        self.assertFalse(robots_txt)
+
+        robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt("disallow:\t\n")
+        self.assertIsInstance(robots_txt, list)
+        self.assertFalse(robots_txt)
+
+        # Multiple lines: a blank disallow shouldn't swallow a real one.
+        robots_txt = SpiderFootHelpers.extractUrlsFromRobotsTxt(
+            "disallow: \ndisallow: /real/path\n"
+        )
+        self.assertEqual(robots_txt, ["/real/path"])
+
     def test_sanitise_input(self):
         safe = SpiderFootHelpers.sanitiseInput("example-string")
         self.assertIsInstance(safe, bool)
